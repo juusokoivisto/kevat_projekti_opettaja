@@ -1,18 +1,20 @@
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import multiMonthPlugin from '@fullcalendar/multimonth'
+import fiLocale from '@fullcalendar/core/locales/fi'
 
 export default function Calendar() {
   return (
     <FullCalendar
-      plugins={[ timeGridPlugin, dayGridPlugin ]}
+      plugins={[timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
       initialView="timeGridWeek"
       weekends={false}
       allDaySlot={false}
       slotMinTime="07:00:00"
       slotMaxTime="22:00:00"
       contentHeight="auto"
-      locale="fi"
+      locale={fiLocale}
       slotLabelFormat={{
         hour: '2-digit',
         minute: '2-digit',
@@ -21,7 +23,7 @@ export default function Calendar() {
       headerToolbar={{
         left: 'prev,next today',
         center: 'title',
-        right: 'timeGridDay,timeGridWeek,dayGridMonth'
+        right: 'timeGridWeek,dayGridMonth,multiMonthYear'
       }}
       dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'numeric', omitCommas: true }}
       titleFormat={{ day: 'numeric', month: 'long', year: 'numeric' }}
