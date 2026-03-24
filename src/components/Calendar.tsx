@@ -1,0 +1,34 @@
+import FullCalendar from '@fullcalendar/react'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import dayGridPlugin from '@fullcalendar/daygrid'
+
+export default function Calendar() {
+  return (
+    <FullCalendar
+      plugins={[ timeGridPlugin, dayGridPlugin ]}
+      initialView="timeGridWeek"
+      weekends={false}
+      allDaySlot={false}
+      slotMinTime="07:00:00"
+      slotMaxTime="22:00:00"
+      contentHeight="auto"
+      locale="fi"
+      slotLabelFormat={{
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }}
+      headerToolbar={{
+        left: 'prev,next today',
+        center: 'title',
+        right: 'timeGridDay,timeGridWeek,dayGridMonth'
+      }}
+      dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'numeric', omitCommas: true }}
+      titleFormat={{ day: 'numeric', month: 'long', year: 'numeric' }}
+      events={[
+        { title: 'event 1', date: '2026-04-01' },
+        { title: 'event 2', date: '2026-04-02' }
+      ]}
+    />
+  )
+}
