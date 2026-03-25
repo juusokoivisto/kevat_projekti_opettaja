@@ -19,7 +19,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 
 const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
-const settings = ['Profiili', 'Tili', 'Dashboard', 'Kirjaudu ulos'];
+const settings = ['Profiili', 'Kirjaudu ulos'];
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -76,6 +76,7 @@ const handleCloseTeachersMenu = () => {
   position="static"
   sx={{
     borderRadius: '12px',
+    mb: 2
   }}
 >
       <Container maxWidth="xl">
