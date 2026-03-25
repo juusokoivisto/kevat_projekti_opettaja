@@ -1,11 +1,15 @@
 import './App.css'
-import Calendar from './components/Calendar.tsx'
+import MainPage from './pages/MainPage.tsx'
+import AdminPanel from './pages/AdminPanel.tsx'
+import { Route, Routes } from 'react-router-dom'
 
 function App() {
   return (
     <>
-    <h1>Kevätprojekti</h1>
-    <Calendar />
+    <Routes>
+      <Route path="/" element={<MainPage/>}></Route>
+      <Route path="/admin" element={<AdminPanel/>}></Route>
+    </Routes>
     </>
   )
 }
