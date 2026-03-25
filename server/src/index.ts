@@ -1,13 +1,14 @@
 import 'dotenv/config'
 import express from 'express'
 import { prisma } from './prismaClient'
+import { Request, Response } from 'express'
 
 const app = express()
 app.use(express.json())
 
-app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok' }))
 
-app.get('/opettajat', async (_req, res) => {
+app.get('/opettajat', async (_req: Request, res: Response) => {
   try {
     const opettajat = await prisma.opettaja.findMany()
     res.json(opettajat)
@@ -16,7 +17,7 @@ app.get('/opettajat', async (_req, res) => {
   }
 })
 
-app.post('/opettajat', async (req, res) => {
+app.post('/opettajat', async (req: Request, res: Response) => {
   const { nimi, sukunimi, sahkoposti, sopimustunnit = 0, vapaaResurssi = 0 } = req.body
   try {
     const opettaja = await prisma.opettaja.create({
