@@ -197,6 +197,9 @@ const handleCloseTeachersMenu = () => {
           <MenuItem onClick={handleCloseTeachersMenu}>
             <Typography>Opettaja 2</Typography>
           </MenuItem>
+          <MenuItem onClick={handleCloseTeachersMenu}>
+            <Typography>Uusi opettaja</Typography>
+          </MenuItem>
         </Menu>
       </React.Fragment>
     );
