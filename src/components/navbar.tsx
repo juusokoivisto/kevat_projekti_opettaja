@@ -11,11 +11,11 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import Brightness4Icon from '@mui/icons-material/Brightness4'; // dark
 import Brightness7Icon from '@mui/icons-material/Brightness7'; // light
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+
 
 
 const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
@@ -75,13 +75,12 @@ const handleCloseTeachersMenu = () => {
     <AppBar
   position="static"
   sx={{
-    borderRadius: '12px',
-    mb: 2
+    borderRadius: '0 0 8px 8px',
+    mb: 2,
   }}
 >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
@@ -92,12 +91,12 @@ const handleCloseTeachersMenu = () => {
               display: { xs: 'none', md: 'flex' },
               fontFamily: 'monospace',
               fontWeight: 700,
-              letterSpacing: '.3rem',
+              letterSpacing: '.1rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            KALENTERI
+            Työjärjestykset
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -157,7 +156,6 @@ const handleCloseTeachersMenu = () => {
 })}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -174,7 +172,7 @@ const handleCloseTeachersMenu = () => {
               textDecoration: 'none',
             }}
           >
-            KALENTERI
+            Työjärjestykset
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
            {pages.map((page) => {
@@ -215,14 +213,17 @@ const handleCloseTeachersMenu = () => {
     );
   })}
           </Box>
+          <Tooltip title="Vaihda teema">
           <IconButton onClick={toggleDarkMode} color="inherit">
   {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-</IconButton>
-              <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>            
-                <Tooltip title="Avaa asetukset">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-              </IconButton>
+            </IconButton>
+            </Tooltip>
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>            
+            <Tooltip title="Avaa asetukset">
+          <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+            <Avatar>
+              </Avatar>
+            </IconButton>
             </Tooltip>
             <Menu
               sx={{ mt: '45px' }}
