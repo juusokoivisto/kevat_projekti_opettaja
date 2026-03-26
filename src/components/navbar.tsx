@@ -15,10 +15,16 @@ import Brightness4Icon from '@mui/icons-material/Brightness4'; // dark
 import Brightness7Icon from '@mui/icons-material/Brightness7'; // light
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { useNavigate } from 'react-router-dom';
 
 
 
 const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
+const routes: Record<string, string> = {
+  Kalenteri: '/',
+  Opettajat: '/teachers',
+  Kirjaudu: '/login',
+};
 const settings = ['Profiili', 'Kirjaudu ulos'];
 
 function ResponsiveAppBar() {
@@ -27,6 +33,7 @@ function ResponsiveAppBar() {
   const [anchorElTeachers, setAnchorElTeachers] = React.useState<null | HTMLElement>(null);
   const [openTeachers, setOpenTeachers] = React.useState(false);
   const [darkMode, setDarkMode] = React.useState(false);
+  const navigate = useNavigate();
 
 const toggleDarkMode = () => {
   setDarkMode((prev) => !prev);
@@ -142,8 +149,13 @@ const handleCloseTeachersMenu = () => {
             <MenuItem sx={{ pl: 4 }}>
               <Typography>Opettaja 2</Typography>
             </MenuItem>
-            <MenuItem sx={{ pl: 4 }}>
-              <Typography>Uusi opettaja</Typography>
+            <MenuItem sx={{ pl: 4 }} 
+              onClick={() => {
+                  handleCloseTeachersMenu();
+                  navigate('/newteacher');
+              }}
+              >
+              <Typography>Lisää opettaja</Typography>
             </MenuItem>
           </>
         )}
@@ -152,10 +164,17 @@ const handleCloseTeachersMenu = () => {
   }
 
   return (
-    <MenuItem key={page} onClick={handleCloseNavMenu}>
-      <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-    </MenuItem>
-  );
+  <MenuItem
+    key={page}
+    onClick={() => {
+      handleCloseNavMenu();
+      navigate(routes[page]);
+    }}
+  >
+    <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+  </MenuItem>
+);
+  
 })}
             </Menu>
           </Box>
@@ -200,8 +219,13 @@ const handleCloseTeachersMenu = () => {
           <MenuItem onClick={handleCloseTeachersMenu}>
             <Typography>Opettaja 2</Typography>
           </MenuItem>
-          <MenuItem onClick={handleCloseTeachersMenu}>
-            <Typography>Lisää opettaja</Typography>
+          <MenuItem 
+              onClick={() => {
+                  handleCloseTeachersMenu();
+                  navigate('/newteacher');
+              }}
+              >
+              <Typography>Lisää opettaja</Typography>
           </MenuItem>
         </Menu>
       </React.Fragment>
@@ -209,13 +233,19 @@ const handleCloseTeachersMenu = () => {
   }
 
   return (
-    <Button
-      key={page}
-      onClick={handleCloseNavMenu}
-      sx={{ my: 2, color: 'white', display: 'block' }}
-    >
-      {page}
-    </Button>
+          <Button
+            key={page}
+            onClick={() => {
+              handleCloseNavMenu();
+
+              if (page === 'Kalenteri') {
+                navigate('/');
+              }
+            }}
+            sx={{ my: 2, color: 'white', display: 'block' }}
+          >
+            {page}
+          </Button>
     );
   })}
           </Box>
