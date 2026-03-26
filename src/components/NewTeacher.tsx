@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Container, TextField, Typography, Box, Button } from '@mui/material';
 
 const TeacherForm: React.FC = () => {
-  const [teacherName, setTeacherName] = useState('');
+  const [teacherFirstName, setTeacherFirstName] = useState('');
+  const [teacherLastName, setTeacherLastName] = useState('');
   const [email, setEmail] = useState('');
   const [hoursPerYear, setHoursPerYear] = useState('');
 
@@ -14,13 +15,15 @@ const TeacherForm: React.FC = () => {
   const handleAdd = () => {
     // Tallennetaan consoliin (raaka versio)
     console.log('Lisätty opettaja:', {
-      teacherName,
+      teacherFirstName,
+      teacherLastName,
       email,
       hoursPerYear,
     });
 
     // Tyhjennetään kentät lisäyksen jälkeen
-    setTeacherName('');
+    setTeacherFirstName('');
+    setTeacherLastName('');
     setEmail('');
     setHoursPerYear('');
   };
@@ -32,10 +35,17 @@ const TeacherForm: React.FC = () => {
       </Typography>
       <Box component="form" noValidate autoComplete="off" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TextField
-          label="Opettajan nimi"
+          label="Opettajan etunimi"
           variant="outlined"
-          value={teacherName}
-          onChange={(e) => setTeacherName(e.target.value)}
+          value={teacherFirstName}
+          onChange={(e) => setTeacherFirstName(e.target.value)}
+          fullWidth
+        />
+        <TextField
+          label="Opettajan sukunimi"
+          variant="outlined"
+          value={teacherLastName}
+          onChange={(e) => setTeacherLastName(e.target.value)}
           fullWidth
         />
         <TextField
