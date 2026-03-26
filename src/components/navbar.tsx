@@ -20,7 +20,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
 const settings = ['Profiili', 'Kirjaudu ulos'];
-const settings = ['Profiili', 'Kirjaudu ulos'];
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
