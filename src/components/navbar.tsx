@@ -127,7 +127,7 @@ const handleCloseTeachersMenu = () => {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => {
-  if (page === 'Opettajat') {
+  if (page === 'Opettajat') {       //Puhelin Menu
     return (
       <div key={page}>
         <MenuItem onClick={() => setOpenTeachers(!openTeachers)}>
@@ -142,6 +142,9 @@ const handleCloseTeachersMenu = () => {
             <MenuItem sx={{ pl: 4 }}>
               <Typography>Opettaja 2</Typography>
             </MenuItem>
+            <MenuItem sx={{ pl: 4 }}>
+              <Typography>Uusi opettaja</Typography>
+              </MenuItem>
           </>
         )}
       </div>
@@ -176,7 +179,7 @@ const handleCloseTeachersMenu = () => {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
            {pages.map((page) => {
-  if (page === 'Opettajat') {
+  if (page === 'Opettajat') {     //Menu
     return (
       <React.Fragment key={page}>
         <Button
