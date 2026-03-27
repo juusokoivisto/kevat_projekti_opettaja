@@ -10,7 +10,10 @@ import NewTeacherPanel from './pages/NewTeacherPanel.tsx'
 import Footer from './components/Footer.tsx'
 import Box from '@mui/material/Box';
 
-export const ColorModeContext = React.createContext({ toggleDarkMode: () => {} })
+export const ColorModeContext = React.createContext({
+  toggleDarkMode: () => {},
+  darkMode: false,         
+})
 
 function App() {
   const [darkMode, setDarkMode] = React.useState(false)
@@ -28,7 +31,7 @@ function App() {
   })
 
   return (
-    <ColorModeContext.Provider value={{ toggleDarkMode: () => setDarkMode(p => !p) }}>
+    <ColorModeContext.Provider value={{ toggleDarkMode: () => setDarkMode(p => !p), darkMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
