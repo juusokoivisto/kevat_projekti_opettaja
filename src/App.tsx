@@ -1,7 +1,9 @@
 import './App.css'
+import { Route, Routes } from 'react-router-dom'
+
 import MainPage from './pages/MainPage.tsx'
 import AdminPanel from './pages/AdminPanel.tsx'
-import { Route, Routes } from 'react-router-dom'
+import Footer from './components/Footer.tsx'
 
 function App() {
   return (
@@ -10,6 +12,7 @@ function App() {
       <Route path="/" element={<MainPage/>}></Route>
       <Route path="/admin" element={<AdminPanel/>}></Route>
     </Routes>
+    <Footer/>
     </>
   )
 }
