@@ -19,7 +19,7 @@ export default function Footer() {
         mt: "auto",
         borderTop: "1px solid",
         borderColor: "divider",
-        bgcolor: "grey.100",
+        bgcolor: "background.paper",
         textAlign: "center",
       }}
     >
@@ -27,7 +27,7 @@ export default function Footer() {
         {names.map((name, i) => (
           <span key={name}>
             {name}
-            {i < names.length - 1 && <Divider/>}
+            {i < names.length - 1 && <Divider />}
           </span>
         ))}
       </Typography>

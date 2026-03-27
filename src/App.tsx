@@ -1,24 +1,44 @@
 import './App.css'
+import * as React from 'react'
 import { Route, Routes } from 'react-router-dom'
-
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import MainPage from './pages/MainPage.tsx'
 import AdminPanel from './pages/AdminPanel.tsx'
-import { Route, Routes } from 'react-router-dom'
-import Navbar from './components/navbar.tsx'
+import Navbar from './components/Navbar.tsx'
 import NewTeacherPanel from './pages/NewTeacherPanel.tsx'
 import Footer from './components/Footer.tsx'
 
+export const ColorModeContext = React.createContext({ toggleDarkMode: () => {} })
+
 function App() {
+  const [darkMode, setDarkMode] = React.useState(false)
+
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      ...(darkMode && {
+        background: {
+          default: '#1a1a1a',
+          paper: '#242424',
+        },
+      }),
+    },
+  })
+
   return (
-    <>
-    <Navbar/>
-    <Routes>
-      <Route path="/" element={<MainPage/>}></Route>
-      <Route path="/admin" element={<AdminPanel/>}></Route>
-      <Route path="/newteacher" element={<NewTeacherPanel/>}></Route>
-    </Routes>
-    <Footer/>
-    </>
+    <ColorModeContext.Provider value={{ toggleDarkMode: () => setDarkMode(p => !p) }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/newteacher" element={<NewTeacherPanel />} />
+        </Routes>
+        <Footer />
+      </ThemeProvider>
+    </ColorModeContext.Provider>
   )
 }
 
