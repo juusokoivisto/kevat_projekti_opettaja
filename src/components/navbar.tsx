@@ -143,7 +143,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
                     <Typography>{page}</Typography>
                   </MenuItem>
                 );
-              } 
+              }
               return (
                 <Button key={page} onClick={() => { handleCloseNavMenu(); navigate(routes[page]); }}
                   sx={{ my: 2, color: 'white', display: 'block' }}>

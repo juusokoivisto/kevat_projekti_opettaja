@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Container, TextField, Typography, Box, Button } from '@mui/material';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, Box
+} from '@mui/material';
 
-const TeacherForm: React.FC = () => {
+interface TeacherFormDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) => {
   const [teacherFirstName, setTeacherFirstName] = useState('');
   const [teacherLastName, setTeacherLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,66 +21,64 @@ const TeacherForm: React.FC = () => {
   };
 
   const handleAdd = () => {
-    // Tallennetaan consoliin (raaka versio)
-    console.log('Lisätty opettaja:', {
-      teacherFirstName,
-      teacherLastName,
-      email,
-      hoursPerYear,
-    });
-
-    // Tyhjennetään kentät lisäyksen jälkeen
+    console.log('Lisätty opettaja:', { teacherFirstName, teacherLastName, email, hoursPerYear });
     setTeacherFirstName('');
     setTeacherLastName('');
     setEmail('');
     setHoursPerYear('');
+    onClose();
+  };
+
+  const handleClose = () => {
+    setTeacherFirstName('');
+    setTeacherLastName('');
+    setEmail('');
+    setHoursPerYear('');
+    onClose();
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        Opettajan tiedot
-      </Typography>
-      <Box component="form" noValidate autoComplete="off" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <TextField
-          label="Opettajan etunimi"
-          variant="outlined"
-          value={teacherFirstName}
-          onChange={(e) => setTeacherFirstName(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Opettajan sukunimi"
-          variant="outlined"
-          value={teacherLastName}
-          onChange={(e) => setTeacherLastName(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Sähköposti"
-          variant="outlined"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Tunnit vuodessa"
-          variant="outlined"
-          value={hoursPerYear}
-          onChange={handleHoursChange}
-          fullWidth
-        />
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={handleAdd}
-        >
-          Lisää
-        </Button>
-      </Box>
-    </Container>
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <DialogTitle>Opettajan tiedot</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+          <TextField
+            label="Opettajan etunimi"
+            variant="outlined"
+            value={teacherFirstName}
+            onChange={(e) => setTeacherFirstName(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Opettajan sukunimi"
+            variant="outlined"
+            value={teacherLastName}
+            onChange={(e) => setTeacherLastName(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Sähköposti"
+            variant="outlined"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Tunnit vuodessa"
+            variant="outlined"
+            value={hoursPerYear}
+            onChange={handleHoursChange}
+            fullWidth
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Peruuta</Button>
+        <Button variant="contained" color="primary" onClick={handleAdd}>Lisää</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default TeacherForm;
+export default TeacherFormDialog;
