@@ -17,12 +17,14 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ColorModeContext, UserContext } from '../App';
 
-// Updated routes: Opettajat now goes straight to the new panel
+{/*NAPPIEN SÄÄTÖ JA UUSIEN NAPPIEN LISÄÄMINEN PAGES ARRAYHIN UUSI NAPPI ILMESTYY NAVIIN */}
 const pages = ['Kalenteri', 'Opettajat'];
+{/*NAPPIEN REITIT HELPOSTI LISÄTTÄVISSÄ TÄSTÄ AVAIMENA NAPIN NIMI JA PERÄÄN ANTAA SILLE REITTI */}
 const routes: Record<string, string> = {
   Kalenteri: '/',
-  Opettajat: '/newteacher', 
+  Opettajat: '/newteacher'
 };
+{/*SETTINGS ON KÄYTTÄJÄ AVATARIN DROWNDOWN VALIKKO */}
 const settings = ['Profiili', 'Kirjaudu ulos'];
 
 type NavbarProps = {
