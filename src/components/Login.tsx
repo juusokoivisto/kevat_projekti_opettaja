@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
+import { UserContext } from '../App'
 
 type LoginProps = {
   open?: boolean
@@ -15,6 +16,7 @@ type LoginProps = {
 export default function Login({ open = true, onClose }: LoginProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const { setUser } = useContext(UserContext)
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -41,7 +43,7 @@ export default function Login({ open = true, onClose }: LoginProps) {
 
       const data = await res.json()
       const displayName = data.user?.username || data.user?.nimi || data.user?.sahkoposti || username
-      //setUser(displayName)
+      setUser(displayName)
       onClose?.()
     } catch (err: any) {
       alert('Kirjautuminen epäonnistui: ' + (err?.message || err))
