@@ -21,11 +21,14 @@ const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
 const routes: Record<string, string> = {
   Kalenteri: '/',
   Opettajat: '/teachers',
-  Kirjaudu: '/login',
 };
 const settings = ['Profiili', 'Kirjaudu ulos'];
 
-function ResponsiveAppBar() {
+type NavbarProps = {
+  onLoginClick: () => void
+}
+
+export default function Navbar({ onLoginClick }: NavbarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElTeachers, setAnchorElTeachers] = React.useState<null | HTMLElement>(null);
@@ -92,6 +95,7 @@ function ResponsiveAppBar() {
                     </div>
                   );
                 }
+
                 return (
                   <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate(routes[page]); }}>
                     <Typography>{page}</Typography>
@@ -133,6 +137,13 @@ function ResponsiveAppBar() {
                   </React.Fragment>
                 );
               }
+              if (page === 'Kirjaudu') {
+                return (
+                  <MenuItem key={page} onClick={() => { onLoginClick() }}>
+                    <Typography>{page}</Typography>
+                  </MenuItem>
+                );
+              } 
               return (
                 <Button key={page} onClick={() => { handleCloseNavMenu(); navigate(routes[page]); }}
                   sx={{ my: 2, color: 'white', display: 'block' }}>
@@ -175,5 +186,3 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
-
-export default ResponsiveAppBar;
