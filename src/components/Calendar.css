@@ -1,0 +1,44 @@
+.calendar-dark {
+  --fc-border-color: #444;
+  --fc-page-bg-color: #1a1a1a;
+  --fc-neutral-bg-color: #242424;
+  --fc-list-event-hover-bg-color: #2e2e2e;
+  --fc-today-bg-color: rgba(25, 118, 210, 0.35);
+  --fc-event-bg-color: #3a6ea5;
+  --fc-event-border-color: #3a6ea5;
+}
+
+.calendar-dark .fc-theme-standard td,
+.calendar-dark .fc-theme-standard th,
+.calendar-dark .fc-theme-standard .fc-scrollgrid {
+  border-color: #444;
+}
+
+.calendar-dark .fc-col-header-cell,
+.calendar-dark .fc-timegrid-slot-label,
+.calendar-dark .fc-daygrid-day-number,
+.calendar-dark .fc-toolbar-title,
+.calendar-dark .fc-col-header-cell-cushion {
+  color: #e0e0e0;
+}
+
+.calendar-dark .fc-button {
+  background-color: #333;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.calendar-dark .fc-button:hover {
+  background-color: #444;
+  border-color: #666;
+}
+
+.calendar-dark .fc-button-active,
+.calendar-dark .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #1976d2;
+  border-color: #1976d2;
+}
+
+.calendar-dark .fc-scrollgrid-section > td {
+  background-color: #1a1a1a;
+}
