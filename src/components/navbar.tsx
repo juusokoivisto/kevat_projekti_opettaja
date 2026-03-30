@@ -15,9 +15,9 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { ColorModeContext } from '../App';
+import { ColorModeContext, UserContext } from '../App';
 
-const pages = ['Kalenteri', 'Opettajat', 'Kirjaudu'];
+const pages = ['Kalenteri', 'Opettajat'];
 const routes: Record<string, string> = {
   Kalenteri: '/',
   Opettajat: '/teachers',
@@ -36,6 +36,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
 
   const theme = useTheme();
   const { toggleDarkMode } = React.useContext(ColorModeContext);
+  const { user, setUser } = React.useContext(UserContext);
   const navigate = useNavigate();
 
   const handleOpenTeachersMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElTeachers(event.currentTarget);
@@ -102,6 +103,15 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
                   </MenuItem>
                 );
               })}
+              {!user ? (
+                <MenuItem onClick={() => { handleCloseNavMenu(); onLoginClick(); }}>
+                  <Typography>Kirjaudu</Typography>
+                </MenuItem>
+              ) : (
+                <MenuItem onClick={() => { handleCloseNavMenu(); setUser(null); }}>
+                  <Typography>Kirjaudu ulos</Typography>
+                </MenuItem>
+              )}
             </Menu>
           </Box>
 
@@ -152,6 +162,15 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
               );
             })}
           </Box>
+          {!user ? (
+            <Button onClick={() => { onLoginClick(); }} sx={{ my: 2, color: 'white', display: 'block' }}>
+              Kirjaudu
+            </Button>
+          ) : (
+            <Button onClick={() => { setUser(null); }} sx={{ my: 2, color: 'white', display: 'block' }}>
+              Kirjaudu ulos
+            </Button>
+          )}
 
           {/* Dark mode toggle */}
           <Tooltip title="Vaihda teema">
@@ -161,26 +180,28 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
           </Tooltip>
 
           {/* User menu */}
-          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
-            <Tooltip title="Avaa asetukset">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }} id="menu-appbar" anchorEl={anchorElUser}
-              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              keepMounted
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              open={Boolean(anchorElUser)} onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography>{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
+          {user ? (
+            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+              <Tooltip title={user}>
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Avatar>{user.charAt(0).toUpperCase()}</Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }} id="menu-appbar" anchorEl={anchorElUser}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                keepMounted
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                open={Boolean(anchorElUser)} onClose={handleCloseUserMenu}
+              >
+                {settings.map((setting) => (
+                  <MenuItem key={setting} onClick={() => { if (setting === 'Kirjaudu ulos') setUser(null); handleCloseUserMenu(); }}>
+                    <Typography>{setting}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          ) : null}
         </Toolbar>
       </Container>
     </AppBar>
