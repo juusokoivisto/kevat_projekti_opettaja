@@ -31,6 +31,14 @@ export default function Calendar() {
           }}
           dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'numeric', omitCommas: true }}
           titleFormat={{ day: 'numeric', month: 'long', year: 'numeric' }}
+          views={{
+            multiMonthYear: {
+              dayHeaderFormat: { weekday: 'short' }
+            },
+            dayGridMonth: {
+              dayHeaderFormat: { weekday: 'long' }
+            }
+          }}
           events={[
             { title: 'event 1', date: '2026-04-01' },
             { title: 'event 2', date: '2026-04-02' }
