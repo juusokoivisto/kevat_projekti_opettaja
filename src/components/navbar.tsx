@@ -18,11 +18,12 @@ import { useNavigate } from 'react-router-dom';
 import { ColorModeContext, UserContext } from '../App';
 
 {/*NAPPIEN SÄÄTÖ JA UUSIEN NAPPIEN LISÄÄMINEN PAGES ARRAYHIN UUSI NAPPI ILMESTYY NAVIIN */ }
-const pages = ['Kalenteri', 'Opettajat'];
+const pages = ['Kalenteri', 'Opettajat', 'Luokkahuoneet'];
 {/*NAPPIEN REITIT HELPOSTI LISÄTTÄVISSÄ TÄSTÄ AVAIMENA NAPIN NIMI JA PERÄÄN ANTAA SILLE REITTI */ }
 const routes: Record<string, string> = {
   Kalenteri: '/',
-  Opettajat: '/newteacher'
+  Opettajat: '/teachers',
+  Luokkahuoneet: '/classrooms'
 };
 {/*SETTINGS ON KÄYTTÄJÄ AVATARIN DROWNDOWN VALIKKO */ }
 const settings = ['Profiili', 'Kirjaudu ulos'];

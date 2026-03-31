@@ -7,7 +7,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import MainPage from './pages/MainPage.tsx'
 import AdminPanel from './pages/AdminPage.tsx'
-import NewTeacherPanel from './pages/TeachersPage.tsx'
+import TeachersPage from './pages/TeachersPage.tsx'
+import ClassroomPage from './pages/ClassroomPage.tsx'
 import Navbar from './components/Navbar.tsx'
 import Footer from './components/Footer.tsx'
 import Login from './components/Login.tsx'
@@ -53,7 +54,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/newteacher" element={<NewTeacherPanel />} />
+                <Route path="/teachers" element={<TeachersPage />} />
+                <Route path="/classrooms" element={<ClassroomPage />} />
               </Routes>
             </Box>
             <Footer />
