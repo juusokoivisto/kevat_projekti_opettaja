@@ -24,7 +24,6 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
     setStudentCount(value);
   };
 
-
   const handleAdd = () => {
     console.log('Lisätty ryhmä:', { GroupId, StartingYear, StudentCount, DegreeProgram });
     setGroupId('');

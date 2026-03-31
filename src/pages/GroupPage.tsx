@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@mui/material'
-import ClassroomFormDialog from '../components/NewGroup'
+import ClassroomFormDialog from '../components/dialogs/GroupFormDialog'
 
 export default function GroupPage() {
   const [open, setOpen] = useState(false)
