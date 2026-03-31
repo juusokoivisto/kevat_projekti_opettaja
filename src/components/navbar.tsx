@@ -59,7 +59,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
 
   return (
     <AppBar position="static" sx={{ borderRadius: '0 0 8px 8px', mb: 2 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
         <Toolbar disableGutters sx={{ height: 64 }}>
 
           {/* Desktop Logo */}
