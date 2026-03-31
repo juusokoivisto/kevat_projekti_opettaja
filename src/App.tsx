@@ -28,7 +28,7 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
   const [user, setUser] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
 
@@ -45,7 +45,12 @@ function App() {
   })
 
   return (
-    <ColorModeContext.Provider value={{ toggleDarkMode: () => setDarkMode(p => !p), darkMode }}>
+    <ColorModeContext.Provider value={{
+      toggleDarkMode: () => setDarkMode(p => {
+        localStorage.setItem('darkMode', String(!p))
+        return !p
+      }), darkMode
+    }}>
       <UserContext.Provider value={{ user, setUser }}>
         <ThemeProvider theme={theme}>
           <CssBaseline />

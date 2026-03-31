@@ -2,6 +2,7 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import fiLocale from '@fullcalendar/core/locales/fi'
 import * as React from 'react'
 import { ColorModeContext } from '../App'
@@ -15,12 +16,13 @@ export default function Calendar() {
     <Box sx={{ p: 2 }}>
       <div className={darkMode ? 'calendar-dark' : ''}>
         <FullCalendar
-          plugins={[timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
+          plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
+          schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
           initialView="timeGridWeek"
           weekends={false}
           allDaySlot={false}
           slotMinTime="07:00:00"
-          slotMaxTime="22:00:00"
+          slotMaxTime="20:00:00"
           contentHeight="auto"
           locale={fiLocale}
           slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
