@@ -11,6 +11,7 @@ import NewTeacherPanel from './pages/TeachersPage.tsx'
 import Navbar from './components/Navbar.tsx'
 import Footer from './components/Footer.tsx'
 import Login from './components/Login.tsx'
+import GroupPage from './pages/GroupPage.tsx'
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -54,6 +55,7 @@ function App() {
                 <Route path="/" element={<MainPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/newteacher" element={<NewTeacherPanel />} />
+                <Route path="/group" element={<GroupPage />} />
               </Routes>
             </Box>
             <Footer />
