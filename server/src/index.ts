@@ -75,6 +75,27 @@ app.post('/luokkahuoneet', async (req: Request, res: Response) => {
   }
 })
 
+app.get('/kurssit', async (_req: Request, res: Response) => {
+  try {
+    const kurssit = await prisma.kurssi.findMany()
+    res.json(kurssit)
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message })
+  }
+})
+
+app.post('/kurssit', async (req: Request, res: Response) => {
+  const { nimi, koodi, opintopisteet, suunnittelutunnit } = req.body
+  try {
+    const kurssi = await prisma.kurssi.create({
+      data: { nimi, koodi, opintopisteet: Number(opintopisteet), suunnitellutTunnit: Number(suunnittelutunnit) }
+    })
+    res.status(201).json(kurssi)
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message })
+  }
+})
+
 const port = Number(process.env.PORT) || 4000
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)
