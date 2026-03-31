@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import { UserContext } from '../App'
+import { login as apiLogin } from '../api'
 
 type LoginProps = {
   open?: boolean
@@ -30,18 +31,7 @@ export default function Login({ open = true, onClose }: LoginProps) {
     }
 
     try {
-      const res = await fetch('http://localhost:4000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => null)
-        throw new Error(err?.error || res.statusText)
-      }
-
-      const data = await res.json()
+      const data = await apiLogin(username, password)
       const displayName = data.user?.username || data.user?.nimi || data.user?.sahkoposti || username
       setUser(displayName)
       onClose?.()

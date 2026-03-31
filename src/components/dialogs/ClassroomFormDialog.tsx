@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createClassroom } from '../../api'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
@@ -26,12 +27,7 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
 
   const handleAdd = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/luokkahuoneet`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ huoneenNumero, kapasiteetti, tyyppi })
-      })
-      if (!res.ok) throw new Error((await res.json()).error)
+      await createClassroom({ huoneenNumero, kapasiteetti, tyyppi })
       resetForm()
       onClose()
     } catch (err) {

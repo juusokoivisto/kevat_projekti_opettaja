@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from 'react'
+import { getClassrooms } from '../api'
 import { Button, Box, Paper } from '@mui/material'
 import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
 import { UserContext } from '../App';
@@ -20,9 +21,7 @@ export default function ClassroomPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('http://localhost:4000/luokkahuoneet')
-        if (!res.ok) throw new Error('Failed to fetch classrooms')
-        const data = await res.json()
+        const data = await getClassrooms()
         setRows(data)
       } catch (err) {
         console.error('Error loading classrooms:', err)

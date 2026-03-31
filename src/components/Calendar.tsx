@@ -6,16 +6,11 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import fiLocale from '@fullcalendar/core/locales/fi'
 import * as React from 'react'
 import { useState, useEffect } from 'react'
+import { getClassrooms } from '../api'
+import type { Classroom as ApiClassroom } from '../api'
 import { ColorModeContext } from '../App'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-
-interface Huone {
-  id: number
-  huoneenNumero: string
-  kapasiteetti: number
-  tyyppi: string
-}
 
 export default function Calendar() {
   const { darkMode } = React.useContext(ColorModeContext)
@@ -25,9 +20,7 @@ export default function Calendar() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('http://localhost:4000/luokkahuoneet')
-        if (!res.ok) throw new Error('Failed to fetch classrooms')
-        const huoneet: Huone[] = await res.json()
+        const huoneet: ApiClassroom[] = await getClassrooms()
 
         const resources = huoneet.map(h => ({
           id: String(h.id),
@@ -41,7 +34,7 @@ export default function Calendar() {
     }
 
     load()
-  }, [open])
+  }, [])
 
   return (
     <Box sx={{ p: 2 }}>
