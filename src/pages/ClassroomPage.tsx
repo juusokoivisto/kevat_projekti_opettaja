@@ -42,7 +42,7 @@ export default function ClassroomPage() {
       )}
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
-        <Paper sx={{ height: 500, width: '100%', maxWidth: 1200, p: 1 }}>
+        <Paper sx={{ height: 500, width: '100%', maxWidth: '75%', p: 1 }}>
           <DatagridComponent
             rows={rows}
             columns={columns}
