@@ -54,6 +54,18 @@ app.post('/opettajat', async (req: Request, res: Response) => {
   }
 })
 
+app.post('/luokkahuoneet', async (req: Request, res: Response) => {
+  const { huoneenNumero, kapasiteetti, tyyppi } = req.body
+  try {
+    const luokkahuone = await prisma.tila.create({
+      data: { huoneenNumero: huoneenNumero, kapasiteetti: Number(kapasiteetti), tyyppi }
+    })
+    res.status(201).json(luokkahuone)
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message })
+  }
+})
+
 const port = Number(process.env.PORT) || 4000
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)

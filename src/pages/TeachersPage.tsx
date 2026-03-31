@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@mui/material'
-import TeacherFormDialog from '../components/NewTeacher'
+import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 
 export default function TeachersPage() {
   const [open, setOpen] = useState(false)
