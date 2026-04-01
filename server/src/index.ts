@@ -85,12 +85,33 @@ app.get('/kurssit', async (_req: Request, res: Response) => {
 })
 
 app.post('/kurssit', async (req: Request, res: Response) => {
-  const { nimi, koodi, opintopisteet, suunnittelutunnit } = req.body
+  const { nimi, koodi, opintopisteet, suunnitellutTunnit } = req.body
   try {
     const kurssi = await prisma.kurssi.create({
-      data: { nimi, koodi, opintopisteet: Number(opintopisteet), suunnitellutTunnit: Number(suunnittelutunnit) }
+      data: { nimi, koodi, opintopisteet: Number(opintopisteet), suunnitellutTunnit: Number(suunnitellutTunnit) }
     })
     res.status(201).json(kurssi)
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message })
+  }
+})
+
+app.get('/opiskelijaryhmat', async (_req: Request, res: Response) => {
+  try {
+    const ryhmat = await prisma.opiskelijaryhma.findMany()
+    res.json(ryhmat)
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message })
+  }
+})
+
+app.post('/opiskelijaryhmat', async (req: Request, res: Response) => {
+  const { ryhmatunnus, aloitusvuosi, opiskelijamaara, tutkintoOhjelma } = req.body
+  try {
+    const ryhma = await prisma.opiskelijaryhma.create({
+      data: { ryhmatunnus, aloitusvuosi: Number(aloitusvuosi), opiskelijamaara: Number(opiskelijamaara), tutkintoOhjelma }
+    })
+    res.status(201).json(ryhma)
   } catch (err) {
     res.status(400).json({ error: (err as Error).message })
   }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createGroup } from '../../api'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
@@ -25,12 +26,18 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
   };
 
   const handleAdd = () => {
-    console.log('Lisätty ryhmä:', { GroupId, StartingYear, StudentCount, DegreeProgram });
-    setGroupId('');
-    setStartingYear('');
-    setStudentCount('');
-    setDegreeProgram('');
-    onClose();
+    (async () => {
+      try {
+        await createGroup({ ryhmatunnus: GroupId, aloitusvuosi: Number(StartingYear), opiskelijamaara: Number(StudentCount), tutkintoOhjelma: DegreeProgram })
+        setGroupId('');
+        setStartingYear('');
+        setStudentCount('');
+        setDegreeProgram('');
+        onClose();
+      } catch (err) {
+        console.error('Virhe ryhmän luomisessa:', err)
+      }
+    })()
   };
 
   const handleClose = () => {
