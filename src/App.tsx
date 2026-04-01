@@ -30,7 +30,12 @@ export const UserContext = React.createContext<{
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
-  const [user, setUser] = useState<string | null>(null)
+  const [user, setUserState] = useState<string | null>(() => localStorage.getItem('user') || null)
+  const setUser = (u: string | null) => {
+    if (u) localStorage.setItem('user', u)
+    else localStorage.removeItem('user')
+    setUserState(u)
+  }
   const [loginOpen, setLoginOpen] = useState(false)
 
   const theme = createTheme({
