@@ -41,8 +41,57 @@ export async function createClassroom(payload: Partial<Classroom>) {
   return post('/luokkahuoneet', payload)
 }
 
+export interface Teacher {
+  id?: number
+  nimi: string
+  sukunimi: string
+  sahkoposti: string
+  sopimustunnit?: number | string
+  vapaaResurssi?: number | string
+}
+
+export async function getTeachers(): Promise<Teacher[]> {
+  return get<Teacher[]>('/opettajat')
+}
+
+export async function createTeacher(payload: Partial<Teacher>) {
+  return post('/opettajat', payload)
+}
+
+export interface StudentGroup {
+  id?: number
+  ryhmatunnus: string
+  aloitusvuosi: number | string
+  opiskelijamaara: number | string
+  tutkintoOhjelma: string
+}
+
+export async function getGroups(): Promise<StudentGroup[]> {
+  return get<StudentGroup[]>('/opiskelijaryhmat')
+}
+
+export async function createGroup(payload: Partial<StudentGroup>) {
+  return post('/opiskelijaryhmat', payload)
+}
+
+export interface Course {
+  id?: number
+  nimi: string
+  koodi: string
+  opintopisteet: number | string
+  suunnitellutTunnit?: number | string
+}
+
+export async function getCourses(): Promise<Course[]> {
+  return get<Course[]>('/kurssit')
+}
+
+export async function createCourse(payload: Partial<Course>) {
+  return post('/kurssit', payload)
+}
+
 export async function login(username: string, password: string) {
   return post('/login', { username, password })
 }
 
-export default { get, post, getClassrooms, createClassroom, login }
+export default { get, post, getClassrooms, createClassroom, getTeachers, createTeacher, getGroups, createGroup, login }

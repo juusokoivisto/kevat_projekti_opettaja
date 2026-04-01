@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createCourse } from '../../api'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
@@ -17,7 +18,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({ open, onClose }) =>
   const [nimi, setKurssiNimi] = useState('');
   const [koodi, setKoodi] = useState('');
   const [opintopisteet, setOpintopisteet] = useState('');
-  const [suunnittelutunnit , setSuunnitellutTunnit] = useState('');
+  const [suunnitellutTunnit , setSuunnitellutTunnit] = useState('');
 
   const resetForm = () => {
     setKurssiNimi('');
@@ -28,12 +29,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({ open, onClose }) =>
 
   const handleAdd = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/kurssit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nimi, koodi, opintopisteet, suunnittelutunnit  })
-      })
-      if (!res.ok) throw new Error((await res.json()).error)
+      await createCourse({ nimi, koodi, opintopisteet: Number(opintopisteet), suunnitellutTunnit: Number(suunnitellutTunnit) })
       resetForm()
       onClose()
     } catch (err) {
@@ -75,7 +71,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({ open, onClose }) =>
           <TextField
             label="Tuntien määrä"
             variant="outlined"
-            value={suunnittelutunnit}
+            value={suunnitellutTunnit}
             onChange={handleIntChange(setSuunnitellutTunnit)}
             fullWidth
           />
@@ -87,7 +83,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({ open, onClose }) =>
           variant="contained"
           color="primary"
           onClick={handleAdd}
-          disabled={!nimi || !koodi || !opintopisteet || !suunnittelutunnit }
+          disabled={!nimi || !koodi || !opintopisteet || !suunnitellutTunnit }
         >
           Lisää
         </Button>

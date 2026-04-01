@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createTeacher } from '../../api'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
@@ -21,12 +22,18 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) 
   };
 
   const handleAdd = () => {
-    console.log('Lisätty opettaja:', { teacherFirstName, teacherLastName, email, hoursPerYear });
-    setTeacherFirstName('');
-    setTeacherLastName('');
-    setEmail('');
-    setHoursPerYear('');
-    onClose();
+    (async () => {
+      try {
+        await createTeacher({ nimi: teacherFirstName, sukunimi: teacherLastName, sahkoposti: email, sopimustunnit: Number(hoursPerYear) })
+        setTeacherFirstName('');
+        setTeacherLastName('');
+        setEmail('');
+        setHoursPerYear('');
+        onClose();
+      } catch (err) {
+        console.error('Virhe opettajan luomisessa:', err)
+      }
+    })()
   };
 
   const handleClose = () => {
