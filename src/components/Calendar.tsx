@@ -2,11 +2,11 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
-import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import * as React from 'react'
 import { useState, useEffect } from 'react'
-import { getClassrooms } from '../api'
+import { getClassrooms, getCalendarEvents } from '../api'
 import type { Classroom as ApiClassroom } from '../api'
 import { ColorModeContext } from '../App'
 import './Calendar.css'
@@ -14,27 +14,43 @@ import Box from '@mui/material/Box'
 
 export default function Calendar() {
   const { darkMode } = React.useContext(ColorModeContext)
-
-  const [resources, setRows] = useState<any[]>([])
+  const [resources, setResources] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
 
   useEffect(() => {
     const load = async () => {
       try {
-        const huoneet: ApiClassroom[] = await getClassrooms()
+        const [huoneet, tapahtumat] = await Promise.all([
+          getClassrooms(),
+          getCalendarEvents()
+        ])
 
-        const resources = huoneet.map(h => ({
+        const mappedResources = huoneet.map((h: ApiClassroom) => ({
           id: String(h.id),
           title: h.huoneenNumero
         }))
 
-        setRows(resources)
+        const mappedEvents = tapahtumat.map((e: any) => ({
+          id: String(e.id),
+          resourceId: String(e.tilaId),
+          title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
+          start: e.alkaa,
+          end: e.paattyy,
+          backgroundColor: darkMode ? '#1976d2' : '#3788d8',
+          extendedProps: {
+            ryhma: e.opiskelijaryhma?.ryhmatunnus,
+            opettaja: `${e.opettaja?.nimi} ${e.opettaja?.sukunimi}`
+          }
+        }))
+
+        setResources(mappedResources)
+        setEvents(mappedEvents)
       } catch (err) {
-        console.error('Error loading classrooms:', err)
+        console.error('Error loading calendar data:', err)
       }
     }
-
     load()
-  }, [])
+  }, [darkMode])
 
   return (
     <Box sx={{ p: 2 }}>
@@ -71,8 +87,11 @@ export default function Calendar() {
               buttonText: 'Päivä',
             }
           }}
+          resourceAreaHeaderContent='Tilat'
           resources={resources}
+          events={events}
           resourceAreaWidth="200px"
+          eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
         />
       </div>
     </Box>

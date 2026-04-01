@@ -27,13 +27,17 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
 
   const handleAdd = async () => {
     try {
-      await createClassroom({ huoneenNumero, kapasiteetti, tyyppi })
-      resetForm()
-      onClose()
+      await createClassroom({
+        huoneenNumero,
+        kapasiteetti: parseInt(kapasiteetti, 10),
+        tyyppi
+      });
+      resetForm();
+      onClose();
     } catch (err) {
-      console.error('Virhe luokkahuoneen luonnissa:', err)
+      console.error('Virhe luokkahuoneen luonnissa:', err);
     }
-  }
+  };
 
   const handleClose = () => {
     resetForm();

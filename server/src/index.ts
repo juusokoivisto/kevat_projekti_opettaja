@@ -117,6 +117,90 @@ app.post('/opiskelijaryhmat', async (req: Request, res: Response) => {
   }
 })
 
+app.get('/kalenteri', async (_req: Request, res: Response) => {
+  try {
+    const tapahtumat = await prisma.tyojarjestys.findMany({
+      include: {
+        tila: true,
+        opettaja: true,
+        kurssi: true,
+      },
+    })
+    res.json(tapahtumat)
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message })
+  }
+})
+
+app.post('/kalenteri', async (req: Request, res: Response) => {
+  const { huoneId, opettajaId, kurssiId, ryhmaId, alkaa, paattyy } = req.body
+
+  if (!huoneId || !opettajaId || !kurssiId || !ryhmaId || !alkaa || !paattyy) {
+    return res.status(400).json({ error: 'huoneId, opettajaId, kurssiId, ryhmaId, alkaa and paattyy are required' })
+  }
+
+  const start = new Date(alkaa)
+  const end = new Date(paattyy)
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return res.status(400).json({ error: 'Invalid date format for alkaa or paattyy' })
+  }
+
+  if (end <= start) {
+    return res.status(400).json({ error: 'paattyy must be after alkaa' })
+  }
+
+  try {
+    const roomConflict = await prisma.tyojarjestys.findFirst({
+      where: {
+        tilaId: Number(huoneId),
+        AND: [
+          { alkaa: { lt: end } },
+          { paattyy: { gt: start } },
+        ],
+      },
+    })
+
+    if (roomConflict) {
+      return res.status(409).json({ error: 'Room is already booked during this time' })
+    }
+
+    const teacherConflict = await prisma.tyojarjestys.findFirst({
+      where: {
+        opettajaId: Number(opettajaId),
+        AND: [
+          { alkaa: { lt: end } },
+          { paattyy: { gt: start } },
+        ],
+      },
+    })
+
+    if (teacherConflict) {
+      return res.status(409).json({ error: 'Teacher already has an event during this time' })
+    }
+
+    const tapahtuma = await prisma.tyojarjestys.create({
+      data: {
+        tilaId: Number(huoneId),
+        opettajaId: Number(opettajaId),
+        kurssiId: Number(kurssiId),
+        ryhmaId: ryhmaId,
+        alkaa: start,
+        paattyy: end,
+      },
+      include: {
+        tila: true,
+        opettaja: true,
+        kurssi: true,
+      },
+    })
+
+    res.status(201).json(tapahtuma)
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message })
+  }
+})
+
 const port = Number(process.env.PORT) || 4000
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)
