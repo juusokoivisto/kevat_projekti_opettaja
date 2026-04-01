@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react'
 import { Button, Box, Paper } from '@mui/material'
 import CourseFormDialog from '../components/dialogs/CourseFormDialog'
 import { UserContext } from '../App';
+import { get } from '../api'
 import DatagridComponent from '../components/DatagridComponent';
 
 export default function CoursePage() {
@@ -21,9 +22,7 @@ export default function CoursePage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('http://localhost:4000/kurssit')
-        if (!res.ok) throw new Error('Failed to fetch courses')
-        const data = await res.json()
+        const data = await get('/kurssit')
         setRows(data)
       } catch (err) {
         console.error('Error loading courses:', err)
