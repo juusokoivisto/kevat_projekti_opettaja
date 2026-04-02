@@ -17,60 +17,70 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ColorModeContext, UserContext } from '../App';
 
-{/*NAPPIEN SÄÄTÖ JA UUSIEN NAPPIEN LISÄÄMINEN PAGES ARRAYHIN UUSI NAPPI ILMESTYY NAVIIN */ }
-const pages = ['Kalenteri', 'Opettajat', 'Luokkahuoneet', 'Ryhmät', 'Kurssit'];
-{/*NAPPIEN REITIT HELPOSTI LISÄTTÄVISSÄ TÄSTÄ AVAIMENA NAPIN NIMI JA PERÄÄN ANTAA SILLE REITTI */ }
-const routes: Record<string, string> = {
-  Kalenteri: '/',
-  Opettajat: '/teachers',
-  Luokkahuoneet: '/classrooms',
-  Ryhmät: '/group',
-  Kurssit: '/courses'
+const NAV_ITEMS = [
+  { label: 'Kalenteri', path: '/' },
+  { label: 'Opettajat', path: '/teachers' },
+  { label: 'Luokkahuoneet', path: '/classrooms' },
+  { label: 'Ryhmät', path: '/group' },
+  { label: 'Kurssit', path: '/courses' },
+];
+
+const navButtonSx = {
+  color: 'white',
+  height: '100%',
+  borderRadius: 0,
+  px: 3,
+  textTransform: 'none',
+  fontSize: '1rem',
+  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
 };
 
-{/*SETTINGS ON KÄYTTÄJÄ AVATARIN DROWNDOWN VALIKKO */ }
-const settings = ['Profiili', 'Kirjaudu ulos'];
-
 type NavbarProps = {
-  onLoginClick: () => void
+  onLoginClick: () => void;
+};
+
+function UserMenu({ user, onLogout }: { user: string; onLogout: () => void }) {
+  const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
+
+  return (
+    <Box sx={{ ml: 1 }}>
+      <IconButton onClick={(e) => setAnchor(e.currentTarget)} sx={{ p: 0 }}>
+        <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+          {user.charAt(0).toUpperCase()}
+        </Avatar>
+      </IconButton>
+      <Menu
+        anchorEl={anchor}
+        open={Boolean(anchor)}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{ mt: '45px' }}
+      >
+        <MenuItem onClick={() => setAnchor(null)}>Profiili</MenuItem>
+        <MenuItem onClick={() => { onLogout(); setAnchor(null); }}>Kirjaudu ulos</MenuItem>
+      </Menu>
+    </Box>
+  );
 }
 
 export default function Navbar({ onLoginClick }: NavbarProps) {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
 
   const theme = useTheme();
   const { toggleDarkMode } = React.useContext(ColorModeContext);
   const { user, setUser } = React.useContext(UserContext);
   const navigate = useNavigate();
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElNav(event.currentTarget);
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElUser(event.currentTarget);
-  const handleCloseNavMenu = () => setAnchorElNav(null);
-  const handleCloseUserMenu = () => setAnchorElUser(null);
-
-  const navButtonStyle = {
-    color: 'white',
-    height: '100%',
-    borderRadius: 0,
-    px: 3,
-    textTransform: 'none',
-    fontSize: '1rem',
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.15)",
-    },
-  };
+  const closeMobileMenu = () => setMobileMenuAnchor(null);
 
   return (
     <AppBar position="static" sx={{ borderRadius: '0 0 8px 8px', mb: 2 }}>
       <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
         <Toolbar disableGutters sx={{ height: 64 }}>
-
-          {/* Desktop Logo */}
           <Typography
             variant="h6" noWrap component="a" href="/"
             sx={{
-              mr: 2, px: 2, display: { xs: 'none', md: 'flex' },
+              mr: 2, px: 2,
               fontFamily: 'monospace', fontWeight: 700,
               letterSpacing: '.1rem', color: 'inherit', textDecoration: 'none',
             }}
@@ -78,95 +88,54 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             Työjärjestykset
           </Typography>
 
-          {/* Mobile Menu */}
+          {/* Mobile menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton size="large" onClick={handleOpenNavMenu} color="inherit">
+            <IconButton size="large" onClick={(e) => setMobileMenuAnchor(e.currentTarget)} color="inherit">
               <MenuIcon />
             </IconButton>
             <Menu
-              anchorEl={anchorElNav}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
+              anchorEl={mobileMenuAnchor}
+              open={Boolean(mobileMenuAnchor)}
+              onClose={closeMobileMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate(routes[page]); }}>
-                  <Typography>{page}</Typography>
+              {NAV_ITEMS.map(({ label, path }) => (
+                <MenuItem key={label} onClick={() => { closeMobileMenu(); navigate(path); }}>
+                  <Typography>{label}</Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
 
-          {/* Mobile Logo */}
-          <Typography
-            variant="h5" noWrap component="a" href="/"
-            sx={{
-              mr: 2, display: { xs: 'flex', md: 'none' }, flexGrow: 1,
-              fontFamily: 'monospace', fontWeight: 700,
-              color: 'inherit', textDecoration: 'none',
-            }}
-          >
-            Työjärjestykset
-          </Typography>
-
-          {/* Desktop Nav */}
+          {/* Desktop nav */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, alignSelf: 'stretch' }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={() => navigate(routes[page])}
-                sx={navButtonStyle}
-              >
-                {page}
+            {NAV_ITEMS.map(({ label, path }) => (
+              <Button key={label} onClick={() => navigate(path)} sx={navButtonSx}>
+                {label}
               </Button>
             ))}
           </Box>
 
-          {/* Right side: Login & Icons */}
-          <Box sx={{ display: 'flex', alignSelf: 'stretch', alignItems: 'center' }}>
-            {!user ? (
-              <Button onClick={onLoginClick} sx={navButtonStyle}>
-                Kirjaudu
+          {/* Right side */}
+          <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+            {user ? (
+              <Button onClick={() => setUser(null)} sx={{ ...navButtonSx, color: '#ff1744' }}>
+                Kirjaudu ulos
               </Button>
             ) : (
-              <Button
-                onClick={() => setUser(null)}
-                sx={{ ...navButtonStyle, color: '#ff1744' }}
-              >
-                Kirjaudu ulos
+              <Button onClick={onLoginClick} sx={navButtonSx}>
+                Kirjaudu
               </Button>
             )}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-              <Tooltip title="Vaihda teema">
-                <IconButton onClick={toggleDarkMode} color="inherit">
-                  {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-                </IconButton>
-              </Tooltip>
+            <Tooltip title="Vaihda teema">
+              <IconButton onClick={toggleDarkMode} color="inherit">
+                {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </Tooltip>
 
-              {user && (
-                <Box sx={{ ml: 1 }}>
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                      {user.charAt(0).toUpperCase()}
-                    </Avatar>
-                  </IconButton>
-                  <Menu
-                    sx={{ mt: '45px' }} anchorEl={anchorElUser}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    open={Boolean(anchorElUser)} onClose={handleCloseUserMenu}
-                  >
-                    {settings.map((setting) => (
-                      <MenuItem key={setting} onClick={() => { if (setting === 'Kirjaudu ulos') setUser(null); handleCloseUserMenu(); }}>
-                        <Typography>{setting}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </Box>
-              )}
-            </Box>
+            {user && <UserMenu user={user} onLogout={() => setUser(null)} />}
           </Box>
-
         </Toolbar>
       </Container>
     </AppBar>
