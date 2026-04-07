@@ -16,6 +16,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ColorModeContext, UserContext } from '../App';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const NAV_ITEMS = [
   { label: 'Kalenteri', path: '/' },
@@ -57,7 +58,21 @@ function UserMenu({ user, onLogout }: { user: string; onLogout: () => void }) {
         sx={{ mt: '45px' }}
       >
         <MenuItem onClick={() => setAnchor(null)}>Profiili</MenuItem>
-        <MenuItem onClick={() => { onLogout(); setAnchor(null); }}>Kirjaudu ulos</MenuItem>
+        <MenuItem
+          onClick={() => { onLogout(); setAnchor(null); }}
+          sx={{
+            color: '#ff1744',
+            fontWeight: 500,
+            display: 'flex',
+            gap: 1,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 23, 68, 0.08)',
+            },
+          }}
+        >
+          <LogoutIcon fontSize="small" />
+          Kirjaudu ulos
+        </MenuItem>
       </Menu>
     </Box>
   );
@@ -118,11 +133,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
 
           {/* Right side */}
           <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
-            {user ? (
-              <Button onClick={() => setUser(null)} sx={{ ...navButtonSx, color: '#ff1744' }}>
-                Kirjaudu ulos
-              </Button>
-            ) : (
+            {!user && (
               <Button onClick={onLoginClick} sx={navButtonSx}>
                 Kirjaudu
               </Button>
