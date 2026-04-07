@@ -26,19 +26,20 @@ export async function post<T = any>(path: string, body?: unknown): Promise<T> {
   return handleRes(res) as Promise<T>
 }
 
+export async function del<T = any>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+  return handleRes(res) as Promise<T>
+}
+
 export interface Classroom {
   id?: number
   huoneenNumero: string
   kapasiteetti: number
   tyyppi: string
-}
-
-export async function getClassrooms(): Promise<Classroom[]> {
-  return get<Classroom[]>('/luokkahuoneet')
-}
-
-export async function createClassroom(payload: Omit<Classroom, 'id'>) {
-  return post('/luokkahuoneet', payload)
 }
 
 export interface Teacher {
@@ -50,14 +51,6 @@ export interface Teacher {
   vapaaResurssi?: number
 }
 
-export async function getTeachers(): Promise<Teacher[]> {
-  return get<Teacher[]>('/opettajat')
-}
-
-export async function createTeacher(payload: Omit<Teacher, 'id'>) {
-  return post('/opettajat', payload)
-}
-
 export interface StudentGroup {
   id?: number
   ryhmatunnus: string
@@ -66,28 +59,12 @@ export interface StudentGroup {
   tutkintoOhjelma: string
 }
 
-export async function getGroups(): Promise<StudentGroup[]> {
-  return get<StudentGroup[]>('/opiskelijaryhmat')
-}
-
-export async function createGroup(payload: Omit<StudentGroup, 'id'>) {
-  return post('/opiskelijaryhmat', payload)
-}
-
 export interface Course {
   id?: number
   nimi: string
   koodi: string
   opintopisteet: number
   suunnitellutTunnit?: number
-}
-
-export async function getCourses(): Promise<Course[]> {
-  return get<Course[]>('/kurssit')
-}
-
-export async function createCourse(payload: Omit<Course, 'id'>) {
-  return post('/kurssit', payload)
 }
 
 export interface CalendarEvent {
@@ -100,14 +77,22 @@ export interface CalendarEvent {
   paattyy: string
 }
 
-export async function getCalendarEvents(): Promise<CalendarEvent[]> {
-  return get<CalendarEvent[]>('/kalenteri')
-}
+export async function getClassrooms() { return get<Classroom[]>('/luokkahuoneet') }
+export async function createClassroom(payload: Omit<Classroom, 'id'>) { return post('/luokkahuoneet', payload) }
+export async function deleteClassrooms(ids: number[]) { return del('/luokkahuoneet', { ids }) }
 
-export async function createCalendarEvent(payload: Omit<CalendarEvent, 'id'>) {
-  return post('/kalenteri', payload)
-}
+export async function getTeachers() { return get<Teacher[]>('/opettajat') }
+export async function createTeacher(payload: Omit<Teacher, 'id'>) { return post('/opettajat', payload) }
+export async function deleteTeachers(ids: number[]) { return del('/opettajat', { ids }) }
 
-export async function login(username: string, password: string) {
-  return post('/login', { username, password })
-}
+export async function getGroups() { return get<StudentGroup[]>('/opiskelijaryhmat') }
+export async function createGroup(payload: Omit<StudentGroup, 'id'>) { return post('/opiskelijaryhmat', payload) }
+export async function deleteGroups(ids: number[]) { return del('/opiskelijaryhmat', { ids }) }
+
+export async function getCourses() { return get<Course[]>('/kurssit') }
+export async function createCourse(payload: Omit<Course, 'id'>) { return post('/kurssit', payload) }
+export async function deleteCourses(ids: number[]) { return del('/kurssit', { ids }) }
+
+export async function getCalendarEvents() { return get<CalendarEvent[]>('/kalenteri') }
+export async function createCalendarEvent(payload: Omit<CalendarEvent, 'id'>) { return post('/kalenteri', payload) }
+export async function login(username: string, password: string) { return post('/login', { username, password }) }

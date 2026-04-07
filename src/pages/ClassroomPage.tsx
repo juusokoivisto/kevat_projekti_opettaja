@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react'
-import { getClassrooms } from '../api'
+import { deleteClassrooms, getClassrooms } from '../api'
 import { Button, Box, Paper } from '@mui/material'
 import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
 import { UserContext } from '../App';
@@ -31,6 +31,10 @@ export default function ClassroomPage() {
     load()
   }, [open])
 
+  const handleDelete = async (ids: (string | number)[]) => {
+    await deleteClassrooms(ids as number[]);
+  }
+
   return (
     <>
       {user && (
@@ -50,6 +54,7 @@ export default function ClassroomPage() {
             checkboxSelection
             autoHeight={false}
             sx={{ height: '100%' }}
+            onDeleteRows={handleDelete}
           />
         </Paper>
       </Box>

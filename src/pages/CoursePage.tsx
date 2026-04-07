@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react'
 import { Button, Box, Paper } from '@mui/material'
 import CourseFormDialog from '../components/dialogs/CourseFormDialog'
 import { UserContext } from '../App';
-import { get } from '../api'
+import { deleteCourses, get } from '../api'
 import DatagridComponent from '../components/DatagridComponent';
 
 export default function CoursePage() {
@@ -32,6 +32,10 @@ export default function CoursePage() {
     load()
   }, [open])
 
+  const handleDelete = async (ids: (string | number)[]) => {
+    await deleteCourses(ids as number[]);
+  }
+
   return (
     <>
       {user && (
@@ -51,6 +55,7 @@ export default function CoursePage() {
             checkboxSelection
             autoHeight={false}
             sx={{ height: '100%' }}
+            onDeleteRows={handleDelete}
           />
         </Paper>
       </Box>

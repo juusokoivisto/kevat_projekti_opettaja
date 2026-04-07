@@ -3,11 +3,12 @@ import { Button, Box, Paper } from '@mui/material'
 import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 import { UserContext } from '../App';
 import DatagridComponent from '../components/DatagridComponent'
-import { get } from '../api'
+import { get, deleteTeachers } from '../api'
 
 export default function TeachersPage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext);
+  const [rows, setRows] = useState<any[]>([])
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -18,28 +19,32 @@ export default function TeachersPage() {
     { field: 'vapaaResurssi', headerName: 'Vapaa resurssi', width: 160 }
   ]
 
-  const [rows, setRows] = useState<any[]>([])
+  const load = async () => {
+    try {
+      const data = await get('/opettajat')
+      setRows(data)
+    } catch (err) {
+      console.error('Error loading teachers:', err)
+    }
+  }
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await get('/opettajat')
-        setRows(data)
-      } catch (err) {
-        console.error('Error loading teachers:', err)
-      }
-    }
-
     load()
   }, [open])
+
+  const handleDelete = async (ids: (string | number)[]) => {
+    await deleteTeachers(ids as number[]);
+  }
 
   return (
     <>
       {user && (
-        <>
-          <Button onClick={() => setOpen(true)}>Lisää opettaja</Button>
+        <Box sx={{ mb: 2 }}>
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            Lisää opettaja
+          </Button>
           <TeacherFormDialog open={open} onClose={() => setOpen(false)} />
-        </>
+        </Box>
       )}
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
@@ -52,6 +57,7 @@ export default function TeachersPage() {
             checkboxSelection
             autoHeight={false}
             sx={{ height: '100%' }}
+            onDeleteRows={handleDelete}
           />
         </Paper>
       </Box>

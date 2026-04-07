@@ -201,6 +201,69 @@ app.post('/kalenteri', async (req: Request, res: Response) => {
   }
 })
 
+app.delete('/opettajat', async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const numericIds = ids.map(Number);
+
+  try {
+    await prisma.$transaction([
+      prisma.tyojarjestys.deleteMany({ where: { opettajaId: { in: numericIds } } }),
+      prisma.resurssivaraus.deleteMany({ where: { opettajaId: { in: numericIds } } }),
+      prisma.opettaja.deleteMany({ where: { id: { in: numericIds } } }),
+    ]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+app.delete('/luokkahuoneet', async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const numericIds = ids.map(Number);
+
+  try {
+    await prisma.$transaction([
+      prisma.tyojarjestys.deleteMany({ where: { tilaId: { in: numericIds } } }),
+      prisma.tila.deleteMany({ where: { id: { in: numericIds } } }),
+    ]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+app.delete('/opiskelijaryhmat', async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const numericIds = ids.map(Number);
+
+  try {
+    await prisma.$transaction([
+      prisma.tyojarjestys.deleteMany({ where: { ryhmaId: { in: numericIds } } }),
+      prisma.resurssivaraus.deleteMany({ where: { ryhmaId: { in: numericIds } } }),
+      prisma.opiskelijaryhma.deleteMany({ where: { id: { in: numericIds } } }),
+    ]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+app.delete('/kurssit', async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const numericIds = ids.map(Number);
+
+  try {
+    await prisma.$transaction([
+      prisma.tyojarjestys.deleteMany({ where: { kurssiId: { in: numericIds } } }),
+      prisma.resurssivaraus.deleteMany({ where: { kurssiId: { in: numericIds } } }),
+      prisma.kurssi.deleteMany({ where: { id: { in: numericIds } } }),
+    ]);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 const port = Number(process.env.PORT) || 4000
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)

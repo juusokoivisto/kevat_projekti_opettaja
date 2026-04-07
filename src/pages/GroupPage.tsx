@@ -3,7 +3,7 @@ import { Button, Box, Paper } from '@mui/material'
 import GroupFormDialog from '../components/dialogs/GroupFormDialog'
 import { UserContext } from '../App';
 import DatagridComponent from '../components/DatagridComponent'
-import { get } from '../api'
+import { get, deleteGroups } from '../api'
 
 export default function GroupPage() {
   const [open, setOpen] = useState(false)
@@ -32,6 +32,10 @@ export default function GroupPage() {
     load()
   }, [open])
 
+  const handleDelete = async (ids: (string | number)[]) => {
+    await deleteGroups(ids as number[]);
+  }
+
   return (
     <>
       {user && (
@@ -51,6 +55,7 @@ export default function GroupPage() {
             checkboxSelection
             autoHeight={false}
             sx={{ height: '100%' }}
+            onDeleteRows={handleDelete}
           />
         </Paper>
       </Box>
