@@ -12,7 +12,9 @@ export default function MainPage() {
     <>
       {user && (
         <>
-          <Button onClick={() => setOpen(true)}>Lisää luokkahuone</Button>
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            Lisää tapahtuma
+          </Button>          
           <CalendarEventFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}
