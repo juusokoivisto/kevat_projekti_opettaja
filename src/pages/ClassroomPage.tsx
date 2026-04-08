@@ -39,9 +39,14 @@ export default function ClassroomPage() {
     <>
       {user && (
         <>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Lisää luokkahuone
-          </Button>
+        <Box sx={{ pl: 4}}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+        >
+          Lisää tapahtuma
+        </Button>
+        </Box>
           <ClassroomFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}

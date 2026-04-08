@@ -40,9 +40,14 @@ export default function GroupPage() {
     <>
       {user && (
         <>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-          Lisää Ryhmä
-          </Button>
+        <Box sx={{ pl: 4}}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+        >
+          Lisää tapahtuma
+        </Button>
+        </Box>
           <GroupFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}
