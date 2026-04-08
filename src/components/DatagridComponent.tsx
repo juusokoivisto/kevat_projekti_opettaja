@@ -7,6 +7,7 @@ import type {
 } from '@mui/x-data-grid';
 import { TextField, Box, Button, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
 interface DatagridComponentProps {
   rows: any[];
@@ -75,28 +76,49 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <TextField
-          size="small"
-          placeholder="Hae..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          disabled={loading}
-          sx={{ width: 300 }}
-        />
-
-        {selectedCount > 0 && (
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
-            onClick={handleDelete}
+      <Box
+          sx={{
+            mb: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <TextField
+            size="small"
+            placeholder="Hae..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
             disabled={loading}
-          >
-            {loading ? 'Poistetaan...' : `Poista (${selectedCount})`}
-          </Button>
-        )}
-      </Box>
+            sx={{ width: 300 }}
+          />
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {selectedCount === 1 && (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <OpenInFullIcon />}
+                
+                disabled={loading}
+              >
+                {loading ? 'Avataan...' : 'Avaa'}  
+              </Button>
+            )}
+
+            {selectedCount > 0 && (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                {loading ? 'Poistetaan...' : `Poista (${selectedCount})`}
+              </Button>
+            )}
+          </Box>
+        </Box>
 
       <DataGrid
         {...rest}
