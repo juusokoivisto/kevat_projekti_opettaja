@@ -40,9 +40,14 @@ export default function CoursePage() {
     <>
       {user && (
         <>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Lisää kurssi
-          </Button>
+        <Box sx={{ pl: 4}}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+        >
+          Lisää kurssi
+        </Button>
+        </Box>
           <CourseFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}

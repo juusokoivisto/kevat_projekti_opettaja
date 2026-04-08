@@ -40,9 +40,14 @@ export default function TeachersPage() {
     <>
       {user && (
         <Box sx={{ mb: 2 }}>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Lisää opettaja
-          </Button>
+        <Box sx={{ pl: 4}}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+        >
+          Lisää opettaja
+        </Button>
+        </Box>
           <TeacherFormDialog open={open} onClose={() => setOpen(false)} />
         </Box>
       )}
