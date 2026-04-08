@@ -45,7 +45,7 @@ export default function CoursePage() {
           variant="contained"
           onClick={() => setOpen(true)}
         >
-          Lisää tapahtuma
+          Lisää kurssi
         </Button>
         </Box>
           <CourseFormDialog open={open} onClose={() => setOpen(false)} />

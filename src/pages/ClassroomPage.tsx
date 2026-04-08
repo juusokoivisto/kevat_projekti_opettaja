@@ -44,7 +44,7 @@ export default function ClassroomPage() {
           variant="contained"
           onClick={() => setOpen(true)}
         >
-          Lisää tapahtuma
+          Lisää huone
         </Button>
         </Box>
           <ClassroomFormDialog open={open} onClose={() => setOpen(false)} />

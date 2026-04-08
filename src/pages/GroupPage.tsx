@@ -45,7 +45,7 @@ export default function GroupPage() {
           variant="contained"
           onClick={() => setOpen(true)}
         >
-          Lisää tapahtuma
+          Lisää ryhmä
         </Button>
         </Box>
           <GroupFormDialog open={open} onClose={() => setOpen(false)} />

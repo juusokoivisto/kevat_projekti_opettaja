@@ -45,7 +45,7 @@ export default function TeachersPage() {
           variant="contained"
           onClick={() => setOpen(true)}
         >
-          Lisää tapahtuma
+          Lisää opettaja
         </Button>
         </Box>
           <TeacherFormDialog open={open} onClose={() => setOpen(false)} />
