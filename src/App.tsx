@@ -14,6 +14,7 @@ import Footer from './components/Footer.tsx'
 import Login from './components/Login.tsx'
 import GroupPage from './pages/GroupPage.tsx'
 import CoursePage from './pages/CoursePage.tsx'
+import TeacherDetailPage from './pages/TeacherDetailPage';
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -70,6 +71,7 @@ function App() {
                 <Route path="/classrooms" element={<ClassroomPage />} />
                 <Route path="/group" element={<GroupPage />} />
                 <Route path="/courses" element={<CoursePage />} />
+                <Route path="/teachers/:id" element={<TeacherDetailPage />} />
               </Routes>
             </Box>
             <Footer />
