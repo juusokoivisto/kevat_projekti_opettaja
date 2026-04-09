@@ -63,6 +63,11 @@ export default function TeachersPage() {
             autoHeight={false}
             sx={{ height: '100%' }}
             onDeleteRows={handleDelete}
+            showOpenButton={true}
+            //Tää on kesken
+            //onOpenRow={(id) => {
+            //console.log("Avaa opettaja ID:", id);
+            //}}  
           />
         </Paper>
       </Box>
