@@ -5,7 +5,18 @@ import type {
   GridRowId,
   GridColDef
 } from '@mui/x-data-grid';
-import { TextField, Box, Button, CircularProgress } from '@mui/material';
+
+import {
+  TextField,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from '@mui/material';
+
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
@@ -16,6 +27,8 @@ interface DatagridComponentProps {
   autoHeight?: boolean;
   onRowsChange?: (newRows: any[]) => void;
   onDeleteRows?: (ids: GridRowId[]) => Promise<void>;
+  showOpenButton?: boolean;
+  onOpenRow?: (id: GridRowId) => void;
   [key: string]: any;
 }
 
@@ -33,10 +46,14 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
   const [filter, setFilter] = useState('');
   const [rows, setRows] = useState(initialRows);
   const [loading, setLoading] = useState(false);
+
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set<GridRowId>()
   });
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<GridRowId[]>([]);
 
   useEffect(() => {
     setRows(initialRows);
@@ -48,27 +65,35 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
     )
   );
 
-  const handleDelete = async () => {
-    const idsToDelete = selectionModel.type === 'include'
+  const handleDelete = () => {
+    const ids = selectionModel.type === 'include'
       ? Array.from(selectionModel.ids)
       : rows.filter((r) => !selectionModel.ids.has(r.id)).map((r) => r.id);
 
-    if (onDeleteRows) {
-      try {
-        setLoading(true);
-        await onDeleteRows(idsToDelete);
+    if (ids.length === 0) return;
 
-        const remainingRows = rows.filter((row) => !idsToDelete.includes(row.id));
-        setRows(remainingRows);
-        setSelectionModel({ type: 'include', ids: new Set() });
+    setIdsToDelete(ids);
+    setConfirmOpen(true);
+  };
 
-        if (onRowsChange) onRowsChange(remainingRows);
-      } catch (error) {
-        console.error("Delete error:", error);
-        alert("Poisto epäonnistui.");
-      } finally {
-        setLoading(false);
-      }
+  const handleConfirmDelete = async () => {
+    if (!onDeleteRows) return;
+
+    try {
+      setLoading(true);
+      await onDeleteRows(idsToDelete);
+
+      const remainingRows = rows.filter((row) => !idsToDelete.includes(row.id));
+      setRows(remainingRows);
+      setSelectionModel({ type: 'include', ids: new Set() });
+
+      if (onRowsChange) onRowsChange(remainingRows);
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Poisto epäonnistui.");
+    } finally {
+      setLoading(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -79,59 +104,65 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
   return (
     <Box sx={{ width: '100%' }}>
       <Box
-          sx={{
-            mb: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
-        >
-          <TextField
-            size="small"
-            placeholder="Hae..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            disabled={loading}
-            sx={{ width: 300 }}
-          />
+        sx={{
+          mb: 2,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <TextField
+          size="small"
+          placeholder="Hae..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          disabled={loading}
+          sx={{ width: 300 }}
+        />
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {showOpenButton && selectedCount === 1 && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={
-                  loading ? <CircularProgress size={20} color="inherit" /> : <OpenInFullIcon />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {showOpenButton && selectedCount === 1 && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={
+                loading
+                  ? <CircularProgress size={20} color="inherit" />
+                  : <OpenInFullIcon />
+              }
+              disabled={loading}
+              onClick={() => {
+                const selectedId =
+                  selectionModel.type === 'include'
+                    ? Array.from(selectionModel.ids)[0]
+                    : rows.find((r) => !selectionModel.ids.has(r.id))?.id;
+
+                if (selectedId && onOpenRow) {
+                  onOpenRow(selectedId);
                 }
-                disabled={loading}
-                onClick={() => {
-                  const selectedId =
-                    selectionModel.type === 'include'
-                      ? Array.from(selectionModel.ids)[0]
-                      : rows.find((r) => !selectionModel.ids.has(r.id))?.id;
+              }}
+            >
+              {loading ? 'Avataan...' : 'Avaa'}
+            </Button>
+          )}
 
-                  if (selectedId && onOpenRow) {
-                    onOpenRow(selectedId);
-                  }
-                }}
-              >
-                {loading ? 'Avataan...' : 'Avaa'}
-              </Button>
-            )}
-
-            {selectedCount > 0 && (
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                {loading ? 'Poistetaan...' : `Poista (${selectedCount})`}
-              </Button>
-            )}
-          </Box>
+          {selectedCount > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={
+                loading
+                  ? <CircularProgress size={20} color="inherit" />
+                  : <DeleteIcon />
+              }
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              {loading ? 'Poistetaan...' : `Poista (${selectedCount})`}
+            </Button>
+          )}
         </Box>
+      </Box>
 
       <DataGrid
         {...rest}
@@ -150,6 +181,21 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
           ...(typeof sx === 'object' ? sx : {}),
         }}
       />
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Vahvista poisto</DialogTitle>
+        <DialogContent>
+          Haluatko varmasti poistaa?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>
+            Peruuta
+          </Button>
+          <Button color="error" onClick={handleConfirmDelete}>
+            Poista
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
