@@ -36,16 +36,16 @@ export default function Calendar() {
           getCalendarEvents(),
           getTeachers(),
           getGroups(),
-          get('/kurssit') // haetaan kurssit API:sta
+          get('/kurssit')
         ])
 
-        // Resources (luokkahuoneet)
+      
         const mappedResources = huoneet.map((h: ApiClassroom) => ({
           id: String(h.id),
           title: h.huoneenNumero
         }))
 
-        // Tapahtumat
+      
         const mappedEvents = tapahtumat.map((e: any) => ({
           id: String(e.id),
           resourceId: String(e.tilaId),
@@ -73,7 +73,7 @@ export default function Calendar() {
     load()
   }, [darkMode])
 
-  // Suodatuslogiikka
+ 
   useEffect(() => {
     let filtered = [...events]
     if (selectedRoom) {
@@ -93,7 +93,6 @@ export default function Calendar() {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Suodatusvalikko */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Huone</InputLabel>
