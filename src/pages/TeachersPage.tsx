@@ -4,11 +4,13 @@ import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 import { UserContext } from '../App';
 import DatagridComponent from '../components/DatagridComponent'
 import { get, deleteTeachers } from '../api'
+import { useNavigate } from 'react-router-dom';
 
 export default function TeachersPage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext);
   const [rows, setRows] = useState<any[]>([])
+  const navigate = useNavigate();
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -64,10 +66,9 @@ export default function TeachersPage() {
             sx={{ height: '100%' }}
             onDeleteRows={handleDelete}
             showOpenButton={true}
-            //Tää on kesken
-            //onOpenRow={(id) => {
-            //console.log("Avaa opettaja ID:", id);
-            //}}  
+            onOpenRow={(id) => {
+              navigate(`/teachers/${id}`);
+            }}  
           />
         </Paper>
       </Box>
