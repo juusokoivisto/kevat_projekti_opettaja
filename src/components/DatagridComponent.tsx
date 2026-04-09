@@ -26,6 +26,8 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
   autoHeight = true,
   onRowsChange,
   onDeleteRows,
+  showOpenButton = false,
+  onOpenRow,
   ...rest
 }) => {
   const [filter, setFilter] = useState('');
@@ -94,15 +96,26 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
           />
 
           <Box sx={{ display: 'flex', gap: 1 }}>
-            {selectedCount === 1 && (
+            {showOpenButton && selectedCount === 1 && (
               <Button
                 variant="contained"
                 color="primary"
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <OpenInFullIcon />}
-                
+                startIcon={
+                  loading ? <CircularProgress size={20} color="inherit" /> : <OpenInFullIcon />
+                }
                 disabled={loading}
+                onClick={() => {
+                  const selectedId =
+                    selectionModel.type === 'include'
+                      ? Array.from(selectionModel.ids)[0]
+                      : rows.find((r) => !selectionModel.ids.has(r.id))?.id;
+
+                  if (selectedId && onOpenRow) {
+                    onOpenRow(selectedId);
+                  }
+                }}
               >
-                {loading ? 'Avataan...' : 'Avaa'}  
+                {loading ? 'Avataan...' : 'Avaa'}
               </Button>
             )}
 
