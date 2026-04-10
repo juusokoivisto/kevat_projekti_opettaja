@@ -19,7 +19,7 @@ interface FCResource {
   title: string;
 }
 
-export default function Calendar() {
+export default function Calendar({ refreshKey }: { refreshKey: number }) {
   const { darkMode } = useContext(ColorModeContext)
 
   const [resources, setResources] = useState<FCResource[]>([])
@@ -77,7 +77,7 @@ export default function Calendar() {
       }
     }
     load()
-  }, [darkMode])
+  }, [darkMode, refreshKey])
 
   useEffect(() => {
     let filtered = [...events]

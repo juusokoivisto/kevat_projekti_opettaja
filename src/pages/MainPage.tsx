@@ -1,11 +1,12 @@
 import { useContext, useState } from 'react'
 import Calendar from './../components/Calendar.tsx'
-import { Box, Button, } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
 import { UserContext } from '../App';
 
 export default function MainPage() {
   const [open, setOpen] = useState(false)
+
   const [refreshKey, setRefreshKey] = useState(0);
   const { user } = useContext(UserContext);
 
@@ -31,7 +32,7 @@ export default function MainPage() {
           />
         </>
       )}
-      <Calendar key={refreshKey} />
+      <Calendar refreshKey={refreshKey} />
     </>
   );
 }
