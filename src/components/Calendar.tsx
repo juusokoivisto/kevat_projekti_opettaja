@@ -53,7 +53,7 @@ export default function Calendar() {
 
         const mappedEvents = tapahtumat.map(e => ({
           id: String(e.id),
-          resourceId: String(e.tilaId),
+          resourceId: String(e.huoneId),
           title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
           start: e.alkaa,
           end: e.paattyy,

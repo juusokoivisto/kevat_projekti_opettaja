@@ -32,7 +32,7 @@ export interface Course {
 
 export interface CalendarEvent {
   id: number;
-  tilaId: number;
+  huoneId: number;
   opettajaId: number;
   kurssiId: number;
   ryhmaId: number;

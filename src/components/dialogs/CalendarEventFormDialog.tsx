@@ -74,7 +74,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
     try {
       await api.calendar.create({
-        tilaId: classroom.id,
+        huoneId: classroom.id,
         opettajaId: teacher.id,
         kurssiId: course.id,
         ryhmaId: group.id,
