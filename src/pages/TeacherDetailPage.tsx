@@ -18,12 +18,11 @@ export default function TeacherDetailsPage() {
 
       try {
         setLoading(true);
-        const data = await api.teachers.getAll();
-        const found = data.find((t) => String(t.id) === id);
-        setTeacher(found || null);
+        const data = await api.teachers.getOne(id);
+        setTeacher(data);
       } catch (err) {
-        const apiErr = err as T.ApiError;
-        console.error('Failed to load teacher details:', apiErr.error);
+        console.error('Failed to load teacher details:', err);
+        setTeacher(null);
       } finally {
         setLoading(false);
       }

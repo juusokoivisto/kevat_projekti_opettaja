@@ -22,6 +22,10 @@ export const api = {
         method: 'DELETE',
         body: JSON.stringify({ ids })
       }),
+    getOne: (id: string | number) =>
+      request<T.Teacher>(`/opettajat/${id}`, {
+        method: 'GET'
+      }),
   },
 
   rooms: {
