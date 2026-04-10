@@ -6,7 +6,16 @@ import { UserContext } from '../App';
 
 export default function MainPage() {
   const [open, setOpen] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const { user } = useContext(UserContext);
+
+  const handleDialogClose = (refresh?: boolean) => {
+    setOpen(false)
+
+    if (refresh) {
+      setRefreshKey(prev => prev + 1 )
+    }
+  }
 
   return (
     <>
@@ -20,10 +29,13 @@ export default function MainPage() {
           Lisää tapahtuma
         </Button>
         </Box>
-          <CalendarEventFormDialog open={open} onClose={() => setOpen(false)} />
+          <CalendarEventFormDialog 
+            open={open}
+            onClose={handleDialogClose}
+          />
         </>
       )}
-      <Calendar />
+      <Calendar refreshKey={refreshKey} />
     </>
   )
 }

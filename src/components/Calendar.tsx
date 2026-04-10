@@ -13,7 +13,7 @@ import './Calendar.css'
 import Box from '@mui/material/Box'
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 
-export default function Calendar() {
+export default function Calendar({ refreshKey }: { refreshKey: number }) {
   const { darkMode } = React.useContext(ColorModeContext)
   const [resources, setResources] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
@@ -71,7 +71,7 @@ export default function Calendar() {
       }
     }
     load()
-  }, [darkMode])
+  }, [darkMode, refreshKey])
 
  
   useEffect(() => {
