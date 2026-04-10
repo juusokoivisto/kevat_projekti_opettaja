@@ -21,7 +21,7 @@ export default function Calendar() {
 
   const [selectedRoom, setSelectedRoom] = useState<string>('')
   const [selectedTeacher, setSelectedTeacher] = useState<string>('')
-  const [selectedGroup, setSelectedGroup] = useState<string>('')
+  const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
   const [selectedCourse, setSelectedCourse] = useState<string>('')
 
   const [teachers, setTeachers] = useState<any[]>([])
@@ -54,7 +54,7 @@ export default function Calendar() {
           end: e.paattyy,
           backgroundColor: darkMode ? '#1976d2' : '#3788d8',
           extendedProps: {
-            ryhma: e.opiskelijaryhma?.ryhmatunnus,
+            ryhmaId: e.ryhmaId,
             opettaja: `${e.opettaja?.nimi} ${e.opettaja?.sukunimi}`,
             kurssi: e.kurssi?.nimi || ''
           }
@@ -82,8 +82,10 @@ export default function Calendar() {
     if (selectedTeacher) {
       filtered = filtered.filter(e => e.extendedProps.opettaja === selectedTeacher)
     }
-    if (selectedGroup) {
-      filtered = filtered.filter(e => e.extendedProps.ryhma === selectedGroup)
+    if (selectedGroup !== '') {
+      filtered = filtered.filter(e =>
+        e.extendedProps.ryhmaId === selectedGroup
+      )
     }
     if (selectedCourse) {
       filtered = filtered.filter(e => e.extendedProps.kurssi === selectedCourse)
@@ -133,7 +135,9 @@ export default function Calendar() {
           >
             <MenuItem value="">Kaikki</MenuItem>
             {groups.map(g => (
-              <MenuItem key={g.id} value={g.ryhmatunnus}>{g.ryhmatunnus}</MenuItem>
+              <MenuItem key={g.id} value={g.id}>
+                {g.ryhmatunnus}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
