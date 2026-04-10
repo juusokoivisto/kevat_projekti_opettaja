@@ -70,6 +70,7 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
         console.error('Error loading calendar data:', err)
       }
     }
+
     load()
   }, [darkMode, refreshKey])
 
