@@ -1,43 +1,73 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { get } from '../api';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@mui/material';
-import { Box } from '@mui/material';
+import { Button, Box, Typography, CircularProgress } from '@mui/material';
+
+import { api } from '../api';
+import * as T from '../api/types/api.types';
 
 export default function TeacherDetailsPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [teacher, setTeacher] = useState<any>(null);
+
+  const [teacher, setTeacher] = useState<T.Teacher | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-        const data = await get(`/opettajat?id=${id}`);
+      if (!id) return;
 
-        const found = data.find((t: any) => String(t.id) === String(id));
-        setTeacher(found);
+      try {
+        setLoading(true);
+        const data = await api.teachers.getAll();
+        const found = data.find((t) => String(t.id) === id);
+        setTeacher(found || null);
+      } catch (err) {
+        const apiErr = err as T.ApiError;
+        console.error('Failed to load teacher details:', apiErr.error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (id) load();
+    load();
   }, [id]);
 
-  if (!teacher) return <div>Ladataan...</div>;
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!teacher) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography color="error">Opettajaa ei löytynyt.</Typography>
+        <Button onClick={() => navigate('/teachers')}>Palaa listaan</Button>
+      </Box>
+    );
+  }
 
   return (
-    <div>
-    <Box sx={{ ml: 2 }}>
-        <Button
-            variant="contained"
-            onClick={() => navigate('/teachers')}
-        >
-            ← Takaisin
-        </Button>
-      <h2>{teacher.nimi} {teacher.sukunimi}</h2>
-      <p>Email: {teacher.sahkoposti}</p>
-      <p>Sopimustunnit: {teacher.sopimustunnit}</p>
-      <p>Vapaa resurssi: {teacher.vapaaResurssi}</p>
-      
+    <Box sx={{ p: 2 }}>
+      <Button
+        variant="contained"
+        onClick={() => navigate('/teachers')}
+        sx={{ mb: 3 }}
+      >
+        ← Takaisin
+      </Button>
+
+      <Typography variant="h4" gutterBottom>
+        {teacher.nimi} {teacher.sukunimi}
+      </Typography>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography><strong>Sähköposti:</strong> {teacher.sahkoposti}</Typography>
+        <Typography><strong>Sopimustunnit:</strong> {teacher.sopimustunnit} h</Typography>
+        <Typography><strong>Vapaa resurssi:</strong> {teacher.vapaaResurssi} h</Typography>
       </Box>
-    </div>
+    </Box>
   );
 }

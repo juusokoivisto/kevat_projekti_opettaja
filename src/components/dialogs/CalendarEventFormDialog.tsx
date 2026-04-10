@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getClassrooms, getTeachers, getCourses, getGroups, createCalendarEvent } from '../../api';
-import type { Classroom, Teacher, Course, StudentGroup } from '../../api';
+
+import { api } from '../../api';
+import * as T from '../../api/types/api.types';
+
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Stack, Autocomplete
+  TextField, Button, Stack, Autocomplete, Alert
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -17,24 +19,42 @@ interface CalendarEventFormDialogProps {
 }
 
 const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose }) => {
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [groups, setGroups] = useState<StudentGroup[]>([]);
+  const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
+  const [teachers, setTeachers] = useState<T.Teacher[]>([]);
+  const [courses, setCourses] = useState<T.Course[]>([]);
+  const [groups, setGroups] = useState<T.StudentGroup[]>([]);
 
-  const [classroom, setClassroom] = useState<Classroom | null>(null);
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
-  const [course, setCourse] = useState<Course | null>(null);
-  const [group, setGroup] = useState<StudentGroup | null>(null);
+  const [classroom, setClassroom] = useState<T.Classroom | null>(null);
+  const [teacher, setTeacher] = useState<T.Teacher | null>(null);
+  const [course, setCourse] = useState<T.Course | null>(null);
+  const [group, setGroup] = useState<T.StudentGroup | null>(null);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    getClassrooms().then(setClassrooms).catch(console.error);
-    getTeachers().then(setTeachers).catch(console.error);
-    getCourses().then(setCourses).catch(console.error);
-    getGroups().then(setGroups).catch(console.error);
+
+    const loadFormData = async () => {
+      try {
+        const [roomsRes, teachersRes, coursesRes, groupsRes] = await Promise.all([
+          api.rooms.getAll(),
+          api.teachers.getAll(),
+          api.courses.getAll(),
+          api.groups.getAll()
+        ]);
+
+        setClassrooms(roomsRes);
+        setTeachers(teachersRes);
+        setCourses(coursesRes);
+        setGroups(groupsRes);
+      } catch (err) {
+        const apiErr = err as T.ApiError;
+        setError("Lomaketietojen haku epäonnistui: " + apiErr.error);
+      }
+    };
+
+    loadFormData();
   }, [open]);
 
   const resetForm = () => {
@@ -44,6 +64,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setGroup(null);
     setStartDate(null);
     setEndDate(null);
+    setError(null);
   };
 
   const handleAdd = async () => {
@@ -52,7 +73,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     }
 
     try {
-      await createCalendarEvent({
+      await api.calendar.create({
         huoneId: classroom.id,
         opettajaId: teacher.id,
         kurssiId: course.id,
@@ -64,8 +85,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
       resetForm();
       onClose(true);
     } catch (err) {
-      console.error("Failed to create event:", err);
-      alert("Virhe luotaessa tapahtumaa: " + (err as Error).message);
+      const apiErr = err as T.ApiError;
+      setError(apiErr.error);
     }
   };
 
@@ -82,6 +103,9 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogTitle>Uusi kalenteritapahtuma</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
+
+            {error && <Alert severity="error">{error}</Alert>}
+
             <Autocomplete
               options={groups}
               value={group}
@@ -95,7 +119,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               options={courses}
               value={course}
               onChange={(_, val) => setCourse(val)}
-              getOptionLabel={(o) => o.nimi}
+              getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
               renderInput={(params) => <TextField {...params} label="Kurssi" />}
               fullWidth
             />
@@ -113,8 +137,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               options={classrooms}
               value={classroom}
               onChange={(_, val) => setClassroom(val)}
-              getOptionLabel={(o) => o.huoneenNumero}
-              renderInput={(params) => <TextField {...params} label="Huoneen numero" />}
+              getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
+              renderInput={(params) => <TextField {...params} label="Huone" />}
               fullWidth
             />
 
@@ -134,9 +158,13 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             </Stack>
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ pb: 2, px: 3 }}>
           <Button onClick={handleClose}>Peruuta</Button>
-          <Button variant="contained" onClick={handleAdd} disabled={!isValid}>
+          <Button
+            variant="contained"
+            onClick={handleAdd}
+            disabled={!isValid}
+          >
             Lisää tapahtuma
           </Button>
         </DialogActions>

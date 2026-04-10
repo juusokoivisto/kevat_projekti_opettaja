@@ -1,15 +1,19 @@
 import { useState, useContext, useEffect } from 'react'
 import { Button, Box, Paper } from '@mui/material'
+import type { GridColDef } from '@mui/x-data-grid'
 import CourseFormDialog from '../components/dialogs/CourseFormDialog'
 import { UserContext } from '../App';
-import { deleteCourses, get } from '../api'
+
+import { api } from '../api'
+import * as T from '../api/types/api.types'
+
 import DatagridComponent from '../components/DatagridComponent';
 
 export default function CoursePage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext);
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'nimi', headerName: 'Kurssi', flex: 1 },
     { field: 'koodi', headerName: 'Koodi', width: 140 },
@@ -17,37 +21,44 @@ export default function CoursePage() {
     { field: 'suunnitellutTunnit', headerName: 'Tuntimäärä', width: 140 }
   ]
 
-  const [rows, setRows] = useState<any[]>([])
+  const [rows, setRows] = useState<T.Course[]>([])
+
+  const loadData = async () => {
+    try {
+      const data = await api.courses.getAll()
+      setRows(data)
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      console.error('Error loading courses:', apiErr.error)
+    }
+  }
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await get('/kurssit')
-        setRows(data)
-      } catch (err) {
-        console.error('Error loading courses:', err)
-      }
-    }
-
-    load()
+    loadData()
   }, [open])
 
   const handleDelete = async (ids: (string | number)[]) => {
-    await deleteCourses(ids as number[]);
+    try {
+      await api.courses.deleteMany(ids as number[]);
+      await loadData();
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      alert(`Poisto epäonnistui: ${apiErr.error}`);
+    }
   }
 
   return (
     <>
       {user && (
         <>
-        <Box sx={{ pl: 4}}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(true)}
-        >
-          Lisää kurssi
-        </Button>
-        </Box>
+          <Box sx={{ pl: 4 }}>
+            <Button
+              variant="contained"
+              onClick={() => setOpen(true)}
+            >
+              Lisää kurssi
+            </Button>
+          </Box>
           <CourseFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}

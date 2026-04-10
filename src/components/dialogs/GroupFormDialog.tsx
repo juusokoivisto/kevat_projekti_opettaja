@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { createGroup } from '../../api'
+
+import { api } from '../../api';
+import * as T from '../../api/types/api.types';
+
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface GroupFormDialogProps {
@@ -11,33 +14,37 @@ interface GroupFormDialogProps {
 }
 
 const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
-  const [GroupId, setGroupId] = useState('');
-  const [StartingYear, setStartingYear] = useState('');
-  const [StudentCount, setStudentCount] = useState('');
-  const [DegreeProgram, setDegreeProgram] = useState('');
+  const [groupId, setGroupId] = useState('');
+  const [startingYear, setStartingYear] = useState('');
+  const [studentCount, setStudentCount] = useState('');
+  const [degreeProgram, setDegreeProgram] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    setStartingYear(value);
-  };
-  const handleStudentCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    setStudentCount(value);
-  };
+  const handleNumericChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.replace(/\D/g, '');
+      setter(value);
+    };
 
-  const handleAdd = () => {
-    (async () => {
-      try {
-        await createGroup({ ryhmatunnus: GroupId, aloitusvuosi: Number(StartingYear), opiskelijamaara: Number(StudentCount), tutkintoOhjelma: DegreeProgram })
-        setGroupId('');
-        setStartingYear('');
-        setStudentCount('');
-        setDegreeProgram('');
-        onClose();
-      } catch (err) {
-        console.error('Virhe ryhmän luomisessa:', err)
-      }
-    })()
+  const handleAdd = async () => {
+    if (!groupId || !startingYear || !studentCount || !degreeProgram) {
+      setError("Täytä kaikki pakolliset kentät.");
+      return;
+    }
+
+    try {
+      await api.groups.create({
+        ryhmatunnus: groupId,
+        aloitusvuosi: Number(startingYear),
+        opiskelijamaara: Number(studentCount),
+        tutkintoOhjelma: degreeProgram
+      });
+
+      handleClose();
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      setError(apiErr.error);
+    }
   };
 
   const handleClose = () => {
@@ -45,47 +52,62 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
     setStartingYear('');
     setStudentCount('');
     setDegreeProgram('');
+    setError(null);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Ryhmän tiedot</DialogTitle>
+      <DialogTitle>Lisää uusi opiskelijaryhmä</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+
+          {error && <Alert severity="error">{error}</Alert>}
+
           <TextField
-            label="Ryhmätunnus"
+            label="Ryhmätunnus (esim. TiVi22S1)"
             variant="outlined"
-            value={GroupId}
+            value={groupId}
             onChange={(e) => setGroupId(e.target.value)}
             fullWidth
+            required
           />
           <TextField
             label="Aloitusvuosi"
             variant="outlined"
-            value={StartingYear}
-            onChange={handleYearChange}
+            value={startingYear}
+            onChange={handleNumericChange(setStartingYear)}
             fullWidth
+            required
           />
           <TextField
             label="Opiskelijamäärä"
             variant="outlined"
-            value={StudentCount}
-            onChange={handleStudentCountChange}
+            value={studentCount}
+            onChange={handleNumericChange(setStudentCount)}
             fullWidth
+            required
           />
           <TextField
             label="Tutkinto-ohjelma"
             variant="outlined"
-            value={DegreeProgram}
+            value={degreeProgram}
             onChange={(e) => setDegreeProgram(e.target.value)}
             fullWidth
+            required
           />
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose}>Peruuta</Button>
-        <Button variant="contained" color="primary" onClick={handleAdd}>Lisää</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAdd}
+          disabled={!groupId || !startingYear || !studentCount || !degreeProgram}
+        >
+          Lisää ryhmä
+        </Button>
       </DialogActions>
     </Dialog>
   );

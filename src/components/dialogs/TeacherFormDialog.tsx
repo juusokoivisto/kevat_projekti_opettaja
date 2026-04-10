@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { createTeacher } from '../../api'
+
+import { api } from '../../api';
+import * as T from '../../api/types/api.types';
+
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface TeacherFormDialogProps {
@@ -15,25 +18,33 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) 
   const [teacherLastName, setTeacherLastName] = useState('');
   const [email, setEmail] = useState('');
   const [hoursPerYear, setHoursPerYear] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
     setHoursPerYear(value);
   };
 
-  const handleAdd = () => {
-    (async () => {
-      try {
-        await createTeacher({ nimi: teacherFirstName, sukunimi: teacherLastName, sahkoposti: email, sopimustunnit: Number(hoursPerYear) })
-        setTeacherFirstName('');
-        setTeacherLastName('');
-        setEmail('');
-        setHoursPerYear('');
-        onClose();
-      } catch (err) {
-        console.error('Virhe opettajan luomisessa:', err)
-      }
-    })()
+  const handleAdd = async () => {
+    if (!teacherFirstName || !teacherLastName || !email) {
+      setError("Täytä kaikki pakolliset kentät.");
+      return;
+    }
+
+    try {
+      await api.teachers.create({
+        nimi: teacherFirstName,
+        sukunimi: teacherLastName,
+        sahkoposti: email,
+        sopimustunnit: Number(hoursPerYear) || 0,
+        vapaaResurssi: Number(hoursPerYear) || 0
+      });
+
+      handleClose();
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      setError(apiErr.error);
+    }
   };
 
   const handleClose = () => {
@@ -41,27 +52,33 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) 
     setTeacherLastName('');
     setEmail('');
     setHoursPerYear('');
+    setError(null);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Opettajan tiedot</DialogTitle>
+      <DialogTitle>Lisää uusi opettaja</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+
+          {error && <Alert severity="error">{error}</Alert>}
+
           <TextField
-            label="Opettajan etunimi"
+            label="Etunimi"
             variant="outlined"
             value={teacherFirstName}
             onChange={(e) => setTeacherFirstName(e.target.value)}
             fullWidth
+            required
           />
           <TextField
-            label="Opettajan sukunimi"
+            label="Sukunimi"
             variant="outlined"
             value={teacherLastName}
             onChange={(e) => setTeacherLastName(e.target.value)}
             fullWidth
+            required
           />
           <TextField
             label="Sähköposti"
@@ -70,19 +87,28 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
+            required
           />
           <TextField
-            label="Tunnit vuodessa"
+            label="Sopimustunnit (h/vuosi)"
             variant="outlined"
             value={hoursPerYear}
             onChange={handleHoursChange}
             fullWidth
+            helperText="Syötä vain numeroita"
           />
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose}>Peruuta</Button>
-        <Button variant="contained" color="primary" onClick={handleAdd}>Lisää</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAdd}
+          disabled={!teacherFirstName || !teacherLastName || !email}
+        >
+          Lisää opettaja
+        </Button>
       </DialogActions>
     </Dialog>
   );
