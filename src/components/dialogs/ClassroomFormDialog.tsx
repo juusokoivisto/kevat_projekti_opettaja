@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { createClassroom } from '../../api'
+
+import { api } from '../../api';
+import * as T from '../../api/types/api.types';
+
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface ClassroomFormDialogProps {
@@ -18,16 +21,18 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
   const [huoneenNumero, setHuoneenNumero] = useState('');
   const [kapasiteetti, setKapasiteetti] = useState('');
   const [tyyppi, setTyyppi] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
     setHuoneenNumero('');
     setKapasiteetti('');
     setTyyppi('');
+    setError(null);
   };
 
   const handleAdd = async () => {
     try {
-      await createClassroom({
+      await api.rooms.create({
         huoneenNumero,
         kapasiteetti: parseInt(kapasiteetti, 10),
         tyyppi
@@ -35,6 +40,8 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
       resetForm();
       onClose();
     } catch (err) {
+      const apiErr = err as T.ApiError;
+      setError(apiErr.error || 'Virhe luokkahuoneen luonnissa');
       console.error('Virhe luokkahuoneen luonnissa:', err);
     }
   };
@@ -44,43 +51,52 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
     onClose();
   };
 
+  // 4. Derived validation state
+  const isInvalid = !huoneenNumero || !kapasiteetti || !tyyppi;
+
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Luokkahuoneen tiedot</DialogTitle>
+      <DialogTitle>Lisää uusi tila</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+
+          {error && <Alert severity="error">{error}</Alert>}
+
           <TextField
-            label="Huoneen numero"
+            label="Huoneen numero (esim. A102)"
             variant="outlined"
             value={huoneenNumero}
             onChange={(e) => setHuoneenNumero(e.target.value)}
             fullWidth
+            required
           />
           <TextField
-            label="Kapasiteetti"
+            label="Kapasiteetti (henkilömäärä)"
             variant="outlined"
             value={kapasiteetti}
             onChange={handleIntChange(setKapasiteetti)}
             fullWidth
+            required
           />
           <TextField
-            label="Tyyppi"
+            label="Tyyppi (esim. Luokka, Labra, Auditorio)"
             variant="outlined"
             value={tyyppi}
             onChange={(e) => setTyyppi(e.target.value)}
             fullWidth
+            required
           />
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose}>Peruuta</Button>
         <Button
           variant="contained"
           color="primary"
           onClick={handleAdd}
-          disabled={!huoneenNumero || !kapasiteetti || !tyyppi}
+          disabled={isInvalid}
         >
-          Lisää
+          Lisää tila
         </Button>
       </DialogActions>
     </Dialog>

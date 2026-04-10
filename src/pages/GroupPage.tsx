@@ -1,15 +1,18 @@
 import { useState, useContext, useEffect } from 'react'
 import { Button, Box, Paper } from '@mui/material'
+import type { GridColDef } from '@mui/x-data-grid'
 import GroupFormDialog from '../components/dialogs/GroupFormDialog'
 import { UserContext } from '../App';
 import DatagridComponent from '../components/DatagridComponent'
-import { get, deleteGroups } from '../api'
+
+import { api } from '../api'
+import * as T from '../api/types/api.types'
 
 export default function GroupPage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext);
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'ryhmatunnus', headerName: 'Ryhmatunnus', flex: 1 },
     { field: 'aloitusvuosi', headerName: 'Aloitusvuosi', width: 140 },
@@ -17,37 +20,44 @@ export default function GroupPage() {
     { field: 'tutkintoOhjelma', headerName: 'Tutkinto-ohjelma', flex: 1 }
   ]
 
-  const [rows, setRows] = useState<any[]>([])
+  const [rows, setRows] = useState<T.StudentGroup[]>([])
+
+  const loadData = async () => {
+    try {
+      const data = await api.groups.getAll()
+      setRows(data)
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      console.error('Error loading groups:', apiErr.error)
+    }
+  }
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await get('/opiskelijaryhmat')
-        setRows(data)
-      } catch (err) {
-        console.error('Error loading groups:', err)
-      }
-    }
-
-    load()
+    loadData()
   }, [open])
 
   const handleDelete = async (ids: (string | number)[]) => {
-    await deleteGroups(ids as number[]);
+    try {
+      await api.groups.deleteMany(ids as number[]);
+      await loadData();
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      alert(`Poisto epäonnistui: ${apiErr.error}`);
+    }
   }
 
   return (
     <>
       {user && (
         <>
-        <Box sx={{ pl: 4}}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(true)}
-        >
-          Lisää ryhmä
-        </Button>
-        </Box>
+          <Box sx={{ pl: 4 }}>
+            <Button
+              variant="contained"
+              onClick={() => setOpen(true)}
+            >
+              Lisää ryhmä
+            </Button>
+          </Box>
           <GroupFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}

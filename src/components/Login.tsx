@@ -7,7 +7,9 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import { UserContext } from '../App'
-import { login as apiLogin } from '../api'
+
+import { api } from '../api'
+import * as T from '../api/types/api.types'
 
 type LoginProps = {
   open?: boolean
@@ -31,19 +33,22 @@ export default function Login({ open = true, onClose }: LoginProps) {
     }
 
     try {
-      const data = await apiLogin(username, password)
-      const displayName = data.user?.username || data.user?.nimi || data.user?.sahkoposti || username
+      const data = await api.auth.login(username, password)
+
+      const displayName = data.user?.nimi || data.user?.username || username
+
       setUser(displayName)
       onClose?.()
-    } catch (err: any) {
-      alert('Kirjautuminen epäonnistui: ' + (err?.message || err))
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      alert(`Kirjautuminen epäonnistui: ${apiErr.error}`)
     }
   }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Kirjaudu sisään</DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center', pt: 3 }}>Kirjaudu sisään</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
@@ -52,6 +57,7 @@ export default function Login({ open = true, onClose }: LoginProps) {
               onChange={(e) => setUsername(e.target.value)}
               autoFocus
               fullWidth
+              variant="outlined"
             />
             <TextField
               label="Salasana"
@@ -59,11 +65,19 @@ export default function Login({ open = true, onClose }: LoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               fullWidth
+              variant="outlined"
             />
           </Box>
         </DialogContent>
-        <DialogActions sx={{ pr: 2, pb: 2 }}>
-          <Button type="submit" variant="contained">Kirjaudu</Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            size="large"
+          >
+            Kirjaudu
+          </Button>
         </DialogActions>
       </form>
     </Dialog>

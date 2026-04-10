@@ -12,14 +12,14 @@ export default function MainPage() {
     <>
       {user && (
         <>
-        <Box sx={{ pl: 2}}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(true)}
-        >
-          Lisää tapahtuma
-        </Button>
-        </Box>
+          <Box sx={{ pl: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => setOpen(true)}
+            >
+              Lisää tapahtuma
+            </Button>
+          </Box>
           <CalendarEventFormDialog open={open} onClose={() => setOpen(false)} />
         </>
       )}

@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { prisma } from '../prismaClient'
+import { prisma } from '../config/prisma'
 
 export async function seedAdmin() {
   const username = 'ADMIN'

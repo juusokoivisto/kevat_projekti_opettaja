@@ -4,18 +4,25 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
-import * as React from 'react'
-import { useState, useEffect } from 'react'
-import { getClassrooms, getCalendarEvents, getTeachers, getGroups, get } from '../api'
-import type { Classroom as ApiClassroom } from '../api'
+import { useState, useEffect, useContext } from 'react'
+
+import { api } from '../api'
+import * as T from '../api/types/api.types'
+
 import { ColorModeContext } from '../App'
 import './Calendar.css'
 import Box from '@mui/material/Box'
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 
+interface FCResource {
+  id: string;
+  title: string;
+}
+
 export default function Calendar() {
-  const { darkMode } = React.useContext(ColorModeContext)
-  const [resources, setResources] = useState<any[]>([])
+  const { darkMode } = useContext(ColorModeContext)
+
+  const [resources, setResources] = useState<FCResource[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [filteredEvents, setFilteredEvents] = useState<any[]>([])
 
@@ -24,29 +31,27 @@ export default function Calendar() {
   const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
   const [selectedCourse, setSelectedCourse] = useState<string>('')
 
-  const [teachers, setTeachers] = useState<any[]>([])
-  const [groups, setGroups] = useState<any[]>([])
-  const [courses, setCourses] = useState<any[]>([])
+  const [teachers, setTeachers] = useState<T.Teacher[]>([])
+  const [groups, setGroups] = useState<T.StudentGroup[]>([])
+  const [courses, setCourses] = useState<T.Course[]>([])
 
   useEffect(() => {
     const load = async () => {
       try {
         const [huoneet, tapahtumat, opettajat, opiskelijaryhmat, kurssit] = await Promise.all([
-          getClassrooms(),
-          getCalendarEvents(),
-          getTeachers(),
-          getGroups(),
-          get('/kurssit')
+          api.rooms.getAll(),
+          api.calendar.getAll(),
+          api.teachers.getAll(),
+          api.groups.getAll(),
+          api.courses.getAll()
         ])
 
-      
-        const mappedResources = huoneet.map((h: ApiClassroom) => ({
+        const mappedResources: FCResource[] = huoneet.map(h => ({
           id: String(h.id),
           title: h.huoneenNumero
         }))
 
-      
-        const mappedEvents = tapahtumat.map((e: any) => ({
+        const mappedEvents = tapahtumat.map(e => ({
           id: String(e.id),
           resourceId: String(e.tilaId),
           title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
@@ -55,7 +60,7 @@ export default function Calendar() {
           backgroundColor: darkMode ? '#1976d2' : '#3788d8',
           extendedProps: {
             ryhmaId: e.ryhmaId,
-            opettaja: `${e.opettaja?.nimi} ${e.opettaja?.sukunimi}`,
+            opettaja: e.opettaja ? `${e.opettaja.nimi} ${e.opettaja.sukunimi}` : '',
             kurssi: e.kurssi?.nimi || ''
           }
         }))
@@ -67,13 +72,13 @@ export default function Calendar() {
         setGroups(opiskelijaryhmat)
         setCourses(kurssit)
       } catch (err) {
-        console.error('Error loading calendar data:', err)
+        const apiErr = err as T.ApiError;
+        console.error('Calendar Load Failed:', apiErr.error)
       }
     }
     load()
   }, [darkMode])
 
- 
   useEffect(() => {
     let filtered = [...events]
     if (selectedRoom) {
@@ -83,9 +88,7 @@ export default function Calendar() {
       filtered = filtered.filter(e => e.extendedProps.opettaja === selectedTeacher)
     }
     if (selectedGroup !== '') {
-      filtered = filtered.filter(e =>
-        e.extendedProps.ryhmaId === selectedGroup
-      )
+      filtered = filtered.filter(e => e.extendedProps.ryhmaId === selectedGroup)
     }
     if (selectedCourse) {
       filtered = filtered.filter(e => e.extendedProps.kurssi === selectedCourse)
@@ -95,6 +98,7 @@ export default function Calendar() {
 
   return (
     <Box sx={{ p: 2 }}>
+      {/* Filter UI */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Huone</InputLabel>
@@ -130,7 +134,7 @@ export default function Calendar() {
           <InputLabel>Ryhmä</InputLabel>
           <Select
             value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
+            onChange={(e) => setSelectedGroup(e.target.value as number)}
             label="Ryhmä"
           >
             <MenuItem value="">Kaikki</MenuItem>
@@ -157,6 +161,7 @@ export default function Calendar() {
         </FormControl>
       </Box>
 
+      {/* Calendar View */}
       <div className={darkMode ? 'calendar-dark' : ''}>
         <FullCalendar
           plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
@@ -174,25 +179,9 @@ export default function Calendar() {
             center: 'title',
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
-          dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'numeric', omitCommas: true }}
-          titleFormat={{ day: 'numeric', month: 'long', year: 'numeric' }}
-          views={{
-            multiMonthYear: {
-              dayHeaderFormat: { weekday: 'short' }
-            },
-            dayGridMonth: {
-              dayHeaderFormat: { weekday: 'long' }
-            },
-            resourceTimelineDay: {
-              slotMinTime: '07:00:00',
-              slotMaxTime: '20:00:00',
-              slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-              buttonText: 'Päivä',
-            }
-          }}
-          resourceAreaHeaderContent='Tilat'
           resources={resources}
           events={filteredEvents}
+          resourceAreaHeaderContent='Tilat'
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
         />

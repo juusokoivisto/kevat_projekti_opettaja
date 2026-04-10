@@ -1,18 +1,20 @@
 import { useState, useContext, useEffect } from 'react'
 import { Button, Box, Paper } from '@mui/material'
+import type { GridColDef } from '@mui/x-data-grid'
+import { useNavigate } from 'react-router-dom';
 import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 import { UserContext } from '../App';
 import DatagridComponent from '../components/DatagridComponent'
-import { get, deleteTeachers } from '../api'
-import { useNavigate } from 'react-router-dom';
+
+import { api } from '../api'
+import * as T from '../api/types/api.types'
 
 export default function TeachersPage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext);
-  const [rows, setRows] = useState<any[]>([])
   const navigate = useNavigate();
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'nimi', headerName: 'Etunimi', flex: 1 },
     { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
@@ -21,35 +23,44 @@ export default function TeachersPage() {
     { field: 'vapaaResurssi', headerName: 'Vapaa resurssi', width: 160 }
   ]
 
-  const load = async () => {
+  const [rows, setRows] = useState<T.Teacher[]>([])
+
+  const loadData = async () => {
     try {
-      const data = await get('/opettajat')
+      const data = await api.teachers.getAll()
       setRows(data)
     } catch (err) {
-      console.error('Error loading teachers:', err)
+      const apiErr = err as T.ApiError;
+      console.error('Error loading teachers:', apiErr.error)
     }
   }
 
   useEffect(() => {
-    load()
+    loadData()
   }, [open])
 
   const handleDelete = async (ids: (string | number)[]) => {
-    await deleteTeachers(ids as number[]);
+    try {
+      await api.teachers.deleteMany(ids as number[]);
+      await loadData();
+    } catch (err) {
+      const apiErr = err as T.ApiError;
+      alert(`Poisto epäonnistui: ${apiErr.error}`);
+    }
   }
 
   return (
     <>
       {user && (
         <Box sx={{ mb: 2 }}>
-        <Box sx={{ pl: 4}}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(true)}
-        >
-          Lisää opettaja
-        </Button>
-        </Box>
+          <Box sx={{ pl: 4 }}>
+            <Button
+              variant="contained"
+              onClick={() => setOpen(true)}
+            >
+              Lisää opettaja
+            </Button>
+          </Box>
           <TeacherFormDialog open={open} onClose={() => setOpen(false)} />
         </Box>
       )}
@@ -68,7 +79,7 @@ export default function TeachersPage() {
             showOpenButton={true}
             onOpenRow={(id) => {
               navigate(`/teachers/${id}`);
-            }}  
+            }}
           />
         </Paper>
       </Box>
