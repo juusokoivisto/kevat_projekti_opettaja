@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { login } from '../controllers/auth.controller';
-import { getTeachers, createTeacher, deleteTeachers } from '../controllers/teacher.controller';
+import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../controllers/teacher.controller';
 import { getRooms, createRoom, deleteRooms } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
@@ -16,6 +16,8 @@ router.route('/opettajat')
   .get(getTeachers)
   .post(createTeacher)
   .delete(deleteTeachers);
+
+router.get('/opettajat/:id', getTeacherById);
 
 router.route('/luokkahuoneet')
   .get(getRooms)

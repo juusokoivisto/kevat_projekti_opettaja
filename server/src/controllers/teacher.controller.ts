@@ -36,3 +36,21 @@ export const deleteTeachers = async (req: Request<{}, {}, DeleteRequest>, res: R
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+export const getTeacherById = async (req: Request<{ id: string }>, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const opettaja = await prisma.opettaja.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!opettaja) {
+      return res.status(404).json({ error: 'Opettajaa ei löytynyt' });
+    }
+
+    res.json(opettaja);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
