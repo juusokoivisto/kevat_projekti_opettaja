@@ -12,7 +12,7 @@ import { ColorModeContext } from '../App'
 import './Calendar.css'
 import Box from '@mui/material/Box'
 
-export default function Calendar() {
+export default function Calendar({ refreshKey }: { refreshKey: number }) {
   const { darkMode } = React.useContext(ColorModeContext)
   const [resources, setResources] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
@@ -49,8 +49,9 @@ export default function Calendar() {
         console.error('Error loading calendar data:', err)
       }
     }
+
     load()
-  }, [darkMode])
+  }, [darkMode, refreshKey])
 
   return (
     <Box sx={{ p: 2 }}>
