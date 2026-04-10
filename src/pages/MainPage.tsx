@@ -13,7 +13,7 @@ export default function MainPage() {
     setOpen(false)
 
     if (refresh) {
-      setRefreshKey(prev => prev + 1)
+      setRefreshKey(prev => prev + 1 )
     }
   }
 
@@ -21,22 +21,20 @@ export default function MainPage() {
     <>
       {user && (
         <>
-          <Box sx={{ pl: 2 }}>
-            <Button
-              variant="contained"
-              onClick={() => setOpen(true)}
-            >
-              Lisää tapahtuma
-            </Button>
-          </Box>
-
-          <CalendarEventFormDialog
+        <Box sx={{ pl: 2}}>
+        <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+        >
+          Lisää tapahtuma
+        </Button>
+        </Box>
+          <CalendarEventFormDialog 
             open={open}
             onClose={handleDialogClose}
           />
         </>
       )}
-
       <Calendar refreshKey={refreshKey} />
     </>
   )
