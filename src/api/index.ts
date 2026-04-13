@@ -2,6 +2,12 @@ import { request } from './client';
 import * as T from './types/api.types';
 
 export const api = {
+  health: {
+    check: () =>
+      request<{ status: string }>('/health', {
+        method: 'GET'
+      }),
+  },
   auth: {
     login: (username: string, password: string) =>
       request<T.AuthResponse>('/login', {

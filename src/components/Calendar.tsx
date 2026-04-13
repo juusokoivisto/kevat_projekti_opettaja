@@ -127,40 +127,40 @@ export default function Calendar({ refreshKey, teacherId, hideFilters }: { refre
     <Box sx={{ p: 2 }}>
       {!hideFilters && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Huone</InputLabel>
-          <Select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} label="Huone">
-            <MenuItem value="">Kaikki</MenuItem>
-            {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
-          </Select>
-        </FormControl>
-        
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Opettaja</InputLabel>
-          <Select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)} label="Opettaja">
-            <MenuItem value="">Kaikki</MenuItem>
-            {teachers.map(t => (
-              <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Huone</InputLabel>
+            <Select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} label="Huone">
+              <MenuItem value="">Kaikki</MenuItem>
+              {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
+            </Select>
+          </FormControl>
 
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Ryhmä</InputLabel>
-          <Select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value as number)} label="Ryhmä">
-            <MenuItem value="">Kaikki</MenuItem>
-            {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
-          </Select>
-        </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Opettaja</InputLabel>
+            <Select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)} label="Opettaja">
+              <MenuItem value="">Kaikki</MenuItem>
+              {teachers.map(t => (
+                <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Kurssi</InputLabel>
-          <Select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} label="Kurssi">
-            <MenuItem value="">Kaikki</MenuItem>
-            {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
-          </Select>
-        </FormControl>
-      </Box>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Ryhmä</InputLabel>
+            <Select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value as number)} label="Ryhmä">
+              <MenuItem value="">Kaikki</MenuItem>
+              {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Kurssi</InputLabel>
+            <Select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} label="Kurssi">
+              <MenuItem value="">Kaikki</MenuItem>
+              {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Box>
       )}
 
       <div className={darkMode ? 'calendar-dark' : ''}>
@@ -170,6 +170,7 @@ export default function Calendar({ refreshKey, teacherId, hideFilters }: { refre
           initialView="timeGridWeek"
           weekends={false}
           selectOverlap={false}
+          filterResourcesWithEvents={true}
           allDaySlot={false}
           slotMinTime="07:00:00"
           slotMaxTime="20:00:00"
