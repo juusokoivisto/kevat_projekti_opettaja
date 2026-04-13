@@ -13,7 +13,7 @@ import * as T from '../api/types/api.types'
 import { ColorModeContext } from '../App'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { FormControl, InputLabel, Select, MenuItem, CircularProgress, Typography } from '@mui/material'
 
 interface FCResource {
   id: string;
@@ -23,6 +23,7 @@ interface FCResource {
 export default function Calendar({ refreshKey }: { refreshKey: number }) {
   const { darkMode } = useContext(ColorModeContext)
 
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [resources, setResources] = useState<FCResource[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [filteredEvents, setFilteredEvents] = useState<any[]>([])
@@ -38,6 +39,9 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
 
   useEffect(() => {
     const load = async () => {
+      console.group(`[Calendar] Initial Load (refreshKey: ${refreshKey})`);
+      setIsLoading(true);
+
       try {
         const [huoneet, tapahtumat, opettajat, opiskelijaryhmat, kurssit] = await Promise.all([
           api.rooms.getAll(),
@@ -45,119 +49,99 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
           api.teachers.getAll(),
           api.groups.getAll(),
           api.courses.getAll()
-        ])
+        ]) as [T.Classroom[], T.CalendarEvent[], T.Teacher[], T.StudentGroup[], T.Course[]];
 
         const mappedResources: FCResource[] = huoneet.map(h => ({
           id: String(h.id),
           title: h.huoneenNumero
-        }))
+        }));
 
-        const mappedEvents = tapahtumat.map(e => ({
-          id: String(e.id),
-          resourceId: String(e.huoneId),
-          title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
-          start: e.alkaa,
-          end: e.paattyy,
-          backgroundColor: darkMode ? '#1976d2' : '#3788d8',
-          extendedProps: {
-            ryhmaId: e.ryhmaId,
-            opettaja: e.opettaja ? `${e.opettaja.nimi} ${e.opettaja.sukunimi}` : '',
-            kurssi: e.kurssi?.nimi || ''
+        const mappedEvents = tapahtumat.map(e => {
+          const rawId = e.huoneId || e.tila?.id;
+          const resId = rawId ? String(rawId) : 'unassigned';
+
+          if (resId === 'unassigned') {
+            console.error(`MISSING ID for Event ${e.id}. Object structure:`, e);
           }
-        }))
 
-        setResources(mappedResources)
-        setEvents(mappedEvents)
-        setFilteredEvents(mappedEvents)
-        setTeachers(opettajat)
-        setGroups(opiskelijaryhmat)
-        setCourses(kurssit)
+          return {
+            id: String(e.id),
+            resourceId: resId,
+            title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
+            start: e.alkaa,
+            end: e.paattyy,
+            backgroundColor: darkMode ? '#1976d2' : '#3788d8',
+            extendedProps: {
+              ryhmaId: e.ryhmaId,
+              opettaja: e.opettaja ? `${e.opettaja.nimi} ${e.opettaja.sukunimi}` : '',
+              kurssi: e.kurssi?.nimi || ''
+            }
+          };
+        });
+
+        setResources(mappedResources);
+        setEvents(mappedEvents);
+        setFilteredEvents(mappedEvents);
+        setTeachers(opettajat);
+        setGroups(opiskelijaryhmat);
+        setCourses(kurssit);
+
+        console.log('Data Load Complete. Events mapped:', mappedEvents.length);
       } catch (err) {
-        const apiErr = err as T.ApiError;
-        console.error('Calendar Load Failed:', apiErr.error)
+        console.error('Data Fetch Error:', err);
+      } finally {
+        setIsLoading(false);
+        console.groupEnd();
       }
-    }
-    load()
-  }, [darkMode, refreshKey])
+    };
+    load();
+  }, [darkMode, refreshKey]);
 
+  // Filter Logic
   useEffect(() => {
-    let filtered = [...events]
-    if (selectedRoom) {
-      filtered = filtered.filter(e => e.resourceId === selectedRoom)
-    }
-    if (selectedTeacher) {
-      filtered = filtered.filter(e => e.extendedProps.opettaja === selectedTeacher)
-    }
-    if (selectedGroup !== '') {
-      filtered = filtered.filter(e => e.extendedProps.ryhmaId === selectedGroup)
-    }
-    if (selectedCourse) {
-      filtered = filtered.filter(e => e.extendedProps.kurssi === selectedCourse)
-    }
-    setFilteredEvents(filtered)
-  }, [selectedRoom, selectedTeacher, selectedGroup, selectedCourse, events])
+    let filtered = [...events];
+    if (selectedRoom) filtered = filtered.filter(e => e.resourceId === selectedRoom);
+    if (selectedTeacher) filtered = filtered.filter(e => e.extendedProps.opettaja === selectedTeacher);
+    if (selectedGroup !== '') filtered = filtered.filter(e => e.extendedProps.ryhmaId === selectedGroup);
+    if (selectedCourse) filtered = filtered.filter(e => e.extendedProps.kurssi === selectedCourse);
+    setFilteredEvents(filtered);
+  }, [selectedRoom, selectedTeacher, selectedGroup, selectedCourse, events]);
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Filter UI */}
+      {/* Filters */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Huone</InputLabel>
-          <Select
-            value={selectedRoom}
-            onChange={(e) => setSelectedRoom(e.target.value)}
-            label="Huone"
-          >
+          <Select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} label="Huone">
             <MenuItem value="">Kaikki</MenuItem>
-            {resources.map(r => (
-              <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>
-            ))}
+            {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
           </Select>
         </FormControl>
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Opettaja</InputLabel>
-          <Select
-            value={selectedTeacher}
-            onChange={(e) => setSelectedTeacher(e.target.value)}
-            label="Opettaja"
-          >
+          <Select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)} label="Opettaja">
             <MenuItem value="">Kaikki</MenuItem>
             {teachers.map(t => (
-              <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
-                {t.nimi} {t.sukunimi}
-              </MenuItem>
+              <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
             ))}
           </Select>
         </FormControl>
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Ryhmä</InputLabel>
-          <Select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value as number)}
-            label="Ryhmä"
-          >
+          <Select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value as number)} label="Ryhmä">
             <MenuItem value="">Kaikki</MenuItem>
-            {groups.map(g => (
-              <MenuItem key={g.id} value={g.id}>
-                {g.ryhmatunnus}
-              </MenuItem>
-            ))}
+            {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
           </Select>
         </FormControl>
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Kurssi</InputLabel>
-          <Select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            label="Kurssi"
-          >
+          <Select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} label="Kurssi">
             <MenuItem value="">Kaikki</MenuItem>
-            {courses.map(c => (
-              <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>
-            ))}
+            {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
           </Select>
         </FormControl>
       </Box>

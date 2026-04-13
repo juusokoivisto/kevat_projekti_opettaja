@@ -7,7 +7,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Stack, Autocomplete, Alert
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Dayjs } from 'dayjs';
@@ -28,8 +29,9 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const [teacher, setTeacher] = useState<T.Teacher | null>(null);
   const [course, setCourse] = useState<T.Course | null>(null);
   const [group, setGroup] = useState<T.StudentGroup | null>(null);
-  const [startDate, setStartDate] = useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [date, setDate] = useState<Dayjs | null>(null);
+  const [startTime, setStartTime] = useState<Dayjs | null>(null);
+  const [endTime, setEndTime] = useState<Dayjs | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,13 +64,17 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setTeacher(null);
     setCourse(null);
     setGroup(null);
-    setStartDate(null);
-    setEndDate(null);
+    setDate(null);
+    setStartTime(null);
+    setEndTime(null);
     setError(null);
   };
 
+  const buildDateTime = (day: Dayjs, time: Dayjs): Dayjs =>
+    day.hour(time.hour()).minute(time.minute()).second(0).millisecond(0);
+
   const handleAdd = async () => {
-    if (!classroom?.id || !teacher?.id || !course?.id || !group?.id || !startDate || !endDate) {
+    if (!classroom?.id || !teacher?.id || !course?.id || !group?.id || !date || !startTime || !endTime) {
       return;
     }
 
@@ -78,8 +84,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         opettajaId: teacher.id,
         kurssiId: course.id,
         ryhmaId: group.id,
-        alkaa: startDate.toISOString(),
-        paattyy: endDate.toISOString()
+        alkaa: buildDateTime(date, startTime).toISOString(),
+        paattyy: buildDateTime(date, endTime).toISOString()
       });
 
       resetForm();
@@ -95,7 +101,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     onClose();
   };
 
-  const isValid = !!(classroom && teacher && course && group && startDate && endDate);
+  const isValid = !!(classroom && teacher && course && group && date && startTime && endTime);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
@@ -142,20 +148,28 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               fullWidth
             />
 
+            <DatePicker
+              label="Päivämäärä"
+              value={date}
+              onChange={setDate}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+
             <Stack direction="row" spacing={2}>
-              <DateTimePicker
+              <TimePicker
                 label="Alkaa"
-                value={startDate}
-                onChange={setStartDate}
+                value={startTime}
+                onChange={setStartTime}
                 slotProps={{ textField: { fullWidth: true } }}
               />
-              <DateTimePicker
+              <TimePicker
                 label="Päättyy"
-                value={endDate}
-                onChange={setEndDate}
+                value={endTime}
+                onChange={setEndTime}
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Stack>
+
           </Stack>
         </DialogContent>
         <DialogActions sx={{ pb: 2, px: 3 }}>
