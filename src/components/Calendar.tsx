@@ -13,7 +13,8 @@ import * as T from '../api/types/api.types'
 import { ColorModeContext } from '../App'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { FormControl, InputLabel, Select, MenuItem, CircularProgress, Typography } from '@mui/material'
+import { Tooltip } from '@mui/material'
+import { FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material'
 
 interface FCResource {
   id: string;
@@ -23,7 +24,6 @@ interface FCResource {
 export default function Calendar({ refreshKey }: { refreshKey: number }) {
   const { darkMode } = useContext(ColorModeContext)
 
-  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [resources, setResources] = useState<FCResource[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [filteredEvents, setFilteredEvents] = useState<any[]>([])
@@ -40,7 +40,6 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
   useEffect(() => {
     const load = async () => {
       console.group(`[Calendar] Initial Load (refreshKey: ${refreshKey})`);
-      setIsLoading(true);
 
       try {
         const [huoneet, tapahtumat, opettajat, opiskelijaryhmat, kurssit] = await Promise.all([
@@ -64,10 +63,24 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
             console.error(`MISSING ID for Event ${e.id}. Object structure:`, e);
           }
 
+          let teacherShort = '';
+          if (e.opettaja) {
+            const firstPart = e.opettaja.nimi ? e.opettaja.nimi.substring(0, 2) : '';
+            const lastPart = e.opettaja.sukunimi ? e.opettaja.sukunimi.substring(0, 2) : '';
+
+            const formatPart = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+            teacherShort = `${formatPart(firstPart)}${formatPart(lastPart)}`;
+          }
+
+          const eventTitle = teacherShort
+            ? `${e.kurssi?.nimi || 'Tapahtuma'} (${teacherShort})`
+            : `${e.kurssi?.nimi || 'Tapahtuma'}`;
+
           return {
             id: String(e.id),
             resourceId: resId,
-            title: `${e.kurssi?.nimi || 'Tapahtuma'} (${e.opettaja?.sukunimi || ''})`,
+            title: eventTitle,
             start: e.alkaa,
             end: e.paattyy,
             backgroundColor: darkMode ? '#1976d2' : '#3788d8',
@@ -90,7 +103,6 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
       } catch (err) {
         console.error('Data Fetch Error:', err);
       } finally {
-        setIsLoading(false);
         console.groupEnd();
       }
     };
@@ -170,6 +182,24 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
           resourceAreaHeaderContent='Tilat'
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
+
+          eventContent={(eventInfo) => {
+            const fullName = eventInfo.event.extendedProps.opettaja;
+            return (
+              <Tooltip
+                title={fullName || ""}
+                arrow
+                placement="top"
+                disableInteractive
+              >
+                <div style={{ width: '100%', height: '100%', overflow: 'hidden', padding: '2px' }}>
+                  <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', lineHeight: 1.2 }}>
+                    {eventInfo.event.title}
+                  </Typography>
+                </div>
+              </Tooltip>
+            );
+          }}
         />
       </div>
     </Box>
