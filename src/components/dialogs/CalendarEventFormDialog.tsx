@@ -5,19 +5,27 @@ import * as T from '../../api/types/api.types';
 
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Stack, Autocomplete, Alert
+  TextField, Button, Stack, Autocomplete, Alert,
+  ToggleButton, ToggleButtonGroup, Collapse, Typography
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fi';
 
 interface CalendarEventFormDialogProps {
   open: boolean;
   onClose: (refresh?: boolean) => void;
 }
+
+const SLOTS = {
+  aamu: { label: 'Aamutunnit', start: { h: 8, m: 0 }, end: { h: 11, m: 0 } },
+  iltapaiva: { label: 'Iltapäivätunnit', start: { h: 11, m: 45 }, end: { h: 14, m: 45 } },
+} as const;
+
+type SlotKey = keyof typeof SLOTS;
 
 const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose }) => {
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
@@ -30,9 +38,20 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const [course, setCourse] = useState<T.Course | null>(null);
   const [group, setGroup] = useState<T.StudentGroup | null>(null);
   const [date, setDate] = useState<Dayjs | null>(null);
-  const [startTime, setStartTime] = useState<Dayjs | null>(null);
-  const [endTime, setEndTime] = useState<Dayjs | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<SlotKey | null>(null);
+  const [useCustomTime, setUseCustomTime] = useState(false);
+  const [customStart, setCustomStart] = useState<Dayjs | null>(null);
+  const [customEnd, setCustomEnd] = useState<Dayjs | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const isMonday = date?.day() === 1;
+
+  const getSlotTimes = (key: SlotKey) => {
+    const slot = SLOTS[key];
+    const startH = key === 'aamu' && isMonday ? 9 : slot.start.h;
+    return `${startH}:${String(slot.start.m).padStart(2, '0')} – ${slot.end.h}:${String(slot.end.m).padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -65,27 +84,53 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setCourse(null);
     setGroup(null);
     setDate(null);
-    setStartTime(null);
-    setEndTime(null);
+    setSelectedSlot(null);
+    setUseCustomTime(false);
+    setCustomStart(null);
+    setCustomEnd(null);
     setError(null);
   };
 
-  const buildDateTime = (day: Dayjs, time: Dayjs): Dayjs =>
-    day.hour(time.hour()).minute(time.minute()).second(0).millisecond(0);
+  const handleSlotChange = (_: React.MouseEvent<HTMLElement>, val: SlotKey | null) => {
+    setSelectedSlot(val);
+    setError(null);
+  };
+
+  const handleCustomTimeToggle = () => {
+    setUseCustomTime((prev) => !prev);
+    setSelectedSlot(null);
+    setCustomStart(null);
+    setCustomEnd(null);
+    setError(null);
+  };
 
   const handleAdd = async () => {
-    if (!classroom?.id || !teacher?.id || !course?.id || !group?.id || !date || !startTime || !endTime) {
-      return;
+    if (!isValid) return;
+
+    let startTime: Dayjs;
+    let endTime: Dayjs;
+
+    if (useCustomTime) {
+      startTime = date!.hour(customStart!.hour()).minute(customStart!.minute()).second(0).millisecond(0);
+      endTime = date!.hour(customEnd!.hour()).minute(customEnd!.minute()).second(0).millisecond(0);
+    } else {
+      const slot = SLOTS[selectedSlot!];
+      const startHour = selectedSlot === 'aamu' && isMonday ? 9 : slot.start.h;
+      startTime = date!.hour(startHour).minute(slot.start.m).second(0).millisecond(0);
+      endTime = date!.hour(slot.end.h).minute(slot.end.m).second(0).millisecond(0);
     }
+
+    setLoading(true);
+    setError(null);
 
     try {
       await api.calendar.create({
-        huoneId: classroom.id,
-        opettajaId: teacher.id,
-        kurssiId: course.id,
-        ryhmaId: group.id,
-        alkaa: buildDateTime(date, startTime).toISOString(),
-        paattyy: buildDateTime(date, endTime).toISOString()
+        huoneId: classroom!.id,
+        opettajaId: teacher!.id,
+        kurssiId: course!.id,
+        ryhmaId: group!.id,
+        alkaa: startTime.toISOString(),
+        paattyy: endTime.toISOString()
       });
 
       resetForm();
@@ -93,6 +138,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     } catch (err) {
       const apiErr = err as T.ApiError;
       setError(apiErr.error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,7 +148,15 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     onClose();
   };
 
-  const isValid = !!(classroom && teacher && course && group && date && startTime && endTime);
+  const isCustomTimeValid = !!(
+    customStart && customEnd &&
+    customEnd.isAfter(customStart)
+  );
+
+  const isValid = !!(
+    classroom && teacher && course && group && date &&
+    (useCustomTime ? isCustomTimeValid : selectedSlot)
+  );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
@@ -115,7 +170,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             <Autocomplete
               options={groups}
               value={group}
-              onChange={(_, val) => setGroup(val)}
+              onChange={(_, val) => { setGroup(val); setError(null); }}
               getOptionLabel={(o) => o.ryhmatunnus}
               renderInput={(params) => <TextField {...params} label="Opiskelijaryhmä" />}
               fullWidth
@@ -124,7 +179,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             <Autocomplete
               options={courses}
               value={course}
-              onChange={(_, val) => setCourse(val)}
+              onChange={(_, val) => { setCourse(val); setError(null); }}
               getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
               renderInput={(params) => <TextField {...params} label="Kurssi" />}
               fullWidth
@@ -133,7 +188,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             <Autocomplete
               options={teachers}
               value={teacher}
-              onChange={(_, val) => setTeacher(val)}
+              onChange={(_, val) => { setTeacher(val); setError(null); }}
               getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
               renderInput={(params) => <TextField {...params} label="Opettaja" />}
               fullWidth
@@ -142,7 +197,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             <Autocomplete
               options={classrooms}
               value={classroom}
-              onChange={(_, val) => setClassroom(val)}
+              onChange={(_, val) => { setClassroom(val); setError(null); }}
               getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
               renderInput={(params) => <TextField {...params} label="Huone" />}
               fullWidth
@@ -151,24 +206,58 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             <DatePicker
               label="Päivämäärä"
               value={date}
-              onChange={setDate}
+              onChange={(val) => { setDate(val); setError(null); }}
               slotProps={{ textField: { fullWidth: true } }}
             />
 
-            <Stack direction="row" spacing={2}>
-              <TimePicker
-                label="Alkaa"
-                value={startTime}
-                onChange={setStartTime}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-              <TimePicker
-                label="Päättyy"
-                value={endTime}
-                onChange={setEndTime}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Stack>
+            <Collapse in={!useCustomTime}>
+              <ToggleButtonGroup
+                value={selectedSlot}
+                exclusive
+                onChange={handleSlotChange}
+                fullWidth
+              >
+                {(Object.entries(SLOTS) as [SlotKey, typeof SLOTS[SlotKey]][]).map(([key, slot]) => (
+                  <ToggleButton key={key} value={key} sx={{ py: 1.5 }}>
+                    <Stack alignItems="center">
+                      <span>{slot.label}</span>
+                      <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                        {getSlotTimes(key)}
+                      </span>
+                    </Stack>
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Collapse>
+
+            <Collapse in={useCustomTime}>
+              <Stack direction="row" spacing={2}>
+                <TimePicker
+                  label="Alkaa"
+                  value={customStart}
+                  onChange={(val) => { setCustomStart(val); setError(null); }}
+                  ampm={false}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+                <TimePicker
+                  label="Päättyy"
+                  value={customEnd}
+                  onChange={(val) => { setCustomEnd(val); setError(null); }}
+                  ampm={false}
+                  minTime={customStart ?? undefined}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </Stack>
+            </Collapse>
+
+            <Button
+              variant="text"
+              size="small"
+              onClick={handleCustomTimeToggle}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {useCustomTime ? '← Käytä vakioaikoja' : 'Määritä oma aika'}
+            </Button>
 
           </Stack>
         </DialogContent>
@@ -177,9 +266,9 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           <Button
             variant="contained"
             onClick={handleAdd}
-            disabled={!isValid}
+            disabled={!isValid || loading}
           >
-            Lisää tapahtuma
+            {loading ? 'Lisätään...' : 'Lisää tapahtuma'}
           </Button>
         </DialogActions>
       </Dialog>
