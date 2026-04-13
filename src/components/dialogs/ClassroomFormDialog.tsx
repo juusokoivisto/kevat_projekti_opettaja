@@ -8,7 +8,7 @@ import {
 
 interface ClassroomFormDialogProps {
   open: boolean;
-  onClose: (refresh?: boolean) => void; // Added refresh param for consistency
+  onClose: (refresh?: boolean) => void;
 }
 
 const handleIntChange = (setter: (v: string) => void, clearError: () => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +42,7 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
         tyyppi
       });
       resetForm();
-      onClose(true); // Pass true to trigger a list refresh
+      onClose(true);
     } catch (err) {
       const apiErr = err as T.ApiError;
       setError(apiErr.error || 'Virhe luokkahuoneen luonnissa');
@@ -63,8 +63,6 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
       <DialogTitle>Lisää uusi tila</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
-
-          {/* Consistent animated error popup */}
           <Collapse in={!!error}>
             <Alert severity="error" sx={{ mb: 1 }}>
               {error}
