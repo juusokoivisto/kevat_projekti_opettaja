@@ -5,11 +5,15 @@ import routes from './routes';
 import { logger } from './config/logger';
 import { requestLogger } from './middleware/requestLogger';
 
+if (!process.env.JWT_SECRET) {
+  logger.error('FATAL ERROR: JWT_SECRET is not defined in .env');
+  process.exit(1);
+}
+
 const app = express();
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 app.use(express.json());
-
 app.use(requestLogger);
 
 app.use('/', routes);

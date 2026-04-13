@@ -44,12 +44,15 @@ export interface CalendarEvent {
   kurssi?: Course;
 }
 
+export interface AuthUser {
+  id: number;
+  username: string;
+  nimi: string;
+}
+
 export interface AuthResponse {
-  user: {
-    id: number;
-    username: string;
-    nimi: string;
-  };
+  user: AuthUser;
+  token: string;
 }
 
 export interface ApiError {

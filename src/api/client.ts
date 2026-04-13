@@ -5,6 +5,11 @@ const BASE: string = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 async function handleRes<T>(res: Response): Promise<T> {
   if (res.status === 204) return {} as T;
 
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
   const contentType = res.headers.get('content-type');
   const isJson = contentType && contentType.includes('application/json');
   const data = isJson ? await res.json() : await res.text();
@@ -19,12 +24,16 @@ async function handleRes<T>(res: Response): Promise<T> {
 }
 
 export async function request<T>(path: string, options: RequestInit): Promise<T> {
+  const token = localStorage.getItem('token');
+
   const res = await fetch(`${BASE}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
+
   return handleRes<T>(res);
 }

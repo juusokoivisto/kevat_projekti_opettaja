@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const { fakerFI: faker } = require('@faker-js/faker'); // Using Finnish locale for realism
+import { PrismaClient } from '@prisma/client';
+import { fakerFI as faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 

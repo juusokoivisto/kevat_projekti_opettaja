@@ -15,6 +15,7 @@ import Login from './components/Login.tsx'
 import GroupPage from './pages/GroupPage.tsx'
 import CoursePage from './pages/CoursePage.tsx'
 import TeacherDetailPage from './pages/TeacherDetailPage';
+import type { AuthUser } from './api/types/api.types'
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -22,8 +23,8 @@ export const ColorModeContext = React.createContext({
 })
 
 export const UserContext = React.createContext<{
-  user: string | null
-  setUser: (u: string | null) => void
+  user: AuthUser | null
+  setUser: (u: AuthUser | null) => void
 }>({
   user: null,
   setUser: () => { },
@@ -31,12 +32,25 @@ export const UserContext = React.createContext<{
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
-  const [user, setUserState] = useState<string | null>(() => localStorage.getItem('user') || null)
-  const setUser = (u: string | null) => {
-    if (u) localStorage.setItem('user', u)
-    else localStorage.removeItem('user')
-    setUserState(u)
+  const [user, setUserState] = useState<AuthUser | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  })
+
+  const setUser = (u: AuthUser | null) => {
+    if (u) {
+      localStorage.setItem('user', JSON.stringify(u));
+    } else {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
+    setUserState(u);
   }
+
   const [loginOpen, setLoginOpen] = useState(false)
 
   const theme = createTheme({

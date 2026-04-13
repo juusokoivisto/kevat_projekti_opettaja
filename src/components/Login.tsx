@@ -6,6 +6,8 @@ import DialogActions from '@mui/material/DialogActions'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
+import Alert from '@mui/material/Alert'
+import Collapse from '@mui/material/Collapse'
 import { UserContext } from '../App'
 
 import { api } from '../api'
@@ -19,6 +21,8 @@ type LoginProps = {
 export default function Login({ open = true, onClose }: LoginProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const { setUser } = useContext(UserContext)
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -28,44 +32,71 @@ export default function Login({ open = true, onClose }: LoginProps) {
 
   const onLogin = async (username: string, password: string) => {
     if (!username.trim()) {
-      alert('Syötä käyttäjätunnus')
+      setError('Syötä käyttäjätunnus')
       return
     }
+
+    setLoading(true)
+    setError(null)
 
     try {
       const data = await api.auth.login(username, password)
 
-      const displayName = data.user?.nimi || data.user?.username || username
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
 
-      setUser(displayName)
+      setUser(data.user);
+
+      // Clear local fields on success
+      setUsername('')
+      setPassword('')
       onClose?.()
     } catch (err) {
       const apiErr = err as T.ApiError;
-      alert(`Kirjautuminen epäonnistui: ${apiErr.error}`)
+      // Use the error message from backend, or a fallback
+      setError(apiErr.error || 'Kirjautuminen epäonnistui');
+    } finally {
+      setLoading(false)
     }
   }
 
+  const handleClose = () => {
+    setError(null)
+    onClose?.()
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
       <form onSubmit={handleSubmit}>
         <DialogTitle sx={{ textAlign: 'center', pt: 3 }}>Kirjaudu sisään</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+
+            {/* Proper Error Message UI */}
+            <Collapse in={!!error}>
+              <Alert severity="error" sx={{ mb: 1 }}>
+                {error}
+              </Alert>
+            </Collapse>
+
             <TextField
               label="Käyttäjätunnus"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => { setUsername(e.target.value); setError(null); }}
               autoFocus
               fullWidth
               variant="outlined"
+              disabled={loading}
             />
             <TextField
               label="Salasana"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setError(null); }}
               fullWidth
               variant="outlined"
+              disabled={loading}
             />
           </Box>
         </DialogContent>
@@ -75,8 +106,9 @@ export default function Login({ open = true, onClose }: LoginProps) {
             variant="contained"
             fullWidth
             size="large"
+            disabled={loading}
           >
-            Kirjaudu
+            {loading ? 'Kirjaudutaan...' : 'Kirjaudu'}
           </Button>
         </DialogActions>
       </form>

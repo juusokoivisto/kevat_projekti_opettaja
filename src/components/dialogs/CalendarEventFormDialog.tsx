@@ -6,13 +6,13 @@ import * as T from '../../api/types/api.types';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Stack, Autocomplete, Alert,
-  ToggleButton, ToggleButtonGroup, Collapse, Typography
+  ToggleButton, ToggleButtonGroup, Collapse
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fi';
 
 interface CalendarEventFormDialogProps {
@@ -164,8 +164,11 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogTitle>Uusi kalenteritapahtuma</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-
-            {error && <Alert severity="error">{error}</Alert>}
+            <Collapse in={!!error}>
+              <Alert severity="error" sx={{ mb: 1 }}>
+                {error}
+              </Alert>
+            </Collapse>
 
             <Autocomplete
               options={groups}

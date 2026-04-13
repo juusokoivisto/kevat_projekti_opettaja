@@ -17,6 +17,7 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ColorModeContext, UserContext } from '../App';
 import LogoutIcon from '@mui/icons-material/Logout';
+import type { AuthUser } from '../api/types/api.types';
 
 const NAV_ITEMS = [
   { label: 'Kalenteri', path: '/' },
@@ -40,14 +41,16 @@ type NavbarProps = {
   onLoginClick: () => void;
 };
 
-function UserMenu({ user, onLogout }: { user: string; onLogout: () => void }) {
+function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
+
+  const displayName = user.nimi || user.username || 'User';
 
   return (
     <Box sx={{ ml: 1 }}>
       <IconButton onClick={(e) => setAnchor(e.currentTarget)} sx={{ p: 0 }}>
         <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-          {user.charAt(0).toUpperCase()}
+          {displayName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
       <Menu
@@ -57,7 +60,7 @@ function UserMenu({ user, onLogout }: { user: string; onLogout: () => void }) {
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         sx={{ mt: '45px' }}
       >
-        <MenuItem onClick={() => setAnchor(null)}>Profiili</MenuItem>
+        <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
         <MenuItem
           onClick={() => { onLogout(); setAnchor(null); }}
           sx={{
@@ -145,7 +148,16 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
               </IconButton>
             </Tooltip>
 
-            {user && <UserMenu user={user} onLogout={() => setUser(null)} />}
+            {user && (
+              <UserMenu
+                user={user}
+                onLogout={() => {
+                  localStorage.removeItem('token');
+                  setUser(null);
+                  navigate('/');
+                }}
+              />
+            )}
           </Box>
         </Toolbar>
       </Container>

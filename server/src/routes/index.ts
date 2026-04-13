@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth';
 import { login } from '../controllers/auth.controller';
 import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../controllers/teacher.controller';
 import { getRooms, createRoom, deleteRooms } from '../controllers/room.controller';
@@ -14,30 +15,37 @@ router.post('/login', login);
 
 router.route('/opettajat')
   .get(getTeachers)
-  .post(createTeacher)
-  .delete(deleteTeachers);
+  .post(authenticateToken, createTeacher)
+  .delete(authenticateToken, deleteTeachers);
 
 router.get('/opettajat/:id', getTeacherById);
 
 router.route('/luokkahuoneet')
   .get(getRooms)
-  .post(createRoom)
-  .delete(deleteRooms);
+  .post(authenticateToken, createRoom)
+  .delete(authenticateToken, deleteRooms);
 
 router.route('/kurssit')
   .get(getCourses)
-  .post(createCourse)
-  .delete(deleteCourses);
+  .post(authenticateToken, createCourse)
+  .delete(authenticateToken, deleteCourses);
 
 router.route('/opiskelijaryhmat')
   .get(getGroups)
-  .post(createGroup)
-  .delete(deleteGroups);
+  .post(authenticateToken, createGroup)
+  .delete(authenticateToken, deleteGroups);
 
 router.route('/kalenteri')
   .get(getAllEvents)
-  .post(createEvent);
+  .post(authenticateToken, createEvent);
 
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
+
+router.get('/test-auth', authenticateToken, (req, res) => {
+  res.json({
+    message: 'You are authenticated!',
+    user: (req as any).user
+  });
+});
 
 export default router;

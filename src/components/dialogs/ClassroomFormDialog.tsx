@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-
 import { api } from '../../api';
 import * as T from '../../api/types/api.types';
-
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Alert
+  TextField, Button, Box, Alert, Collapse
 } from '@mui/material';
 
 interface ClassroomFormDialogProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (refresh?: boolean) => void; // Added refresh param for consistency
 }
 
-const handleIntChange = (setter: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleIntChange = (setter: (v: string) => void, clearError: () => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
   setter(e.target.value.replace(/\D/g, ''));
+  clearError();
 };
 
 const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose }) => {
@@ -22,15 +21,20 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
   const [kapasiteetti, setKapasiteetti] = useState('');
   const [tyyppi, setTyyppi] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const resetForm = () => {
     setHuoneenNumero('');
     setKapasiteetti('');
     setTyyppi('');
     setError(null);
+    setLoading(false);
   };
 
   const handleAdd = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
       await api.rooms.create({
         huoneenNumero,
@@ -38,11 +42,12 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
         tyyppi
       });
       resetForm();
-      onClose();
+      onClose(true); // Pass true to trigger a list refresh
     } catch (err) {
       const apiErr = err as T.ApiError;
       setError(apiErr.error || 'Virhe luokkahuoneen luonnissa');
-      console.error('Virhe luokkahuoneen luonnissa:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +56,6 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
     onClose();
   };
 
-  // 4. Derived validation state
   const isInvalid = !huoneenNumero || !kapasiteetti || !tyyppi;
 
   return (
@@ -60,43 +64,51 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {/* Consistent animated error popup */}
+          <Collapse in={!!error}>
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {error}
+            </Alert>
+          </Collapse>
 
           <TextField
             label="Huoneen numero (esim. A102)"
             variant="outlined"
             value={huoneenNumero}
-            onChange={(e) => setHuoneenNumero(e.target.value)}
+            onChange={(e) => { setHuoneenNumero(e.target.value); setError(null); }}
             fullWidth
             required
+            disabled={loading}
           />
           <TextField
             label="Kapasiteetti (henkilömäärä)"
             variant="outlined"
             value={kapasiteetti}
-            onChange={handleIntChange(setKapasiteetti)}
+            onChange={handleIntChange(setKapasiteetti, () => setError(null))}
             fullWidth
             required
+            disabled={loading}
           />
           <TextField
             label="Tyyppi (esim. Luokka, Labra, Auditorio)"
             variant="outlined"
             value={tyyppi}
-            onChange={(e) => setTyyppi(e.target.value)}
+            onChange={(e) => { setTyyppi(e.target.value); setError(null); }}
             fullWidth
             required
+            disabled={loading}
           />
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose}>Peruuta</Button>
+        <Button onClick={handleClose} disabled={loading}>Peruuta</Button>
         <Button
           variant="contained"
           color="primary"
           onClick={handleAdd}
-          disabled={isInvalid}
+          disabled={isInvalid || loading}
         >
-          Lisää tila
+          {loading ? 'Lisätään...' : 'Lisää tila'}
         </Button>
       </DialogActions>
     </Dialog>
