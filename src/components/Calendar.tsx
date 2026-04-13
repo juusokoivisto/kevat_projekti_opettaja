@@ -5,6 +5,7 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import { useState, useEffect, useContext } from 'react'
+import LunchBreak from './LunchBreak'
 
 import { api } from '../api'
 import * as T from '../api/types/api.types'
@@ -168,6 +169,7 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
           schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
           initialView="timeGridWeek"
           weekends={false}
+          selectOverlap={false}
           allDaySlot={false}
           slotMinTime="07:00:00"
           slotMaxTime="20:00:00"
@@ -180,7 +182,7 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
           resources={resources}
-          events={filteredEvents}
+          events={[...filteredEvents, LunchBreak]}
           resourceAreaHeaderContent='Tilat'
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
