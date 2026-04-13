@@ -21,7 +21,7 @@ interface FCResource {
   title: string;
 }
 
-export default function Calendar({ refreshKey }: { refreshKey: number }) {
+export default function Calendar({ refreshKey, teacherId, hideFilters }: { refreshKey: number; teacherId?: number; hideFilters?: boolean }) {
   const { darkMode } = useContext(ColorModeContext)
 
   const [resources, setResources] = useState<FCResource[]>([])
@@ -42,12 +42,18 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
       console.group(`[Calendar] Initial Load (refreshKey: ${refreshKey})`);
 
       try {
+        const roomsPromise = api.rooms.getAll();
+        const eventsPromise = teacherId ? api.calendar.getByTeacher(Number(teacherId)) : api.calendar.getAll();
+        const teachersPromise = api.teachers.getAll();
+        const groupsPromise = api.groups.getAll();
+        const coursesPromise = api.courses.getAll();
+
         const [huoneet, tapahtumat, opettajat, opiskelijaryhmat, kurssit] = await Promise.all([
-          api.rooms.getAll(),
-          api.calendar.getAll(),
-          api.teachers.getAll(),
-          api.groups.getAll(),
-          api.courses.getAll()
+          roomsPromise,
+          eventsPromise,
+          teachersPromise,
+          groupsPromise,
+          coursesPromise
         ]) as [T.Classroom[], T.CalendarEvent[], T.Teacher[], T.StudentGroup[], T.Course[]];
 
         const mappedResources: FCResource[] = huoneet.map(h => ({
@@ -68,25 +74,24 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
             const firstPart = e.opettaja.nimi ? e.opettaja.nimi.substring(0, 2) : '';
             const lastPart = e.opettaja.sukunimi ? e.opettaja.sukunimi.substring(0, 2) : '';
 
-            const formatPart = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+            const formatPart = (str: string) => str
+              ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+              : '';
 
             teacherShort = `${formatPart(firstPart)}${formatPart(lastPart)}`;
           }
 
-          const eventTitle = teacherShort
-            ? `${e.kurssi?.nimi || 'Tapahtuma'} (${teacherShort})`
-            : `${e.kurssi?.nimi || 'Tapahtuma'}`;
-
           return {
             id: String(e.id),
             resourceId: resId,
-            title: eventTitle,
+            title: e.kurssi?.nimi || 'Tapahtuma',
             start: e.alkaa,
             end: e.paattyy,
-            backgroundColor: darkMode ? '#1976d2' : '#3788d8',
+            backgroundColor: e.opettaja && (e.opettaja as any).color ? (e.opettaja as any).color : (darkMode ? '#1976d2' : '#3788d8'),
             extendedProps: {
               ryhmaId: e.ryhmaId,
               opettaja: e.opettaja ? `${e.opettaja.nimi} ${e.opettaja.sukunimi}` : '',
+              opettajaLyhyt: teacherShort,
               kurssi: e.kurssi?.nimi || ''
             }
           };
@@ -109,7 +114,6 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
     load();
   }, [darkMode, refreshKey]);
 
-  // Filter Logic
   useEffect(() => {
     let filtered = [...events];
     if (selectedRoom) filtered = filtered.filter(e => e.resourceId === selectedRoom);
@@ -121,8 +125,8 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+      {!hideFilters && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Huone</InputLabel>
           <Select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} label="Huone">
@@ -130,7 +134,7 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
             {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
           </Select>
         </FormControl>
-
+        
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Opettaja</InputLabel>
           <Select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)} label="Opettaja">
@@ -157,8 +161,8 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
           </Select>
         </FormControl>
       </Box>
+      )}
 
-      {/* Calendar View */}
       <div className={darkMode ? 'calendar-dark' : ''}>
         <FullCalendar
           plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
@@ -185,17 +189,41 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
 
           eventContent={(eventInfo) => {
             const fullName = eventInfo.event.extendedProps.opettaja;
+            const shortName = eventInfo.event.extendedProps.opettajaLyhyt;
+            const title = eventInfo.event.title;
+
             return (
-              <Tooltip
-                title={fullName || ""}
-                arrow
-                placement="top"
-                disableInteractive
-              >
-                <div style={{ width: '100%', height: '100%', overflow: 'hidden', padding: '2px' }}>
-                  <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', lineHeight: 1.2 }}>
-                    {eventInfo.event.title}
+              <Tooltip title={fullName || ''} arrow placement="top" disableInteractive>
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  padding: '2px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1px'
+                }}>
+                  <Typography variant="caption" sx={{
+                    fontWeight: 'bold',
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}>
+                    {title}
                   </Typography>
+                  {shortName && (
+                    <Typography variant="caption" sx={{
+                      lineHeight: 1.2,
+                      opacity: 0.85,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {shortName}
+                    </Typography>
+                  )}
                 </div>
               </Tooltip>
             );
