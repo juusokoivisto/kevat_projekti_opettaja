@@ -5,6 +5,7 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import { useState, useEffect, useContext } from 'react'
+import LunchBreak from './LunchBreak'
 
 import { api } from '../api'
 import * as T from '../api/types/api.types'
@@ -145,35 +146,31 @@ export default function Calendar({ refreshKey }: { refreshKey: number }) {
         </FormControl>
       </Box>
 
-      {/* Calendar Rendering */}
-      <div className={darkMode ? 'calendar-dark' : ''} style={{ minHeight: '600px' }}>
-        {isLoading ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '600px', gap: 2 }}>
-            <CircularProgress />
-            <Typography>Ladataan...</Typography>
-          </Box>
-        ) : (
-          <FullCalendar
-            plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
-            schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
-            initialView="resourceTimelineDay"
-            weekends={false}
-            allDaySlot={false}
-            slotMinTime="07:00:00"
-            slotMaxTime="20:00:00"
-            contentHeight="auto"
-            locale={fiLocale}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'resourceTimelineDay,timeGridWeek,dayGridMonth'
-            }}
-            resources={resources}
-            events={filteredEvents}
-            resourceAreaHeaderContent='Tilat'
-            resourceAreaWidth="200px"
-          />
-        )}
+      {/* Calendar View */}
+      <div className={darkMode ? 'calendar-dark' : ''}>
+        <FullCalendar
+          plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
+          schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
+          initialView="timeGridWeek"
+          weekends={false}
+          selectOverlap={false}
+          allDaySlot={false}
+          slotMinTime="07:00:00"
+          slotMaxTime="20:00:00"
+          contentHeight="auto"
+          locale={fiLocale}
+          slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
+          headerToolbar={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
+          }}
+          resources={resources}
+          events={[...filteredEvents, LunchBreak]}
+          resourceAreaHeaderContent='Tilat'
+          resourceAreaWidth="200px"
+          eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
+        />
       </div>
     </Box>
   )
