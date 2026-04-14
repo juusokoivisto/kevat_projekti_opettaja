@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-
 import { api } from '../../api';
 import * as T from '../../api/types/api.types';
-
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Stack, Autocomplete, Alert,
@@ -12,7 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/fi';
 
 interface CalendarEventFormDialogProps {
@@ -27,6 +25,27 @@ const SLOTS = {
 
 type SlotKey = keyof typeof SLOTS;
 
+const STORAGE_KEY = 'calendarEventFormDefaults';
+
+const saveDefaults = (data: {
+  classroomId?: number;
+  teacherId?: number;
+  courseId?: number;
+  groupId?: number;
+  slotKey?: SlotKey;
+}) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
+
+const loadDefaults = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
 const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose }) => {
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
@@ -37,7 +56,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const [teacher, setTeacher] = useState<T.Teacher | null>(null);
   const [course, setCourse] = useState<T.Course | null>(null);
   const [group, setGroup] = useState<T.StudentGroup | null>(null);
-  const [date, setDate] = useState<Dayjs | null>(null);
+  const [date, setDate] = useState<Dayjs | null>(dayjs());
   const [selectedSlot, setSelectedSlot] = useState<SlotKey | null>(null);
   const [useCustomTime, setUseCustomTime] = useState(false);
   const [customStart, setCustomStart] = useState<Dayjs | null>(null);
@@ -69,6 +88,13 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         setTeachers(teachersRes);
         setCourses(coursesRes);
         setGroups(groupsRes);
+
+        const defaults = loadDefaults();
+        if (defaults.classroomId) setClassroom(roomsRes.find((r: T.Classroom) => r.id === defaults.classroomId) ?? null);
+        if (defaults.teacherId) setTeacher(teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null);
+        if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
+        if (defaults.groupId) setGroup(groupsRes.find((g: T.StudentGroup) => g.id === defaults.groupId) ?? null);
+        if (defaults.slotKey) setSelectedSlot(defaults.slotKey);
       } catch (err) {
         const apiErr = err as T.ApiError;
         setError("Lomaketietojen haku epäonnistui: " + apiErr.error);
@@ -83,7 +109,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setTeacher(null);
     setCourse(null);
     setGroup(null);
-    setDate(null);
+    setDate(dayjs());
     setSelectedSlot(null);
     setUseCustomTime(false);
     setCustomStart(null);
@@ -133,6 +159,14 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         paattyy: endTime.toISOString()
       });
 
+      saveDefaults({
+        classroomId: classroom!.id,
+        teacherId: teacher!.id,
+        courseId: course!.id,
+        groupId: group!.id,
+        slotKey: selectedSlot ?? undefined
+      });
+
       resetForm();
       onClose(true);
     } catch (err) {
@@ -164,11 +198,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogTitle>Uusi kalenteritapahtuma</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <Collapse in={!!error}>
-              <Alert severity="error" sx={{ mb: 1 }}>
-                {error}
-              </Alert>
-            </Collapse>
+
+            {error && <Alert severity="error">{error}</Alert>}
 
             <Autocomplete
               options={groups}
@@ -210,7 +241,12 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               label="Päivämäärä"
               value={date}
               onChange={(val) => { setDate(val); setError(null); }}
-              slotProps={{ textField: { fullWidth: true } }}
+              shouldDisableDate={(day) => day.day() === 0 || day.day() === 6}
+              slotProps={{
+                textField: {
+                  fullWidth: true
+                }
+              }}
             />
 
             <Collapse in={!useCustomTime}>
