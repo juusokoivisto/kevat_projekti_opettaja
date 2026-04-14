@@ -146,7 +146,6 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
           selectOverlap={false}
           filterResourcesWithEvents={true}
           allDaySlot={false}
-          filterResourcesWithEvents={true}
           slotMinTime="07:00:00"
           slotMaxTime="20:00:00"
           contentHeight="auto"
