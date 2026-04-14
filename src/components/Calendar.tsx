@@ -171,6 +171,7 @@ export default function Calendar({ refreshKey, teacherId, hideFilters }: { refre
           weekends={false}
           selectOverlap={false}
           allDaySlot={false}
+          filterResourcesWithEvents={true}
           slotMinTime="07:00:00"
           slotMaxTime="20:00:00"
           contentHeight="auto"
