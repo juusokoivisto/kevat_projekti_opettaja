@@ -6,6 +6,7 @@ import { getRooms, createRoom, deleteRooms } from '../controllers/room.controlle
 import { getCourses, createCourse, deleteCourses } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
 import { getAllEvents, getTeacherEvents, createEvent } from '../controllers/calendar.controller';
+import { deleteEvent } from '../controllers/calendar.controller';
 
 const router = Router();
 
@@ -35,6 +36,8 @@ router.route('/opiskelijaryhmat')
   .post(authenticateToken, createGroup)
   .delete(authenticateToken, deleteGroups);
 
+router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
+
 router.route('/kalenteri')
   .get(getAllEvents)
   .post(authenticateToken, createEvent);
@@ -45,6 +48,7 @@ router.get('/test-auth', authenticateToken, (req, res) => {
   res.json({
     message: 'You are authenticated!',
     user: (req as any).user
+
   });
 });
 
