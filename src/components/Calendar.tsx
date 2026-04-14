@@ -15,6 +15,7 @@ import * as T from '../api/types/api.types'
 import { useCalendarEvents } from '../hooks/useQueries'
 import './Calendar.css'
 import Box from '@mui/material/Box'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
 import { Tooltip, FormControl, InputLabel, Select, Typography } from '@mui/material'
 
 interface FCResource {
@@ -29,19 +30,20 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   const [selectedTeacher, setSelectedTeacher] = useState<string>('')
   const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
   const [selectedCourse, setSelectedCourse] = useState<string>('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const { data: rawEvents = [] } = useCalendarEvents(teacherId)
 
   const queryClient = useQueryClient()
   const deleteEventMutation = useMutation({
-  mutationFn: (id: string) => api.calendar.delete(id),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['calendar'] })
-  }
-})
+    mutationFn: (id: string) => api.calendar.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar'] })
+    }
+  })
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-  
+
 
   const results = useQueries({
     queries: [
@@ -98,7 +100,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
         }
       }
     }),
-    
+
     [rawEvents, darkMode]
   )
 
@@ -150,7 +152,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
           </FormControl>
         </Box>
       )}
-      
+
       <div className={darkMode ? 'calendar-dark' : ''}>
         <FullCalendar
           plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
@@ -171,12 +173,12 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
           eventDidMount={(info) => {
-  info.el.addEventListener('contextmenu', (e) => {
-    e.preventDefault()
-    setSelectedEventId(info.event.id)
-    setMenuAnchor(info.el as HTMLElement)
-  })
-}}
+            info.el.addEventListener('contextmenu', (e) => {
+              e.preventDefault()
+              setSelectedEventId(info.event.id)
+              setMenuAnchor(info.el as HTMLElement)
+            })
+          }}
           resources={resources}
           events={[...filteredEvents, LunchBreak]}
           resourceAreaHeaderContent='Tilat'
@@ -225,25 +227,48 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
           }}
         />
         <Menu
-  anchorEl={menuAnchor}
-  open={Boolean(menuAnchor)}
-  onClose={() => setMenuAnchor(null)}
->
-  <MenuItem
-    onClick={() => {
-      if (selectedEventId) {
-        deleteEventMutation.mutate(selectedEventId)
-      }
-      setMenuAnchor(null)
-    }}
-  >
-    Poista
-  </MenuItem>
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={() => setMenuAnchor(null)}
+        >
+          <MenuItem
+            onClick={() => {
+              setConfirmOpen(true)
+              setMenuAnchor(null)
+            }}
+          >
+            Poista
+          </MenuItem>
 
-  <MenuItem onClick={() => setMenuAnchor(null)}>
-    Peruuta
-  </MenuItem>
-</Menu>
+          <MenuItem onClick={() => setMenuAnchor(null)}>
+            Peruuta
+          </MenuItem>
+        </Menu>
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+          <DialogTitle>Vahvista poisto</DialogTitle>
+
+          <DialogContent>
+            Haluatko varmasti poistaa tämän tapahtuman?
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)}>
+              Peruuta
+            </Button>
+
+            <Button
+              color="error"
+              onClick={() => {
+                if (selectedEventId) {
+                  deleteEventMutation.mutate(selectedEventId)
+                }
+                setConfirmOpen(false)
+              }}
+            >
+              Poista
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </Box>
   )
