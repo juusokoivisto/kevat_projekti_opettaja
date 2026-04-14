@@ -20,6 +20,9 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
+import { useContext } from 'react';
+import { UserContext } from '../App';
+
 interface DatagridComponentProps {
   rows: any[];
   columns: GridColDef[];
@@ -32,17 +35,20 @@ interface DatagridComponentProps {
   [key: string]: any;
 }
 
-const DatagridComponent: React.FC<DatagridComponentProps> = ({
-  rows: initialRows = [],
-  columns,
-  sx,
-  autoHeight = true,
-  onRowsChange,
-  onDeleteRows,
-  showOpenButton = false,
-  onOpenRow,
-  ...rest
-}) => {
+const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
+  const { user } = useContext(UserContext);
+
+  const {
+    rows: initialRows = [],
+    columns,
+    sx,
+    autoHeight = true,
+    onRowsChange,
+    onDeleteRows,
+    showOpenButton = false,
+    onOpenRow,
+    ...rest
+  } = props;
   const [filter, setFilter] = useState('');
   const [rows, setRows] = useState(initialRows);
   const [loading, setLoading] = useState(false);
@@ -146,7 +152,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = ({
             </Button>
           )}
 
-          {selectedCount > 0 && (
+          {user && selectedCount > 0 && (
             <Button
               variant="contained"
               color="error"
