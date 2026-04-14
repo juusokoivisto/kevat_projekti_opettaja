@@ -1,17 +1,18 @@
-import { useState, useContext, useEffect } from 'react'
-
+import { useState, useContext } from 'react'
+import { Button, Box, Paper, CircularProgress, Alert } from '@mui/material'
+import type { GridColDef } from '@mui/x-data-grid'
+import { UserContext } from '../App'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
-
-import { Button, Box, Paper } from '@mui/material'
-import type { GridColDef } from '@mui/x-data-grid'
+import { useRooms, useInvalidate } from '../hooks/useQueries'
+import DatagridComponent from '../components/DatagridComponent'
 import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
-import { UserContext } from '../App';
-import DatagridComponent from '../components/DatagridComponent';
 
 export default function ClassroomPage() {
   const [open, setOpen] = useState(false)
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext)
+  const { data: rows = [], isLoading, isError } = useRooms()
+  const invalidate = useInvalidate()
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -20,48 +21,41 @@ export default function ClassroomPage() {
     { field: 'tyyppi', headerName: 'Tyyppi', width: 140 },
   ]
 
-  const [rows, setRows] = useState<T.Classroom[]>([])
-
-  const loadData = async () => {
-    try {
-      const data = await api.rooms.getAll()
-      setRows(data)
-    } catch (err) {
-      const apiErr = err as T.ApiError;
-      console.error('Error loading classrooms:', apiErr.error)
-    }
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [open])
-
   const handleDelete = async (ids: (string | number)[]) => {
     try {
-      await api.rooms.deleteMany(ids as number[]);
-      await loadData();
+      await api.rooms.deleteMany(ids as number[])
+      invalidate('rooms')
     } catch (err) {
-      const apiErr = err as T.ApiError;
-      alert(`Poisto epäonnistui: ${apiErr.error}`);
+      const apiErr = err as T.ApiError
+      alert(`Poisto epäonnistui: ${apiErr.error}`)
     }
   }
+
+  if (isLoading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  )
+  if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
     <>
       {user && (
         <>
           <Box sx={{ pl: 4 }}>
-            <Button
-              variant="contained"
-              onClick={() => setOpen(true)}
-            >
+            <Button variant="contained" onClick={() => setOpen(true)}>
               Lisää huone
             </Button>
           </Box>
-          <ClassroomFormDialog open={open} onClose={() => setOpen(false)} />
+          <ClassroomFormDialog
+            open={open}
+            onClose={() => {
+              setOpen(false)
+              invalidate('rooms')
+            }}
+          />
         </>
       )}
-
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
         <Paper sx={{ height: 500, width: '100%', maxWidth: 1200, p: 1 }}>
           <DatagridComponent

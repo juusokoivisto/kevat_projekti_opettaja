@@ -2,20 +2,18 @@ import { useContext, useState } from 'react'
 import Calendar from './../components/Calendar.tsx'
 import { Box, Button } from '@mui/material'
 import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
-import { UserContext } from '../App';
+import { UserContext } from '../App'
+import { useInvalidate } from '../hooks/useQueries'
 
 export default function MainPage() {
   const [open, setOpen] = useState(false)
-
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext)
+  const invalidate = useInvalidate()
 
   const handleDialogClose = (shouldRefresh?: boolean) => {
-    setOpen(false);
-    if (shouldRefresh === true) {
-      setRefreshKey((prev) => prev + 1);
-    }
-  };
+    setOpen(false)
+    if (shouldRefresh === true) invalidate('calendar')
+  }
 
   return (
     <>
@@ -26,13 +24,10 @@ export default function MainPage() {
               Lisää tapahtuma
             </Button>
           </Box>
-          <CalendarEventFormDialog
-            open={open}
-            onClose={handleDialogClose}
-          />
+          <CalendarEventFormDialog open={open} onClose={handleDialogClose} />
         </>
       )}
-      <Calendar refreshKey={refreshKey} />
+      <Calendar teacherId={undefined} />
     </>
-  );
+  )
 }

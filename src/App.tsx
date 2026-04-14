@@ -15,10 +15,7 @@ import Login from './components/Login.tsx'
 import GroupPage from './pages/GroupPage.tsx'
 import CoursePage from './pages/CoursePage.tsx'
 import TeacherDetailPage from './pages/TeacherDetailPage';
-import Alert from '@mui/material/Alert'
-import Collapse from '@mui/material/Collapse'
 import type { AuthUser } from './api/types/api.types'
-import { api } from './api'
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
   darkMode: false,
@@ -33,7 +30,6 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
-  const [backendError, setBackendError] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
   const [user, setUserState] = useState<AuthUser | null>(() => {
     const savedUser = localStorage.getItem('user');
@@ -43,27 +39,6 @@ function App() {
       return null;
     }
   })
-
-  React.useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-
-    const checkConnection = async () => {
-      try {
-        await api.health.check();
-        setBackendError(false);
-      } catch (err: any) {
-        if (!err.status) {
-          setBackendError(true);
-        }
-      }
-    };
-
-    checkConnection();
-
-    interval = setInterval(checkConnection, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const setUser = (u: AuthUser | null) => {
     if (u) {
@@ -100,12 +75,6 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Collapse in={backendError}>
-              <Alert severity="error" variant="filled" sx={{ borderRadius: 0 }}>
-                Palvelimeen ei saada yhteyttä.
-              </Alert>
-            </Collapse>
-
             <Navbar onLoginClick={() => setLoginOpen(true)} />
             <Box component="main" sx={{ flexGrow: 1 }}>
               <Routes>
