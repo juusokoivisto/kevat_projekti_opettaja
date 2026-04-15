@@ -17,6 +17,7 @@ import './Calendar.css'
 import Box from '@mui/material/Box'
 import { Tooltip, FormControl, InputLabel, Select, Typography } from '@mui/material'
 import { UserContext } from '../App';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
 
 interface FCResource {
   id: string;
@@ -30,6 +31,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   const [selectedTeacher, setSelectedTeacher] = useState<string>('')
   const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
   const [selectedCourse, setSelectedCourse] = useState<string>('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const { data: rawEvents = [] } = useCalendarEvents(teacherId)
 
@@ -233,20 +235,40 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
           >
             <MenuItem
               onClick={() => {
-                if (selectedEventId) {
-                  deleteEventMutation.mutate(selectedEventId)
-                }
+                setConfirmOpen(true)
                 setMenuAnchor(null)
               }}
             >
               Poista
             </MenuItem>
-
-            <MenuItem onClick={() => setMenuAnchor(null)}>
-              Peruuta
-            </MenuItem>
           </Menu>
         )}
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+          <DialogTitle>Vahvista poisto</DialogTitle>
+
+          <DialogContent>
+            Haluatko varmasti poistaa tämän tapahtuman?
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)}>
+              Peruuta
+            </Button>
+
+            <Button
+              color="error"
+              onClick={() => {
+                if (selectedEventId) {
+                  deleteEventMutation.mutate(selectedEventId)
+                }
+                setConfirmOpen(false)
+                setSelectedEventId(null)
+              }}
+            >
+              Poista
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </Box>
   )
