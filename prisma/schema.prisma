@@ -16,6 +16,7 @@ model Opettaja {
   sahkoposti        String              @unique
   sopimustunnit     Int                 @map("sopimustunnit_vuosi")
   vapaaResurssi     Int                 @map("vapaa_resurssi")
+  vari              String?             @map("vari")
   
   // Suhteet
   varaukset         Resurssivaraus[]
