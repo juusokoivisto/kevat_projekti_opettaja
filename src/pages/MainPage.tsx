@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import Calendar from './../components/Calendar.tsx'
-import { Box, Button, Container, Paper } from '@mui/material' // Added Paper for consistency
+import { Box, Button, Container, Paper } from '@mui/material'
 import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
 import { UserContext } from '../App'
 import { useInvalidate } from '../hooks/useQueries'
