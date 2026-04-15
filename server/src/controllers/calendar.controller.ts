@@ -41,7 +41,7 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
     return res.status(400).json({ error: 'Invalid time range' });
   }
 
-  
+
   const lunchStart = new Date(start);
   lunchStart.setHours(11, 0, 0, 0);
 
@@ -51,12 +51,12 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
   const overlapsLunch = start < lunchEnd && end > lunchStart;
 
   if (overlapsLunch) {
-    return res.status(400).json({ 
-      error: 'Varauksia ei voi tehdä lounastauon aikana (11:00 - 11:45).' 
+    return res.status(400).json({
+      error: 'Varauksia ei voi tehdä lounastauon aikana (11:00 - 11:45).'
     });
   }
-  
-  
+
+
   try {
     const roomConflict = await prisma.tyojarjestys.findFirst({
       where: { tilaId: Number(huoneId), alkaa: { lt: end }, paattyy: { gt: start } },

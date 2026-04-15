@@ -92,7 +92,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
   const closeMobileMenu = () => setMobileMenuAnchor(null);
 
   return (
-    <AppBar position="static" sx={{ borderRadius: '0 0 8px 8px', mb: 2 }}>
+    <AppBar position="static" sx={{ mb: 2 }}>
       <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
         <Toolbar disableGutters sx={{ height: 64 }}>
           <Typography

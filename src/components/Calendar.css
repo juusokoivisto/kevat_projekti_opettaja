@@ -42,3 +42,19 @@
 .calendar-dark .fc-scrollgrid-section>td {
   background-color: #1a1a1a;
 }
+
+.fc-timegrid-col-events {
+  margin: 0 !important;
+}
+
+.fc-v-event {
+  border-radius: 0 !important;
+}
+
+.fc-timeline-event {
+  border-radius: 0 !important;
+}
+
+.fc-timeline-event-harness {
+  margin: 0 !important;
+}

@@ -172,10 +172,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
                   width: '100%',
                   height: '100%',
                   overflow: 'hidden',
-                  padding: '2px',
+                  padding: '2px 4px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1px'
+                  gap: '1px',
+                  boxSizing: 'border-box',
                 }}>
                   <Typography variant="caption" sx={{
                     fontWeight: 'bold',
