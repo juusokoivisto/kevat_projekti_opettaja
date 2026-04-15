@@ -14,9 +14,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { 
-  Tooltip, FormControl, InputLabel, Select, MenuItem, Typography, 
-  Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button 
+import {
+  Tooltip, FormControl, InputLabel, Select, MenuItem, Typography,
+  Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -41,7 +41,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
-  
+
   const { data: rawEvents = [] } = useCalendarEvents(teacherId)
   const { rooms = [], teachers = [], groups = [], courses = [] } = useCalendarFilters()
 
@@ -70,7 +70,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   }, [rawEvents, filters, darkMode]);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 1 }}>
       {!hideFilters && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
           <FormControl sx={{ minWidth: 150 }}>
