@@ -241,7 +241,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
                 setMenuAnchor(null)
               }}
               sx={{
-                color: 'error.main',  // Makes the text red
+                color: 'error.main',
                 display: 'flex',
                 alignItems: 'center',
               }}
