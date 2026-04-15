@@ -1,5 +1,12 @@
 import { useState, useContext } from 'react'
-import { Button, Box, Paper, CircularProgress, Alert } from '@mui/material'
+import {
+  Button,
+  Box,
+  Paper,
+  CircularProgress,
+  Alert,
+  Container
+} from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../App'
@@ -11,8 +18,8 @@ import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 
 export default function TeachersPage() {
   const [open, setOpen] = useState(false)
-  const { user } = useContext(UserContext);
-  const navigate = useNavigate();
+  const { user } = useContext(UserContext)
+  const navigate = useNavigate()
   const { data: rows = [], isLoading, isError } = useTeachers()
   const invalidate = useInvalidate()
 
@@ -32,52 +39,49 @@ export default function TeachersPage() {
 
   const handleDelete = async (ids: (string | number)[]) => {
     try {
-      await api.teachers.deleteMany(ids as number[]);
+      await api.teachers.deleteMany(ids as number[])
       invalidate('teachers')
     } catch (err) {
-      const apiErr = err as T.ApiError;
-      alert(`Poisto epäonnistui: ${apiErr.error}`);
+      const apiErr = err as T.ApiError
+      alert(`Poisto epäonnistui: ${apiErr.error}`)
     }
   }
 
   if (isLoading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-      <CircularProgress color="inherit" />
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
     </Box>
   )
   if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
-    <>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
         <Box sx={{ mb: 2 }}>
-          <Box sx={{ pl: 4 }}>
-            <Button
-              variant="contained"
-              onClick={() => setOpen(true)}
-            >
-              Lisää opettaja
-            </Button>
-          </Box>
+          <Button
+            variant="contained"
+            onClick={() => setOpen(true)}
+          >
+            Lisää opettaja
+          </Button>
           <TeacherFormDialog open={open} onClose={handleDialogClose} />
         </Box>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
-        <Paper sx={{ height: 500, width: '100%', maxWidth: 1200, p: 1 }}>
-          <DatagridComponent
-            rows={rows}
-            columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-            autoHeight={false}
-            sx={{ height: '100%' }}
-            onDeleteRows={handleDelete}
-            showOpenButton={true}
-            onOpenRow={(id) => navigate(`/teachers/${id}`)}
-          />
-        </Paper>
-      </Box>
-    </>
+
+      <Paper elevation={2} sx={{ height: '100%', width: '100%', p: 1 }}>
+        <DatagridComponent
+          rows={rows}
+          columns={columns}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[5, 10]}
+          checkboxSelection
+          autoHeight={false}
+          onDeleteRows={handleDelete}
+          showOpenButton={true}
+          onOpenRow={(id) => navigate(`/teachers/${id}`)}
+          sx={{ height: '100%', border: 'none' }}
+        />
+      </Paper>
+    </Container>
   )
 }

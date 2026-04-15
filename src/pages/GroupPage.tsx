@@ -1,5 +1,12 @@
 import { useState, useContext } from 'react'
-import { Button, Box, Paper, CircularProgress, Alert } from '@mui/material'
+import {
+  Button,
+  Box,
+  Paper,
+  CircularProgress,
+  Alert,
+  Container
+} from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import { UserContext } from '../App'
 import { api } from '../api'
@@ -40,14 +47,12 @@ export default function GroupPage() {
   if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
-    <>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
-        <>
-          <Box sx={{ pl: 4 }}>
-            <Button variant="contained" onClick={() => setOpen(true)}>
-              Lisää ryhmä
-            </Button>
-          </Box>
+        <Box sx={{ mb: 2 }}>
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            Lisää ryhmä
+          </Button>
           <GroupFormDialog
             open={open}
             onClose={() => {
@@ -55,22 +60,21 @@ export default function GroupPage() {
               invalidate('groups')
             }}
           />
-        </>
+        </Box>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
-        <Paper sx={{ height: 500, width: '100%', maxWidth: 1200, p: 1 }}>
-          <DatagridComponent
-            rows={rows}
-            columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-            autoHeight={false}
-            sx={{ height: '100%' }}
-            onDeleteRows={handleDelete}
-          />
-        </Paper>
-      </Box>
-    </>
+
+      <Paper elevation={2} sx={{ height: '100%', width: '100%', p: 1 }}>
+        <DatagridComponent
+          rows={rows}
+          columns={columns}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[5, 10]}
+          checkboxSelection
+          autoHeight={false}
+          onDeleteRows={handleDelete}
+          sx={{ height: '100%', border: 'none' }}
+        />
+      </Paper>
+    </Container>
   )
 }

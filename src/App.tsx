@@ -16,6 +16,8 @@ import GroupPage from './pages/GroupPage.tsx'
 import CoursePage from './pages/CoursePage.tsx'
 import TeacherDetailPage from './pages/TeacherDetailPage';
 import type { AuthUser } from './api/types/api.types'
+import getDesignTokens from './Theme.tsx'
+
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
   darkMode: false,
@@ -30,7 +32,24 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+
+  const theme = React.useMemo(
+    () => createTheme(getDesignTokens(darkMode ? 'dark' : 'light')),
+    [darkMode]
+  );
+
+  const colorMode = React.useMemo(() => ({
+    toggleDarkMode: () => {
+      setDarkMode((prev) => {
+        const next = !prev;
+        localStorage.setItem('darkMode', String(next));
+        return next;
+      });
+    },
+    darkMode,
+  }), [darkMode]);
+
   const [user, setUserState] = useState<AuthUser | null>(() => {
     const savedUser = localStorage.getItem('user');
     try {
@@ -52,31 +71,18 @@ function App() {
 
   const [loginOpen, setLoginOpen] = useState(false)
 
-  const theme = createTheme({
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-      ...(darkMode && {
-        background: {
-          default: '#1a1a1a',
-          paper: '#242424',
-        },
-      }),
-    },
-  })
-
   return (
-    <ColorModeContext.Provider value={{
-      toggleDarkMode: () => setDarkMode(p => {
-        localStorage.setItem('darkMode', String(!p))
-        return !p
-      }), darkMode
-    }}>
+    <ColorModeContext.Provider value={colorMode}>
       <UserContext.Provider value={{ user, setUser }}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar onLoginClick={() => setLoginOpen(true)} />
-            <Box component="main" sx={{ flexGrow: 1 }}>
+            <Box component="main" sx={{
+              flexGrow: 1,
+              pt: { xs: 8, sm: 9 },
+              pb: 4
+            }}>
               <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
