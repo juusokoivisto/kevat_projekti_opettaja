@@ -5,21 +5,20 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import { useState, useContext, useMemo } from 'react'
-import { useQueries } from '@tanstack/react-query'
 import LunchBreak from './LunchBreak'
-import { ColorModeContext } from '../App'
+import { ColorModeContext, UserContext } from '../App'
+import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
 import { api } from '../api'
-import { Menu, MenuItem } from '@mui/material'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as T from '../api/types/api.types'
-import { useCalendarEvents } from '../hooks/useQueries'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { Tooltip, FormControl, InputLabel, Select, Typography } from '@mui/material'
-import { UserContext } from '../App';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete';
-
+import { 
+  Tooltip, FormControl, InputLabel, Select, MenuItem, Typography, 
+  Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button 
+} from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 interface FCResource {
   id: string;
@@ -29,92 +28,46 @@ interface FCResource {
 export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
   const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
-  const [selectedRoom, setSelectedRoom] = useState<string>('')
-  const [selectedTeacher, setSelectedTeacher] = useState<string>('')
-  const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
-  const [selectedCourse, setSelectedCourse] = useState<string>('')
-  const [confirmOpen, setConfirmOpen] = useState(false)
 
-  const { data: rawEvents = [] } = useCalendarEvents(teacherId)
+  const [filters, setFilters] = useState({
+    room: '',
+    teacher: '',
+    group: '' as number | '',
+    course: ''
+  })
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
+  
+  const { data: rawEvents = [] } = useCalendarEvents(teacherId)
+  const { rooms = [], teachers = [], groups = [], courses = [] } = useCalendarFilters()
+
   const deleteEventMutation = useMutation({
     mutationFn: (id: string) => api.calendar.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar'] })
     }
   })
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-
-
-  const results = useQueries({
-    queries: [
-      { queryKey: ['rooms'], queryFn: api.rooms.getAll },
-      { queryKey: ['teachers'], queryFn: api.teachers.getAll },
-      { queryKey: ['groups'], queryFn: api.groups.getAll },
-      { queryKey: ['courses'], queryFn: api.courses.getAll },
-    ]
-  })
-
-  const rooms = (results[0].data ?? []) as T.Classroom[]
-  const teachers = (results[1].data ?? []) as T.Teacher[]
-  const groups = (results[2].data ?? []) as T.StudentGroup[]
-  const courses = (results[3].data ?? []) as T.Course[]
 
   const resources: FCResource[] = useMemo(() =>
-    rooms.map(h => ({ id: String(h.id), title: h.huoneenNumero })),
+    rooms.map((h: T.Classroom) => ({ id: String(h.id), title: h.huoneenNumero })),
     [rooms]
   )
 
-  const events = useMemo(() =>
-    rawEvents.map(e => {
-      const rawId = e.huoneId || e.tila?.id
-      const resId = rawId ? String(rawId) : 'unassigned'
-
-      if (resId === 'unassigned') {
-        console.error(`MISSING ID for Event ${e.id}. Object structure:`, e)
-      }
-
-      let teacherShort = ''
-      if (e.opettaja) {
-        const firstPart = e.opettaja.nimi ? e.opettaja.nimi.substring(0, 2) : ''
-        const lastPart = e.opettaja.sukunimi ? e.opettaja.sukunimi.substring(0, 2) : ''
-        const formatPart = (str: string) => str
-          ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
-          : ''
-        teacherShort = `${formatPart(firstPart)}${formatPart(lastPart)}`
-      }
-
-      return {
-        id: String(e.id),
-        resourceId: resId,
-        title: e.kurssi?.nimi || 'Tapahtuma',
-        start: e.alkaa,
-        end: e.paattyy,
-        backgroundColor: e.opettaja && (e.opettaja as any).color
-          ? (e.opettaja as any).color
-          : (darkMode ? '#1976d2' : '#3788d8'),
-        extendedProps: {
-          ryhmaId: e.ryhmaId,
-          opettaja: e.opettaja ? `${e.opettaja.nimi} ${e.opettaja.sukunimi}` : '',
-          opettajaLyhyt: teacherShort,
-          kurssi: e.kurssi?.nimi || ''
-        }
-      }
-    }),
-
-    [rawEvents, darkMode]
-  )
-
   const filteredEvents = useMemo(() => {
-    let filtered = [...events]
-    if (selectedRoom) filtered = filtered.filter(e => e.resourceId === selectedRoom)
-    if (selectedTeacher) filtered = filtered.filter(e => e.extendedProps.opettaja === selectedTeacher)
-    if (selectedGroup !== '') filtered = filtered.filter(e => e.extendedProps.ryhmaId === selectedGroup)
-    if (selectedCourse) filtered = filtered.filter(e => e.extendedProps.kurssi === selectedCourse)
-    return filtered
-  }, [events, selectedRoom, selectedTeacher, selectedGroup, selectedCourse])
+    return rawEvents
+      .map(e => formatCalendarEvent(e, darkMode))
+      .filter(e => {
+        if (filters.room && e.resourceId !== filters.room) return false;
+        if (filters.teacher && e.extendedProps.opettaja !== filters.teacher) return false;
+        if (filters.group !== '' && e.extendedProps.ryhmaId !== filters.group) return false;
+        if (filters.course && e.extendedProps.kurssi !== filters.course) return false;
+        return true;
+      });
+  }, [rawEvents, filters, darkMode]);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -122,7 +75,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
         <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
           <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Huone</InputLabel>
-            <Select value={selectedRoom} onChange={(e) => setSelectedRoom(e.target.value)} label="Huone">
+            <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
               <MenuItem value="">Kaikki</MenuItem>
               {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
             </Select>
@@ -130,7 +83,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
 
           <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Opettaja</InputLabel>
-            <Select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)} label="Opettaja">
+            <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
               <MenuItem value="">Kaikki</MenuItem>
               {teachers.map(t => (
                 <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
@@ -140,7 +93,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
 
           <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Ryhmä</InputLabel>
-            <Select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value as number)} label="Ryhmä">
+            <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
               <MenuItem value="">Kaikki</MenuItem>
               {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
             </Select>
@@ -148,7 +101,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
 
           <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Kurssi</InputLabel>
-            <Select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} label="Kurssi">
+            <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
               <MenuItem value="">Kaikki</MenuItem>
               {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
             </Select>
@@ -198,10 +151,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
                   width: '100%',
                   height: '100%',
                   overflow: 'hidden',
-                  padding: '2px',
+                  padding: '2px 4px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1px'
+                  gap: '1px',
+                  boxSizing: 'border-box',
                 }}>
                   <Typography variant="caption" sx={{
                     fontWeight: 'bold',

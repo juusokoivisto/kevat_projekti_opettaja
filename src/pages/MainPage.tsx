@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import Calendar from './../components/Calendar.tsx'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Container, Paper } from '@mui/material'
 import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
 import { UserContext } from '../App'
 import { useInvalidate } from '../hooks/useQueries'
@@ -16,18 +16,19 @@ export default function MainPage() {
   }
 
   return (
-    <>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
-        <>
-          <Box sx={{ pl: 2 }}>
-            <Button variant="contained" onClick={() => setOpen(true)}>
-              Lisää tapahtuma
-            </Button>
-          </Box>
+        <Box sx={{ mb: 2 }}>
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            Lisää tapahtuma
+          </Button>
           <CalendarEventFormDialog open={open} onClose={handleDialogClose} />
-        </>
+        </Box>
       )}
-      <Calendar teacherId={undefined} />
-    </>
+
+      <Paper elevation={2}>
+        <Calendar teacherId={undefined} />
+      </Paper>
+    </Container>
   )
 }

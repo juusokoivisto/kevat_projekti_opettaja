@@ -7,6 +7,7 @@ import * as T from '../api/types/api.types'
 import { useRooms, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'
 import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
+import { Container } from '@mui/material'
 
 export default function ClassroomPage() {
   const [open, setOpen] = useState(false)
@@ -39,10 +40,10 @@ export default function ClassroomPage() {
   if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
-    <>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
         <>
-          <Box sx={{ pl: 4 }}>
+          <Box sx={{ mb: 2 }}>
             <Button variant="contained" onClick={() => setOpen(true)}>
               Lisää huone
             </Button>
@@ -50,26 +51,25 @@ export default function ClassroomPage() {
           <ClassroomFormDialog
             open={open}
             onClose={() => {
-              setOpen(false)
-              invalidate('rooms')
+              setOpen(false);
+              invalidate('rooms');
             }}
           />
         </>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
-        <Paper sx={{ height: 500, width: '100%', maxWidth: 1200, p: 1 }}>
-          <DatagridComponent
-            rows={rows}
-            columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-            autoHeight={false}
-            sx={{ height: '100%' }}
-            onDeleteRows={handleDelete}
-          />
-        </Paper>
-      </Box>
-    </>
-  )
+
+      <Paper elevation={2} sx={{ height: '100%', width: '100%', p: 1 }}>
+        <DatagridComponent
+          rows={rows}
+          columns={columns}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[5, 10]}
+          checkboxSelection
+          autoHeight={false}
+          sx={{ height: '100%', border: 'none' }}
+          onDeleteRows={handleDelete}
+        />
+      </Paper>
+    </Container>
+  );
 }
