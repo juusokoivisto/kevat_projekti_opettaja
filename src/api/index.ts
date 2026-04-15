@@ -76,14 +76,21 @@ export const api = {
       }),
   },
 
-  calendar: {
-    getAll: () => request<T.CalendarEvent[]>('/kalenteri', { method: 'GET' }),
-    getByTeacher: (id: number) =>
-      request<T.CalendarEvent[]>(`/kalenteri/opettaja/${id}`, { method: 'GET' }),
-    create: (data: Omit<T.CalendarEvent, 'id'>) =>
-      request<T.CalendarEvent>('/kalenteri', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      }),
-  }
+calendar: {
+  getAll: () => request<T.CalendarEvent[]>('/kalenteri', { method: 'GET' }),
+
+  getByTeacher: (id: number) =>
+    request<T.CalendarEvent[]>(`/kalenteri/opettaja/${id}`, { method: 'GET' }),
+
+  create: (data: Omit<T.CalendarEvent, 'id'>) =>
+    request<T.CalendarEvent>('/kalenteri', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  delete: (id: string) =>
+    request<void>(`/kalenteri/${id}`, {
+      method: 'DELETE'
+    }),
+},
 };

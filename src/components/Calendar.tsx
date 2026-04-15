@@ -6,29 +6,56 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import { useState, useContext, useMemo } from 'react'
 import LunchBreak from './LunchBreak'
-import { ColorModeContext } from '../App'
+import { ColorModeContext, UserContext } from '../App'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
+import { api } from '../api'
+import * as T from '../api/types/api.types'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { Tooltip, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material'
-import { formatCalendarEvent } from '../utils/calendarHelpers';
+import { 
+  Tooltip, FormControl, InputLabel, Select, MenuItem, Typography, 
+  Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button 
+} from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+
+interface FCResource {
+  id: string;
+  title: string;
+}
 
 export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
   const { darkMode } = useContext(ColorModeContext)
+  const { user } = useContext(UserContext)
 
   const [filters, setFilters] = useState({
     room: '',
     teacher: '',
     group: '' as number | '',
     course: ''
-  });
+  })
 
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+
+  const queryClient = useQueryClient()
+  
   const { data: rawEvents = [] } = useCalendarEvents(teacherId)
-  const { rooms, teachers, groups, courses } = useCalendarFilters()
+  const { rooms = [], teachers = [], groups = [], courses = [] } = useCalendarFilters()
 
-  const resources = useMemo(() =>
-    rooms.map(h => ({ id: String(h.id), title: h.huoneenNumero })),
-    [rooms]);
+  const deleteEventMutation = useMutation({
+    mutationFn: (id: string) => api.calendar.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar'] })
+    }
+  })
+
+  const resources: FCResource[] = useMemo(() =>
+    rooms.map((h: T.Classroom) => ({ id: String(h.id), title: h.huoneenNumero })),
+    [rooms]
+  )
 
   const filteredEvents = useMemo(() => {
     return rawEvents
@@ -101,6 +128,13 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             center: 'title',
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
+          eventDidMount={(info) => {
+            info.el.addEventListener('contextmenu', (e) => {
+              e.preventDefault()
+              setSelectedEventId(info.event.id)
+              setMenuAnchor(info.el as HTMLElement)
+            })
+          }}
           resources={resources}
           events={[...filteredEvents, LunchBreak]}
           resourceAreaHeaderContent='Tilat'
@@ -149,6 +183,54 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             )
           }}
         />
+        {user && menuAnchor && (
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={() => setMenuAnchor(null)}
+          >
+            <MenuItem
+              onClick={() => {
+                setConfirmOpen(true)
+                setMenuAnchor(null)
+              }}
+              sx={{
+                color: 'error.main',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <DeleteIcon sx={{ color: 'error.main', mr: 1 }} />
+              Poista
+            </MenuItem>
+          </Menu>
+        )}
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+          <DialogTitle>Vahvista poisto</DialogTitle>
+
+          <DialogContent>
+            Haluatko varmasti poistaa tämän tapahtuman?
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)}>
+              Peruuta
+            </Button>
+
+            <Button
+              color="error"
+              onClick={() => {
+                if (selectedEventId) {
+                  deleteEventMutation.mutate(selectedEventId)
+                }
+                setConfirmOpen(false)
+                setSelectedEventId(null)
+              }}
+            >
+              Poista
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </Box>
   )

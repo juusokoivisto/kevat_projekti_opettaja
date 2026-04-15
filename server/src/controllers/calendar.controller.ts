@@ -26,13 +26,34 @@ export const getTeacherEvents = async (req: Request<{ id: string }>, res: Respon
     res.status(500).json({ error: (err as Error).message });
   }
 };
+export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const id = Number(req.params.id)
 
+    const existing = await prisma.tyojarjestys.findUnique({
+      where: { id }
+    })
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Event not found' })
+    }
+
+    await prisma.tyojarjestys.delete({
+      where: { id }
+    })
+
+    res.status(204).send()
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message })
+  }
+}
 export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Response) => {
   const { huoneId, opettajaId, kurssiId, ryhmaId, alkaa, paattyy } = req.body;
 
   if (!huoneId || !opettajaId || !kurssiId || !ryhmaId || !alkaa || !paattyy) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+
 
   const start = new Date(alkaa);
   const end = new Date(paattyy);
