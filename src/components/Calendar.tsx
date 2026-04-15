@@ -18,6 +18,8 @@ import Box from '@mui/material/Box'
 import { Tooltip, FormControl, InputLabel, Select, Typography } from '@mui/material'
 import { UserContext } from '../App';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete';
+
 
 interface FCResource {
   id: string;
@@ -238,7 +240,13 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
                 setConfirmOpen(true)
                 setMenuAnchor(null)
               }}
+              sx={{
+                color: 'error.main',  // Makes the text red
+                display: 'flex',
+                alignItems: 'center',
+              }}
             >
+              <DeleteIcon sx={{ color: 'error.main', mr: 1 }} />  {/* Adds the delete icon */}
               Poista
             </MenuItem>
           </Menu>
