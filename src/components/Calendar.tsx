@@ -9,11 +9,15 @@ import { useQueries } from '@tanstack/react-query'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext } from '../App'
 import { api } from '../api'
+import { Menu, MenuItem } from '@mui/material'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as T from '../api/types/api.types'
 import { useCalendarEvents } from '../hooks/useQueries'
 import './Calendar.css'
 import Box from '@mui/material/Box'
-import { Tooltip, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material'
+import { Tooltip, FormControl, InputLabel, Select, Typography } from '@mui/material'
+import { UserContext } from '../App';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
 
 interface FCResource {
   id: string;
@@ -22,13 +26,25 @@ interface FCResource {
 
 export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
   const { darkMode } = useContext(ColorModeContext)
-
+  const { user } = useContext(UserContext)
   const [selectedRoom, setSelectedRoom] = useState<string>('')
   const [selectedTeacher, setSelectedTeacher] = useState<string>('')
   const [selectedGroup, setSelectedGroup] = useState<number | ''>('')
   const [selectedCourse, setSelectedCourse] = useState<string>('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const { data: rawEvents = [] } = useCalendarEvents(teacherId)
+
+  const queryClient = useQueryClient()
+  const deleteEventMutation = useMutation({
+    mutationFn: (id: string) => api.calendar.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar'] })
+    }
+  })
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+
 
   const results = useQueries({
     queries: [
@@ -85,6 +101,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
         }
       }
     }),
+
     [rawEvents, darkMode]
   )
 
@@ -156,6 +173,13 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             center: 'title',
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
+          eventDidMount={(info) => {
+            info.el.addEventListener('contextmenu', (e) => {
+              e.preventDefault()
+              setSelectedEventId(info.event.id)
+              setMenuAnchor(info.el as HTMLElement)
+            })
+          }}
           resources={resources}
           events={[...filteredEvents, LunchBreak]}
           resourceAreaHeaderContent='Tilat'
@@ -203,6 +227,48 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             )
           }}
         />
+        {user && menuAnchor && (
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={() => setMenuAnchor(null)}
+          >
+            <MenuItem
+              onClick={() => {
+                setConfirmOpen(true)
+                setMenuAnchor(null)
+              }}
+            >
+              Poista
+            </MenuItem>
+          </Menu>
+        )}
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+          <DialogTitle>Vahvista poisto</DialogTitle>
+
+          <DialogContent>
+            Haluatko varmasti poistaa tämän tapahtuman?
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)}>
+              Peruuta
+            </Button>
+
+            <Button
+              color="error"
+              onClick={() => {
+                if (selectedEventId) {
+                  deleteEventMutation.mutate(selectedEventId)
+                }
+                setConfirmOpen(false)
+                setSelectedEventId(null)
+              }}
+            >
+              Poista
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </Box>
   )
