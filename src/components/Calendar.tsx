@@ -246,7 +246,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
                 alignItems: 'center',
               }}
             >
-              <DeleteIcon sx={{ color: 'error.main', mr: 1 }} />  {/* Adds the delete icon */}
+              <DeleteIcon sx={{ color: 'error.main', mr: 1 }} />
               Poista
             </MenuItem>
           </Menu>
