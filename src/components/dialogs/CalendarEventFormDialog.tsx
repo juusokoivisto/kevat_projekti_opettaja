@@ -23,7 +23,7 @@ const SLOTS = {
   iltapaiva: { label: 'Iltapäivätunnit', start: { h: 11, m: 45 }, end: { h: 14, m: 45 } },
 } as const;
 
-type SlotKey = keyof typeof SLOTS;
+type SlotKey = keyof typeof SLOTS | 'molemmat';
 
 const STORAGE_KEY = 'calendarEventFormDefaults';
 
@@ -66,7 +66,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
   const isMonday = date?.day() === 1;
 
-  const getSlotTimes = (key: SlotKey) => {
+  const getSlotTimes = (key: keyof typeof SLOTS) => {
     const slot = SLOTS[key];
     const startH = key === 'aamu' && isMonday ? 9 : slot.start.h;
     return `${startH}:${String(slot.start.m).padStart(2, '0')} – ${slot.end.h}:${String(slot.end.m).padStart(2, '0')}`;
@@ -130,41 +130,48 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setError(null);
   };
 
+  const buildSlotTimes = (key: keyof typeof SLOTS): { start: Dayjs; end: Dayjs } => {
+    const slot = SLOTS[key];
+    const startHour = key === 'aamu' && isMonday ? 9 : slot.start.h;
+    return {
+      start: date!.hour(startHour).minute(slot.start.m).second(0).millisecond(0),
+      end: date!.hour(slot.end.h).minute(slot.end.m).second(0).millisecond(0),
+    };
+  };
+
   const handleAdd = async () => {
     if (!isValid) return;
-
-    let startTime: Dayjs;
-    let endTime: Dayjs;
-
-    if (useCustomTime) {
-      startTime = date!.hour(customStart!.hour()).minute(customStart!.minute()).second(0).millisecond(0);
-      endTime = date!.hour(customEnd!.hour()).minute(customEnd!.minute()).second(0).millisecond(0);
-    } else {
-      const slot = SLOTS[selectedSlot!];
-      const startHour = selectedSlot === 'aamu' && isMonday ? 9 : slot.start.h;
-      startTime = date!.hour(startHour).minute(slot.start.m).second(0).millisecond(0);
-      endTime = date!.hour(slot.end.h).minute(slot.end.m).second(0).millisecond(0);
-    }
 
     setLoading(true);
     setError(null);
 
+    const slots: Array<{ start: Dayjs; end: Dayjs }> = useCustomTime
+      ? [{
+        start: date!.hour(customStart!.hour()).minute(customStart!.minute()).second(0).millisecond(0),
+        end: date!.hour(customEnd!.hour()).minute(customEnd!.minute()).second(0).millisecond(0),
+      }]
+      : selectedSlot === 'molemmat'
+        ? [buildSlotTimes('aamu'), buildSlotTimes('iltapaiva')]
+        : [buildSlotTimes(selectedSlot as keyof typeof SLOTS)];
+
     try {
-      await api.calendar.create({
-        huoneId: classroom!.id,
-        opettajaId: teacher!.id,
-        kurssiId: course!.id,
-        ryhmaId: group!.id,
-        alkaa: startTime.toISOString(),
-        paattyy: endTime.toISOString()
-      });
+      for (const { start, end } of slots) {
+        await api.calendar.create({
+          huoneId: classroom!.id,
+          opettajaId: teacher!.id,
+          kurssiId: course!.id,
+          ryhmaId: group!.id,
+          alkaa: start.toISOString(),
+          paattyy: end.toISOString(),
+        });
+      }
 
       saveDefaults({
         classroomId: classroom!.id,
         teacherId: teacher!.id,
         courseId: course!.id,
         groupId: group!.id,
-        slotKey: selectedSlot ?? undefined
+        slotKey: selectedSlot ?? undefined,
       });
 
       resetForm();
@@ -191,6 +198,12 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     classroom && teacher && course && group && date &&
     (useCustomTime ? isCustomTimeValid : selectedSlot)
   );
+
+  const addButtonLabel = loading
+    ? 'Lisätään...'
+    : selectedSlot === 'molemmat'
+      ? 'Lisää 2 tapahtumaa'
+      : 'Lisää tapahtuma';
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
@@ -256,7 +269,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 onChange={handleSlotChange}
                 fullWidth
               >
-                {(Object.entries(SLOTS) as [SlotKey, typeof SLOTS[SlotKey]][]).map(([key, slot]) => (
+                {(Object.entries(SLOTS) as [keyof typeof SLOTS, typeof SLOTS[keyof typeof SLOTS]][]).map(([key, slot]) => (
                   <ToggleButton key={key} value={key} sx={{ py: 1.5 }}>
                     <Stack alignItems="center">
                       <span>{slot.label}</span>
@@ -266,6 +279,17 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                     </Stack>
                   </ToggleButton>
                 ))}
+                <ToggleButton key="molemmat" value="molemmat" sx={{ py: 1.5 }}>
+                  <Stack alignItems="center">
+                    <span>Molemmat</span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                      {getSlotTimes('aamu')}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                      {getSlotTimes('iltapaiva')}
+                    </span>
+                  </Stack>
+                </ToggleButton>
               </ToggleButtonGroup>
             </Collapse>
 
@@ -307,7 +331,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             onClick={handleAdd}
             disabled={!isValid || loading}
           >
-            {loading ? 'Lisätään...' : 'Lisää tapahtuma'}
+            {addButtonLabel}
           </Button>
         </DialogActions>
       </Dialog>
