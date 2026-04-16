@@ -59,3 +59,12 @@ export interface ApiError {
   error: string;
   status?: number;
 }
+
+export interface CalendarBody {
+  huoneId: number;
+  opettajaId: number;
+  kurssiId: number;
+  ryhmaId: number;
+  alkaa: string;
+  paattyy: string;
+}

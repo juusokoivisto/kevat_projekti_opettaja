@@ -5,13 +5,17 @@ import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../c
 import { getRooms, createRoom, deleteRooms } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
-import { getAllEvents, getTeacherEvents, createEvent } from '../controllers/calendar.controller';
-import { deleteEvent } from '../controllers/calendar.controller';
+import {
+  getAllEvents,
+  getTeacherEvents,
+  createEvent,
+  createManyEvents,
+  deleteEvent
+} from '../controllers/calendar.controller';
 
 const router = Router();
 
 router.get('/health', (_req, res) => res.json({ status: 'ok' }));
-
 router.post('/login', login);
 
 router.route('/opettajat')
@@ -36,13 +40,15 @@ router.route('/opiskelijaryhmat')
   .post(authenticateToken, createGroup)
   .delete(authenticateToken, deleteGroups);
 
-router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
-
 router.route('/kalenteri')
   .get(getAllEvents)
   .post(authenticateToken, createEvent);
 
+router.post('/kalenteri/batch', authenticateToken, createManyEvents);
+
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
+
+router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
 
 router.get('/test-auth', authenticateToken, (req, res) => {
   res.json({
