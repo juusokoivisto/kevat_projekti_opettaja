@@ -164,14 +164,6 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
               }
               disabled={loading}
               onClick={() => {
-                const selectedId =
-                  selectionModel.type === 'include'
-                    ? Array.from(selectionModel.ids)[0]
-                    : rows.find((r) => !selectionModel.ids.has(r.id))?.id;
-
-                if (selectedId && onOpenRow) {
-                  onOpenRow(selectedId);
-                }
               }}
             >
               {loading ? 'Avataan...' : 'Muokkaa'}
