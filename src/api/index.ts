@@ -60,6 +60,11 @@ export const api = {
         method: 'DELETE',
         body: JSON.stringify({ ids })
       }),
+    update: (id: number, data: any) =>
+      request<T.Course>(`/kurssit/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      })
   },
 
   groups: {

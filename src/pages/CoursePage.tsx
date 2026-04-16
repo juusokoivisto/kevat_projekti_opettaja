@@ -3,23 +3,22 @@ import {
   Button,
   Box,
   Paper,
-  CircularProgress,
-  Alert,
   Container
 } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import { UserContext } from '../App'
 import { api } from '../api'
-import * as T from '../api/types/api.types'
 import { useCourses, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'
 import CourseFormDialog from '../components/dialogs/CourseFormDialog'
 
 export default function CoursePage() {
-  const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext)
-  const { data: rows = [], isLoading, isError } = useCourses()
+  const { data: rows = [] } = useCourses()
   const invalidate = useInvalidate()
+
+  const [open, setOpen] = useState(false)
+  const [editingRow, setEditingRow] = useState<any | null>(null)
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -27,43 +26,36 @@ export default function CoursePage() {
     { field: 'koodi', headerName: 'Koodi', width: 140 },
     { field: 'opintopisteet', headerName: 'Opintopisteet', width: 140 },
     { field: 'suunnitellutTunnit', headerName: 'Tuntimäärä', width: 140 }
+
   ]
 
-  const handleDelete = async (ids: (string | number)[]) => {
-    try {
-      await api.courses.deleteMany(ids as number[])
-      invalidate('courses')
-    } catch (err) {
-      const apiErr = err as T.ApiError
-      alert(`Poisto epäonnistui: ${apiErr.error}`)
-    }
+  const handleDelete = async (ids: any[]) => {
+    await api.courses.deleteMany(ids)
+    invalidate('courses')
   }
 
-  if (isLoading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <CircularProgress />
-    </Box>
-  )
-  if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
+  const handleEditRow = (id: any) => {
+    const row = rows.find(r => r.id === id)
+    setEditingRow(row)
+    setOpen(true)
+  }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container>
       {user && (
-        <>
-          <Box sx={{ mb: 2 }}>
-            <Button variant="contained" onClick={() => setOpen(true)}>
-              Lisää kurssi
-            </Button>
-          </Box>
-          <CourseFormDialog
-            open={open}
-            onClose={() => {
-              setOpen(false)
-              invalidate('courses')
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setEditingRow(null)
+              setOpen(true)
             }}
-          />
-        </>
+          >
+            Lisää kurssi
+          </Button>
+        </Box>
       )}
+
       <Paper elevation={2} sx={{ height: '100%', width: '100%', p: 1 }}>
         <DatagridComponent
           rows={rows}
@@ -73,9 +65,20 @@ export default function CoursePage() {
           checkboxSelection
           autoHeight={false}
           onDeleteRows={handleDelete}
+          onEditRow={handleEditRow}
           sx={{ height: '100%', border: 'none' }}
         />
       </Paper>
+
+      <CourseFormDialog
+        open={open}
+        data={editingRow}
+        onClose={() => {
+          setOpen(false)
+          setEditingRow(null)
+          invalidate('courses')
+        }}
+      />
     </Container>
   )
 }

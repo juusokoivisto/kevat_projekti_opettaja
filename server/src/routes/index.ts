@@ -12,6 +12,7 @@ import {
   createManyEvents,
   deleteEvent
 } from '../controllers/calendar.controller';
+import { updateCourse } from '../controllers/course.controller';
 
 const router = Router();
 
@@ -34,6 +35,7 @@ router.route('/kurssit')
   .get(getCourses)
   .post(authenticateToken, createCourse)
   .delete(authenticateToken, deleteCourses);
+router.put('/kurssit/:id', authenticateToken, updateCourse);
 
 router.route('/opiskelijaryhmat')
   .get(getGroups)

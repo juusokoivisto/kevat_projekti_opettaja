@@ -1,113 +1,117 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
-import * as T from '../../api/types/api.types';
-
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Alert
+  TextField, Button, Box
 } from '@mui/material';
 
-interface CourseFormDialogProps {
+interface Props {
   open: boolean;
   onClose: () => void;
+  data?: any | null;
 }
 
-const handleIntChange = (setter: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-  setter(e.target.value.replace(/\D/g, ''));
-};
-
-const CourseFormDialog: React.FC<CourseFormDialogProps> = ({ open, onClose }) => {
-  const [nimi, setKurssiNimi] = useState('');
+const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
+  const [nimi, setNimi] = useState('');
   const [koodi, setKoodi] = useState('');
-  const [opintopisteet, setOpintopisteet] = useState('');
+  const [op, setOp] = useState('');
   const [suunnitellutTunnit, setSuunnitellutTunnit] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const resetForm = () => {
-    setKurssiNimi('');
+  const reset = () => {
+    setNimi('');
     setKoodi('');
-    setOpintopisteet('');
+    setOp('');
     setSuunnitellutTunnit('');
     setError(null);
   };
 
-  const handleAdd = async () => {
+  useEffect(() => {
+    if (data) {
+      setNimi(data.nimi || '');
+      setKoodi(data.koodi || '');
+      setOp(String(data.opintopisteet || ''));
+      setSuunnitellutTunnit(String(data.suunnitellutTunnit || ''));
+    } else {
+      reset();
+    }
+  }, [data, open]);
+
+  const handleSubmit = async () => {
     try {
-      await api.courses.create({
+      const payload = {
         nimi,
         koodi,
-        opintopisteet: Number(opintopisteet),
+        opintopisteet: Number(op),
         suunnitellutTunnit: Number(suunnitellutTunnit)
-      });
+      };
 
-      resetForm();
+      if (data) {
+        await api.courses.update(data.id, payload);
+      } else {
+        await api.courses.create(payload);
+      }
+
+      reset();
       onClose();
-    } catch (err) {
-      const apiErr = err as T.ApiError;
-      setError(apiErr.error || 'Virhe kurssin luonnissa');
-      console.error('Virhe kurssin luonnissa:', err);
+    } catch (err: any) {
+      setError(err?.error || 'Tallennus epäonnistui');
     }
   };
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  const isInvalid = !nimi || !koodi || !opintopisteet || !suunnitellutTunnit;
+  const isInvalid =
+    !nimi || !koodi || !op || !suunnitellutTunnit;
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Lisää uusi kurssi</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {data ? 'Muokkaa kurssia' : 'Lisää kurssi'}
+      </DialogTitle>
+
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Box sx={{ color: 'red' }}>
+              {error}
+            </Box>
+          )}
 
           <TextField
-            label="Kurssin nimi"
-            variant="outlined"
+            label="Nimi"
             value={nimi}
-            onChange={(e) => setKurssiNimi(e.target.value)}
-            fullWidth
-            required
+            onChange={(e) => setNimi(e.target.value)}
           />
+
           <TextField
-            label="Kurssin koodi"
-            variant="outlined"
+            label="Koodi"
             value={koodi}
             onChange={(e) => setKoodi(e.target.value)}
-            fullWidth
-            required
           />
+
           <TextField
             label="Opintopisteet"
-            variant="outlined"
-            value={opintopisteet}
-            onChange={handleIntChange(setOpintopisteet)}
-            fullWidth
-            required
+            value={op}
+            onChange={(e) => setOp(e.target.value)}
           />
+
           <TextField
-            label="Suunniteltu tuntimäärä"
-            variant="outlined"
+            label="Suunnitellut tunnit"
             value={suunnitellutTunnit}
-            onChange={handleIntChange(setSuunnitellutTunnit)}
-            fullWidth
-            required
+            onChange={(e) => setSuunnitellutTunnit(e.target.value)}
           />
+
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose}>Peruuta</Button>
+
+      <DialogActions>
+        <Button onClick={onClose}>Peruuta</Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleAdd}
+          onClick={handleSubmit}
           disabled={isInvalid}
         >
-          Lisää kurssi
+          {data ? 'Tallenna' : 'Lisää'}
         </Button>
       </DialogActions>
     </Dialog>

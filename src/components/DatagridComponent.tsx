@@ -22,6 +22,7 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import EditIcon from '@mui/icons-material/Edit';
 
 
+
 import { useContext } from 'react';
 import { UserContext } from '../App';
 
@@ -32,6 +33,7 @@ interface DatagridComponentProps {
   autoHeight?: boolean;
   onRowsChange?: (newRows: any[]) => void;
   onDeleteRows?: (ids: GridRowId[]) => Promise<void>;
+  onEditRow?: (id: GridRowId) => void;
   showOpenButton?: boolean;
   onOpenRow?: (id: GridRowId) => void;
   [key: string]: any;
@@ -47,6 +49,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
     autoHeight = true,
     onRowsChange,
     onDeleteRows,
+    onEditRow,
     showOpenButton = false,
     onOpenRow,
     ...rest
@@ -105,6 +108,11 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
     }
   };
 
+  const selectedId =
+    selectionModel.type === 'include'
+      ? Array.from(selectionModel.ids)[0]
+      : rows.find((r) => !selectionModel.ids.has(r.id))?.id;
+
   const selectedCount = selectionModel.type === 'include'
     ? selectionModel.ids.size
     : rows.length - selectionModel.ids.size;
@@ -153,20 +161,13 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
               {loading ? 'Avataan...' : 'Avaa'}
             </Button>
           )}
-          {selectedCount === 1 && (
+          {user && selectedCount === 1 && (
             <Button
               variant="contained"
-              color="primary"
-              startIcon={
-                loading
-                  ? <CircularProgress size={20} color="inherit" />
-                  : <EditIcon />
-              }
-              disabled={loading}
-              onClick={() => {
-              }}
+              startIcon={<EditIcon />}
+              onClick={() => selectedId && onEditRow?.(selectedId)}
             >
-              {loading ? 'Avataan...' : 'Muokkaa'}
+              Muokkaa
             </Button>
           )}
           {user && selectedCount > 0 && (

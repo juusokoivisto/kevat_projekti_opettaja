@@ -36,3 +36,27 @@ export const deleteCourses = async (req: Request<{}, {}, DeleteRequest>, res: Re
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+export const updateCourse = async (
+  req: Request<{ id: string }, {}, CourseBody>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { nimi, koodi, opintopisteet, suunnitellutTunnit } = req.body;
+
+  try {
+    const updated = await prisma.kurssi.update({
+      where: { id: Number(id) },
+      data: {
+        nimi,
+        koodi,
+        opintopisteet: Number(opintopisteet),
+        suunnitellutTunnit: Number(suunnitellutTunnit)
+      }
+    });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};
