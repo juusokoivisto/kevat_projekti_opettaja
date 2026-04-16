@@ -6,7 +6,7 @@ import * as CalendarService from '../services/calendar.service';
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
     const tapahtumat = await prisma.tyojarjestys.findMany({
-      include: { tila: true, opettaja: true, kurssi: true },
+      include: { tila: true, opettaja: true, kurssi: true, ryhma: true },
     });
     res.json(tapahtumat);
   } catch (err) {
@@ -19,7 +19,7 @@ export const getTeacherEvents = async (req: Request<{ id: string }>, res: Respon
   try {
     const tapahtumat = await prisma.tyojarjestys.findMany({
       where: { opettajaId: teacherId },
-      include: { tila: true, opettaja: true, kurssi: true },
+      include: { tila: true, opettaja: true, kurssi: true, ryhma: true },
       orderBy: { alkaa: 'asc' }
     });
     res.json(tapahtumat);

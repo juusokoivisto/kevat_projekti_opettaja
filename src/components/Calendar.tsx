@@ -141,44 +141,77 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
           eventContent={(eventInfo) => {
-            const fullName = eventInfo.event.extendedProps.opettaja
-            const shortName = eventInfo.event.extendedProps.opettajaLyhyt
-            const title = eventInfo.event.title
+            const {
+              opettaja,
+              opettajaLyhyt,
+              ryhmaTunnus,
+              huoneNumero,
+              opettajaId
+            } = eventInfo.event.extendedProps;
+            const title = eventInfo.event.title;
 
             return (
-              <Tooltip title={fullName || ''} arrow placement="top" disableInteractive>
-                <div style={{
+              <Tooltip title={opettaja || ''} arrow placement="top" disableInteractive>
+                <Box sx={{
                   width: '100%',
                   height: '100%',
-                  overflow: 'hidden',
                   padding: '2px 4px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1px',
-                  boxSizing: 'border-box',
+                  color: '#fff',
+                  overflow: 'hidden',
+                  boxSizing: 'border-box'
                 }}>
                   <Typography variant="caption" sx={{
                     fontWeight: 'bold',
-                    lineHeight: 1.2,
-                    overflow: 'hidden',
+                    lineHeight: 1.1,
+                    fontSize: '0.75rem',
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
                   }}>
                     {title}
                   </Typography>
-                  {shortName && (
-                    <Typography variant="caption" sx={{
-                      lineHeight: 1.2,
-                      opacity: 0.85,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {shortName}
+
+                  <Typography variant="caption" sx={{
+                    fontSize: '0.65rem',
+                    lineHeight: 1,
+                    opacity: 0.9
+                  }}>
+                    {ryhmaTunnus}
+                  </Typography>
+
+                  <Typography variant="caption" sx={{
+                    fontSize: '0.65rem',
+                    lineHeight: 1,
+                    opacity: 0.9
+                  }}>
+                    {huoneNumero}
+                  </Typography>
+
+                  {opettajaLyhyt && (
+                    <Typography
+                      variant="caption"
+                      component="a"
+                      href={`/teachers/${opettajaId}`}
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{
+                        mt: 'auto',
+                        alignSelf: 'flex-end',
+                        fontWeight: 'bold',
+                        fontSize: '0.7rem',
+                        color: 'inherit',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        }
+                      }}
+                    >
+                      {opettajaLyhyt}
                     </Typography>
                   )}
-                </div>
+                </Box>
               </Tooltip>
             )
           }}
