@@ -89,6 +89,11 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
     });
     if (teacherConflict) return res.status(409).json({ error: 'Teacher already has an event' });
 
+    const groupConflict = await prisma.tyojarjestys.findFirst({
+      where: { ryhmaId: Number(ryhmaId), alkaa: { lt: end }, paattyy: { gt: start } },
+    });
+    if (groupConflict) return res.status(409).json({ error: 'Group already has an event' });
+
     const tapahtuma = await prisma.tyojarjestys.create({
       data: {
         tilaId: Number(huoneId),

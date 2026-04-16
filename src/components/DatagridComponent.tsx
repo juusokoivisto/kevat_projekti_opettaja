@@ -153,7 +153,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
               {loading ? 'Avataan...' : 'Avaa'}
             </Button>
           )}
-                  {selectedCount === 1 && (
+          {selectedCount === 1 && (
             <Button
               variant="contained"
               color="primary"

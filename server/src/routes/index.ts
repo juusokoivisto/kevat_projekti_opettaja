@@ -48,7 +48,6 @@ router.get('/test-auth', authenticateToken, (req, res) => {
   res.json({
     message: 'You are authenticated!',
     user: (req as any).user
-
   });
 });
 
