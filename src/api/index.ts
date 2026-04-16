@@ -60,6 +60,11 @@ export const api = {
         method: 'DELETE',
         body: JSON.stringify({ ids })
       }),
+    update: (id: number, data: any) =>
+      request<T.Course>(`/kurssit/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      })
   },
 
   groups: {
@@ -76,21 +81,21 @@ export const api = {
       }),
   },
 
-calendar: {
-  getAll: () => request<T.CalendarEvent[]>('/kalenteri', { method: 'GET' }),
+  calendar: {
+    getAll: () => request<T.CalendarEvent[]>('/kalenteri', { method: 'GET' }),
 
-  getByTeacher: (id: number) =>
-    request<T.CalendarEvent[]>(`/kalenteri/opettaja/${id}`, { method: 'GET' }),
+    getByTeacher: (id: number) =>
+      request<T.CalendarEvent[]>(`/kalenteri/opettaja/${id}`, { method: 'GET' }),
 
-  create: (data: Omit<T.CalendarEvent, 'id'>) =>
-    request<T.CalendarEvent>('/kalenteri', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
+    create: (data: Omit<T.CalendarEvent, 'id'>) =>
+      request<T.CalendarEvent>('/kalenteri', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }),
 
-  delete: (id: string) =>
-    request<void>(`/kalenteri/${id}`, {
-      method: 'DELETE'
-    }),
-},
+    delete: (id: string) =>
+      request<void>(`/kalenteri/${id}`, {
+        method: 'DELETE'
+      }),
+  },
 };
