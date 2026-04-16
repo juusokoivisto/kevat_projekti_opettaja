@@ -93,6 +93,12 @@ export const api = {
         body: JSON.stringify(data)
       }),
 
+    createBatch: (data: T.CalendarBody[]) =>
+      request<T.CalendarEvent[]>('/kalenteri/batch', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }),
+
     delete: (id: string) =>
       request<void>(`/kalenteri/${id}`, {
         method: 'DELETE'

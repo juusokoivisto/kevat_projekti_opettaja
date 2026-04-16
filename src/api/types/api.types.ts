@@ -30,18 +30,21 @@ export interface Course {
   suunnitellutTunnit: number;
 }
 
-export interface CalendarEvent {
-  id: number;
+export interface CalendarBody {
   huoneId: number;
   opettajaId: number;
   kurssiId: number;
   ryhmaId: number;
   alkaa: string;
   paattyy: string;
+}
 
+export interface CalendarEvent extends CalendarBody {
+  id: number;
   tila?: Classroom;
   opettaja?: Teacher;
   kurssi?: Course;
+  ryhma?: StudentGroup;
 }
 
 export interface AuthUser {

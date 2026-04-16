@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 import { CalendarBody } from '../types';
+import * as CalendarService from '../services/calendar.service';
 
 export const getAllEvents = async (_req: Request, res: Response) => {
   try {
     const tapahtumat = await prisma.tyojarjestys.findMany({
-      include: { tila: true, opettaja: true, kurssi: true },
+      include: { tila: true, opettaja: true, kurssi: true, ryhma: true },
     });
     res.json(tapahtumat);
   } catch (err) {
@@ -18,7 +19,7 @@ export const getTeacherEvents = async (req: Request<{ id: string }>, res: Respon
   try {
     const tapahtumat = await prisma.tyojarjestys.findMany({
       where: { opettajaId: teacherId },
-      include: { tila: true, opettaja: true, kurssi: true },
+      include: { tila: true, opettaja: true, kurssi: true, ryhma: true },
       orderBy: { alkaa: 'asc' }
     });
     res.json(tapahtumat);
@@ -26,87 +27,94 @@ export const getTeacherEvents = async (req: Request<{ id: string }>, res: Respon
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
 export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const id = Number(req.params.id)
+    const id = Number(req.params.id);
 
     const existing = await prisma.tyojarjestys.findUnique({
       where: { id }
-    })
+    });
 
     if (!existing) {
-      return res.status(404).json({ error: 'Event not found' })
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     await prisma.tyojarjestys.delete({
       where: { id }
-    })
+    });
 
-    res.status(204).send()
+    res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message })
+    res.status(500).json({ error: (err as Error).message });
   }
-}
+};
+
 export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Response) => {
-  const { huoneId, opettajaId, kurssiId, ryhmaId, alkaa, paattyy } = req.body;
-
-  if (!huoneId || !opettajaId || !kurssiId || !ryhmaId || !alkaa || !paattyy) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-
-  const start = new Date(alkaa);
-  const end = new Date(paattyy);
-
-  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
-    return res.status(400).json({ error: 'Invalid time range' });
-  }
-
-
-  const lunchStart = new Date(start);
-  lunchStart.setHours(11, 0, 0, 0);
-
-  const lunchEnd = new Date(start);
-  lunchEnd.setHours(11, 45, 0, 0);
-
-  const overlapsLunch = start < lunchEnd && end > lunchStart;
-
-  if (overlapsLunch) {
-    return res.status(400).json({
-      error: 'Varauksia ei voi tehdä lounastauon aikana (11:00 - 11:45).'
-    });
-  }
-
-
   try {
-    const roomConflict = await prisma.tyojarjestys.findFirst({
-      where: { tilaId: Number(huoneId), alkaa: { lt: end }, paattyy: { gt: start } },
-    });
-    if (roomConflict) return res.status(409).json({ error: 'Room is already booked' });
+    const start = new Date(req.body.alkaa);
+    const end = new Date(req.body.paattyy);
 
-    const teacherConflict = await prisma.tyojarjestys.findFirst({
-      where: { opettajaId: Number(opettajaId), alkaa: { lt: end }, paattyy: { gt: start } },
-    });
-    if (teacherConflict) return res.status(409).json({ error: 'Teacher already has an event' });
+    const result = await prisma.$transaction(async (tx) => {
+      await CalendarService.validateEvent(tx, {
+        huoneId: req.body.huoneId,
+        opettajaId: req.body.opettajaId,
+        ryhmaId: req.body.ryhmaId,
+        start,
+        end
+      });
 
-    const groupConflict = await prisma.tyojarjestys.findFirst({
-      where: { ryhmaId: Number(ryhmaId), alkaa: { lt: end }, paattyy: { gt: start } },
-    });
-    if (groupConflict) return res.status(409).json({ error: 'Group already has an event' });
-
-    const tapahtuma = await prisma.tyojarjestys.create({
-      data: {
-        tilaId: Number(huoneId),
-        opettajaId: Number(opettajaId),
-        kurssiId: Number(kurssiId),
-        ryhmaId: Number(ryhmaId),
-        alkaa: start,
-        paattyy: end,
-      },
-      include: { tila: true, opettaja: true, kurssi: true },
+      return await tx.tyojarjestys.create({
+        data: {
+          tilaId: Number(req.body.huoneId),
+          opettajaId: Number(req.body.opettajaId),
+          kurssiId: Number(req.body.kurssiId),
+          ryhmaId: Number(req.body.ryhmaId),
+          alkaa: start,
+          paattyy: end,
+        },
+        include: { tila: true, opettaja: true, kurssi: true },
+      });
     });
 
-    res.status(201).json(tapahtuma);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};
+
+export const createManyEvents = async (req: Request<{}, {}, CalendarBody[]>, res: Response) => {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const created = [];
+      for (const event of req.body) {
+        const start = new Date(event.alkaa);
+        const end = new Date(event.paattyy);
+
+        await CalendarService.validateEvent(tx, {
+          huoneId: event.huoneId,
+          opettajaId: event.opettajaId,
+          ryhmaId: event.ryhmaId,
+          start,
+          end
+        });
+
+        const newEvent = await tx.tyojarjestys.create({
+          data: {
+            tilaId: Number(event.huoneId),
+            opettajaId: Number(event.opettajaId),
+            kurssiId: Number(event.kurssiId),
+            ryhmaId: Number(event.ryhmaId),
+            alkaa: start,
+            paattyy: end,
+          }
+        });
+        created.push(newEvent);
+      }
+      return created;
+    });
+
+    res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
