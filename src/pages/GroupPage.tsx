@@ -55,7 +55,7 @@ export default function GroupPage() {
   if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
-    <Container>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
         <Box sx={{ mb: 2 }}>
           <Button
