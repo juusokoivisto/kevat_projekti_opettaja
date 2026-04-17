@@ -21,6 +21,9 @@ export default function GroupPage() {
   const { data: rows = [], isLoading, isError } = useGroups()
   const invalidate = useInvalidate()
 
+  const [editingRow, setEditingRow] = useState<any | null>(null)
+
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'ryhmatunnus', headerName: 'Ryhmatunnus', flex: 1 },
@@ -38,6 +41,11 @@ export default function GroupPage() {
       alert(`Poisto epäonnistui: ${apiErr.error}`)
     }
   }
+    const handleEditRow = (id: any) => {
+    const row = rows.find(r => r.id === id)
+    setEditingRow(row)
+    setOpen(true)
+  }
 
   if (isLoading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -47,19 +55,18 @@ export default function GroupPage() {
   if (isError) return <Alert severity="error">Lataus epäonnistui</Alert>
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container>
       {user && (
         <Box sx={{ mb: 2 }}>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Lisää ryhmä
-          </Button>
-          <GroupFormDialog
-            open={open}
-            onClose={() => {
-              setOpen(false)
-              invalidate('groups')
+          <Button
+            variant="contained"
+            onClick={() => {
+              setEditingRow(null)
+              setOpen(true)
             }}
-          />
+          >
+            Lisää kurssi
+          </Button>
         </Box>
       )}
 
@@ -72,9 +79,21 @@ export default function GroupPage() {
           checkboxSelection
           autoHeight={false}
           onDeleteRows={handleDelete}
+          onEditRow={handleEditRow}
+
           sx={{ height: '100%', border: 'none' }}
         />
       </Paper>
+
+       <GroupFormDialog
+        open={open}
+        data={editingRow}
+        onClose={() => {
+          setOpen(false)
+          setEditingRow(null)
+          invalidate('groups')
+        }}
+      />
     </Container>
   )
 }
