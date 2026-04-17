@@ -28,10 +28,10 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
 
   useEffect(() => {
     if (data) {
-      setTeacherFirstName(data.teacherFirstName || '');
-      setTeacherLastName(data.teacherLastName || '');
-      setEmail(data.email || '');
-      setHoursPerYear(String(data.hoursPerYear || ''));
+      setTeacherFirstName(data.nimi || '');
+      setTeacherLastName(data.sukunimi || '');
+      setEmail(data.sahkoposti || '');
+      setHoursPerYear(String(data.sopimustunnit || ''));
     } else {
       reset();
     }
