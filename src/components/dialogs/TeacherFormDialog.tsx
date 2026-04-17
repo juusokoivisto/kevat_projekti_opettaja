@@ -1,113 +1,118 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
-import * as T from '../../api/types/api.types';
-
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Alert
+  TextField, Button, Box
 } from '@mui/material';
 
 interface TeacherFormDialogProps {
   open: boolean;
   onClose: () => void;
+  data?: any | null;
 }
 
-const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose }) => {
+const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, data }) => {
   const [teacherFirstName, setTeacherFirstName] = useState('');
   const [teacherLastName, setTeacherLastName] = useState('');
   const [email, setEmail] = useState('');
   const [hoursPerYear, setHoursPerYear] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    setHoursPerYear(value);
-  };
-
-  const handleAdd = async () => {
-    if (!teacherFirstName || !teacherLastName || !email) {
-      setError("Täytä kaikki pakolliset kentät.");
-      return;
-    }
-
-    try {
-      await api.teachers.create({
-        nimi: teacherFirstName,
-        sukunimi: teacherLastName,
-        sahkoposti: email,
-        sopimustunnit: Number(hoursPerYear) || 0,
-        vapaaResurssi: Number(hoursPerYear) || 0
-      });
-
-      handleClose();
-    } catch (err) {
-      const apiErr = err as T.ApiError;
-      setError(apiErr.error);
-    }
-  };
-
-  const handleClose = () => {
+  const reset = () => {
     setTeacherFirstName('');
     setTeacherLastName('');
     setEmail('');
     setHoursPerYear('');
     setError(null);
-    onClose();
   };
 
+  useEffect(() => {
+    if (data) {
+      setTeacherFirstName(data.teacherFirstName || '');
+      setTeacherLastName(data.teacherLastName || '');
+      setEmail(data.email || '');
+      setHoursPerYear(String(data.hoursPerYear || ''));
+    } else {
+      reset();
+    }
+  }, [data, open]);
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        nimi: teacherFirstName,
+        sukunimi: teacherLastName,
+        sahkoposti: email,
+        sopimustunnit: Number(hoursPerYear),
+      };
+
+      if (data) {
+        await api.teachers.update(data.id, payload);
+      } else {
+        await api.teachers.create(payload as any);
+      }
+
+      reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.error || 'Tallennus epäonnistui');
+    }
+  };
+
+  const isInvalid =
+    !teacherFirstName || !teacherLastName || !email || !hoursPerYear;
+
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Lisää uusi opettaja</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {data ? 'Muokkaa opettajaa' : 'Lisää opettaja'}
+      </DialogTitle>
+
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Box sx={{ color: 'red' }}>
+              {error}
+            </Box>
+          )}
 
           <TextField
             label="Etunimi"
-            variant="outlined"
             value={teacherFirstName}
             onChange={(e) => setTeacherFirstName(e.target.value)}
-            fullWidth
-            required
           />
+
           <TextField
             label="Sukunimi"
-            variant="outlined"
             value={teacherLastName}
             onChange={(e) => setTeacherLastName(e.target.value)}
-            fullWidth
-            required
           />
+
           <TextField
             label="Sähköposti"
-            variant="outlined"
-            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            required
           />
+
           <TextField
             label="Sopimustunnit (h/vuosi)"
-            variant="outlined"
             value={hoursPerYear}
-            onChange={handleHoursChange}
-            fullWidth
+            onChange={(e) => setHoursPerYear(e.target.value)}
             helperText="Syötä vain numeroita"
           />
+
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose}>Peruuta</Button>
+
+      <DialogActions>
+        <Button onClick={onClose}>Peruuta</Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleAdd}
-          disabled={!teacherFirstName || !teacherLastName || !email}
+          onClick={handleSubmit}
+          disabled={isInvalid}
         >
-          Lisää opettaja
+          {data ? 'Tallenna' : 'Lisää'}
         </Button>
       </DialogActions>
     </Dialog>

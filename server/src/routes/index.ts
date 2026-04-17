@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { login } from '../controllers/auth.controller';
-import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../controllers/teacher.controller';
+import { getTeachers, createTeacher, deleteTeachers, getTeacherById, updateTeacher } from '../controllers/teacher.controller';
 import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
@@ -17,7 +17,7 @@ router.route('/opettajat')
   .get(getTeachers)
   .post(authenticateToken, createTeacher)
   .delete(authenticateToken, deleteTeachers);
-
+router.put('/opettajat/:id', authenticateToken, updateTeacher);
 router.get('/opettajat/:id', getTeacherById);
 
 router.route('/luokkahuoneet')

@@ -32,6 +32,11 @@ export const api = {
       request<T.Teacher>(`/opettajat/${id}`, {
         method: 'GET'
       }),
+    update: (id: number, data: any) =>
+      request<T.Teacher>(`/opettajat/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      })
   },
 
   rooms: {
