@@ -1,112 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
-import * as T from '../../api/types/api.types';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Alert, Collapse
+  TextField, Button, Box
 } from '@mui/material';
 
 interface ClassroomFormDialogProps {
   open: boolean;
-  onClose: (refresh?: boolean) => void;
+  onClose: () => void;
+  data?: any | null;
 }
 
-const handleIntChange = (setter: (v: string) => void, clearError: () => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-  setter(e.target.value.replace(/\D/g, ''));
-  clearError();
-};
-
-const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose }) => {
+const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose, data }) => {
   const [huoneenNumero, setHuoneenNumero] = useState('');
   const [kapasiteetti, setKapasiteetti] = useState('');
   const [tyyppi, setTyyppi] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const resetForm = () => {
+  const reset = () => {
     setHuoneenNumero('');
     setKapasiteetti('');
     setTyyppi('');
     setError(null);
-    setLoading(false);
   };
 
-  const handleAdd = async () => {
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    if (data) {
+      setHuoneenNumero(data.huoneenNumero || '');
+      setKapasiteetti(String(data.kapasiteetti || ''));
+      setTyyppi(data.tyyppi || '');
+} else {
+  reset();
+      }
+    }, [data, open]);
 
-    try {
-      await api.rooms.create({
-        huoneenNumero,
-        kapasiteetti: parseInt(kapasiteetti, 10),
-        tyyppi
-      });
-      resetForm();
-      onClose(true);
-    } catch (err) {
-      const apiErr = err as T.ApiError;
-      setError(apiErr.error || 'Virhe luokkahuoneen luonnissa');
-    } finally {
-      setLoading(false);
+const handleSubmit = async () => {
+  try {
+    const payload = {
+      huoneenNumero,
+      kapasiteetti: Number(kapasiteetti),
+      tyyppi
+    };
+
+    if (data) {
+      await api.rooms.update(data.id, payload);
+    } else {
+      await api.rooms.create(payload);
     }
-  };
 
-  const handleClose = () => {
-    resetForm();
+    reset();
     onClose();
-  };
+  } catch (err: any) {
+    setError(err?.error || 'Tallennus epäonnistui');
+  }
+};
 
-  const isInvalid = !huoneenNumero || !kapasiteetti || !tyyppi;
+const isInvalid =
+    !huoneenNumero || !kapasiteetti || !tyyppi;
 
-  return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Lisää uusi tila</DialogTitle>
+return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {data ? 'Muokkaa huonetta' : 'Lisää huone'}
+      </DialogTitle>
+
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
-          <Collapse in={!!error}>
-            <Alert severity="error" sx={{ mb: 1 }}>
+
+          {error && (
+            <Box sx={{ color: 'red' }}>
               {error}
-            </Alert>
-          </Collapse>
+            </Box>
+          )}
 
           <TextField
-            label="Huoneen numero (esim. A102)"
-            variant="outlined"
+            label="Huoneen numero"
             value={huoneenNumero}
-            onChange={(e) => { setHuoneenNumero(e.target.value); setError(null); }}
-            fullWidth
-            required
-            disabled={loading}
+            onChange={(e) => setHuoneenNumero(e.target.value)}
           />
+
           <TextField
-            label="Kapasiteetti (henkilömäärä)"
-            variant="outlined"
+            label="Kapasiteetti"
             value={kapasiteetti}
-            onChange={handleIntChange(setKapasiteetti, () => setError(null))}
-            fullWidth
-            required
-            disabled={loading}
+            onChange={(e) => setKapasiteetti(e.target.value)}
           />
+
           <TextField
-            label="Tyyppi (esim. Luokka, Labra, Auditorio)"
-            variant="outlined"
+            label="Tyyppi"
             value={tyyppi}
-            onChange={(e) => { setTyyppi(e.target.value); setError(null); }}
-            fullWidth
-            required
-            disabled={loading}
+            onChange={(e) => setTyyppi(e.target.value)}
           />
+
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={loading}>Peruuta</Button>
+
+      <DialogActions>
+        <Button onClick={onClose}>Peruuta</Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleAdd}
-          disabled={isInvalid || loading}
+          onClick={handleSubmit}
+          disabled={isInvalid}
         >
-          {loading ? 'Lisätään...' : 'Lisää tila'}
+          {data ? 'Tallenna' : 'Lisää'}
         </Button>
       </DialogActions>
     </Dialog>
