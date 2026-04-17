@@ -54,3 +54,27 @@ export const getTeacherById = async (req: Request<{ id: string }>, res: Response
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+export const updateTeacher = async (
+  req: Request<{ id: string }, {}, TeacherBody>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { nimi, sukunimi, sahkoposti, sopimustunnit } = req.body;
+
+  try {
+    const updated = await prisma.opettaja.update({
+      where: { id: Number(id) },
+      data: {
+        nimi,
+        sukunimi,
+        sahkoposti,
+        sopimustunnit: Number(sopimustunnit),
+      }
+    });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};

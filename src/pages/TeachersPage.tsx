@@ -17,11 +17,14 @@ import DatagridComponent from '../components/DatagridComponent'
 import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 
 export default function TeachersPage() {
-  const [open, setOpen] = useState(false)
+
   const { user } = useContext(UserContext)
   const navigate = useNavigate()
   const { data: rows = [], isLoading, isError } = useTeachers()
   const invalidate = useInvalidate()
+
+  const [open, setOpen] = useState(false)
+  const [editingRow, setEditingRow] = useState<any | null>(null)
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -32,11 +35,6 @@ export default function TeachersPage() {
     { field: 'vapaaResurssi', headerName: 'Vapaa resurssi', width: 160 }
   ]
 
-  const handleDialogClose = () => {
-    setOpen(false)
-    invalidate('teachers')
-  }
-
   const handleDelete = async (ids: (string | number)[]) => {
     try {
       await api.teachers.deleteMany(ids as number[])
@@ -45,6 +43,12 @@ export default function TeachersPage() {
       const apiErr = err as T.ApiError
       alert(`Poisto epäonnistui: ${apiErr.error}`)
     }
+  }
+
+  const handleEditRow = (id: any) => {
+    const row = rows.find(r => r.id === id)
+    setEditingRow(row)
+    setOpen(true)
   }
 
   if (isLoading) return (
@@ -60,11 +64,13 @@ export default function TeachersPage() {
         <Box sx={{ mb: 2 }}>
           <Button
             variant="contained"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditingRow(null)
+              setOpen(true)
+            }}
           >
             Lisää opettaja
           </Button>
-          <TeacherFormDialog open={open} onClose={handleDialogClose} />
         </Box>
       )}
 
@@ -76,12 +82,23 @@ export default function TeachersPage() {
           pageSizeOptions={[5, 10]}
           checkboxSelection
           autoHeight={false}
-          onDeleteRows={handleDelete}
           showOpenButton={true}
           onOpenRow={(id) => navigate(`/teachers/${id}`)}
+          onDeleteRows={handleDelete}
+          onEditRow={handleEditRow}
           sx={{ height: '100%', border: 'none' }}
         />
       </Paper>
+
+      <TeacherFormDialog
+        open={open}
+        data={editingRow}
+        onClose={() => {
+          setOpen(false)
+          setEditingRow(null)
+          invalidate('teachers')
+        }}
+      />
     </Container>
   )
 }
