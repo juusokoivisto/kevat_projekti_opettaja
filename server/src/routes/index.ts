@@ -5,13 +5,7 @@ import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../c
 import { getRooms, createRoom, deleteRooms } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
-import {
-  getAllEvents,
-  getTeacherEvents,
-  createEvent,
-  createManyEvents,
-  deleteEvent
-} from '../controllers/calendar.controller';
+import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent } from '../controllers/calendar.controller';
 
 const router = Router();
 
