@@ -35,3 +35,26 @@ export const deleteRooms = async (req: Request<{}, {}, DeleteRequest>, res: Resp
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+export const updateRoom = async (
+  req: Request<{ id: string }, {}, RoomBody>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { huoneenNumero, kapasiteetti, tyyppi } = req.body;
+
+  try {
+    const updated = await prisma.tila.update({
+      where: { id: Number(id) },
+      data: {
+        huoneenNumero,
+        kapasiteetti: Number(kapasiteetti),
+        tyyppi
+      }
+    });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};

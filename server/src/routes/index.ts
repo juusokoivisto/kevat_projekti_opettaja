@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { login } from '../controllers/auth.controller';
 import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../controllers/teacher.controller';
-import { getRooms, createRoom, deleteRooms } from '../controllers/room.controller';
+import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
 import {
@@ -29,6 +29,7 @@ router.route('/luokkahuoneet')
   .get(getRooms)
   .post(authenticateToken, createRoom)
   .delete(authenticateToken, deleteRooms);
+router.put('/luokkahuoneet/:id', authenticateToken, updateRoom);
 
 router.route('/kurssit')
   .get(getCourses)

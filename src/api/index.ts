@@ -46,6 +46,11 @@ export const api = {
         method: 'DELETE',
         body: JSON.stringify({ ids })
       }),
+    update: (id: number, data: any) =>
+      request<T.Classroom>(`/luokkahuoneet/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      })
   },
 
   courses: {
