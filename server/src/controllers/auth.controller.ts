@@ -43,6 +43,7 @@ export const login = async (req: Request, res: Response) => {
       token
     });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

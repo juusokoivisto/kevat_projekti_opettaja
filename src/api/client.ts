@@ -5,6 +5,11 @@ const BASE: string = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 async function handleRes<T>(res: Response): Promise<T> {
   if (res.status === 204) return {} as T;
 
+  const newToken = res.headers.get('x-new-token');
+  if (newToken) {
+    localStorage.setItem('token', newToken);
+  }
+
   if (res.status === 401) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

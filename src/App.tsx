@@ -17,6 +17,7 @@ import CoursePage from './pages/CoursePage.tsx'
 import TeacherDetailPage from './pages/TeacherDetailPage';
 import type { AuthUser } from './api/types/api.types'
 import getDesignTokens from './Theme.tsx'
+import { jwtDecode } from 'jwt-decode';
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -52,12 +53,25 @@ function App() {
 
   const [user, setUserState] = useState<AuthUser | null>(() => {
     const savedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+
+    if (!savedUser || !token) return null;
+
     try {
-      return savedUser ? JSON.parse(savedUser) : null;
+      const decoded: { exp: number } = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      if (decoded.exp < currentTime) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        return null;
+      }
+
+      return JSON.parse(savedUser);
     } catch (e) {
       return null;
     }
-  })
+  });
 
   const setUser = (u: AuthUser | null) => {
     if (u) {
