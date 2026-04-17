@@ -36,3 +36,27 @@ export const deleteGroups = async (req: Request<{}, {}, DeleteRequest>, res: Res
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
+export const updateGroups = async (
+  req: Request<{ id: string }, {}, GroupBody>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { ryhmatunnus, aloitusvuosi, opiskelijamaara, tutkintoOhjelma } = req.body;
+
+  try {
+    const updated = await prisma.opiskelijaryhma.update({
+      where: { id: Number(id) },
+      data: {
+        ryhmatunnus,
+        aloitusvuosi: Number(aloitusvuosi),
+        opiskelijamaara: Number(opiskelijamaara),
+        tutkintoOhjelma
+      }
+    });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};

@@ -4,8 +4,9 @@ import { login } from '../controllers/auth.controller';
 import { getTeachers, createTeacher, deleteTeachers, getTeacherById } from '../controllers/teacher.controller';
 import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
-import { getGroups, createGroup, deleteGroups } from '../controllers/group.controller';
+import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
 import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent } from '../controllers/calendar.controller';
+import { g } from '@faker-js/faker/dist/airline-eVQV6kbz';
 
 const router = Router();
 
@@ -35,6 +36,8 @@ router.route('/opiskelijaryhmat')
   .get(getGroups)
   .post(authenticateToken, createGroup)
   .delete(authenticateToken, deleteGroups);
+  router.put('/opiskelijaryhmat/:id', authenticateToken, updateGroups);
+
 
 router.route('/kalenteri')
   .get(getAllEvents)

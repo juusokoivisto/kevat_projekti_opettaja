@@ -84,6 +84,11 @@ export const api = {
         method: 'DELETE',
         body: JSON.stringify({ ids })
       }),
+    update: (id: number, data: any) =>
+      request<T.StudentGroup>(`/opiskelijaryhmat/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      })
   },
 
   calendar: {

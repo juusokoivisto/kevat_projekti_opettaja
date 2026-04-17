@@ -1,24 +1,65 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
-import * as T from '../../api/types/api.types';
-
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Alert
+  TextField, Button, Box
 } from '@mui/material';
 
 interface GroupFormDialogProps {
   open: boolean;
   onClose: () => void;
+  data?: any | null;
+  
 }
 
-const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
+const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }) => {
   const [groupId, setGroupId] = useState('');
   const [startingYear, setStartingYear] = useState('');
   const [studentCount, setStudentCount] = useState('');
   const [degreeProgram, setDegreeProgram] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+    const reset = () => {
+    setGroupId('');
+    setStartingYear('');
+    setStudentCount('');
+    setDegreeProgram('');
+    setError(null);
+  };
+
+    useEffect(() => {
+      if (data) {
+        setGroupId(data.ryhmatunnus || '');
+        setStartingYear(String(data.aloitusvuosi || ''));
+        setStudentCount(String(data.opiskelijamaara || ''));
+        setDegreeProgram(data.tutkintoOhjelma || '');
+      } else {
+        reset();
+      }
+    }, [data, open]);
+  
+      const handleSubmit = async () => {
+        try {
+          const payload = {
+            ryhmatunnus: groupId,
+            aloitusvuosi: Number(startingYear),
+            opiskelijamaara: Number(studentCount),
+            tutkintoOhjelma: degreeProgram
+          };
+    
+          if (data) {
+            await api.groups.update(data.id, payload);
+          } else {
+            await api.groups.create(payload);
+          }
+                reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.error || 'Tallennus epäonnistui');
+    }
+  };
+
+
 
   const handleNumericChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,26 +67,6 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
       setter(value);
     };
 
-  const handleAdd = async () => {
-    if (!groupId || !startingYear || !studentCount || !degreeProgram) {
-      setError("Täytä kaikki pakolliset kentät.");
-      return;
-    }
-
-    try {
-      await api.groups.create({
-        ryhmatunnus: groupId,
-        aloitusvuosi: Number(startingYear),
-        opiskelijamaara: Number(studentCount),
-        tutkintoOhjelma: degreeProgram
-      });
-
-      handleClose();
-    } catch (err) {
-      const apiErr = err as T.ApiError;
-      setError(apiErr.error);
-    }
-  };
 
   const handleClose = () => {
     setGroupId('');
@@ -55,14 +76,23 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
     setError(null);
     onClose();
   };
+  const isInvalid =
+    !groupId || !startingYear || !studentCount || !degreeProgram;
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Lisää uusi opiskelijaryhmä</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {data ? 'Muokkaa opiskelijaryhmää' : 'Lisää opiskelijaryhmä'}
+      </DialogTitle>
+
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Box sx={{ color: 'red' }}>
+              {error}
+            </Box>
+          )}
 
           <TextField
             label="Ryhmätunnus (esim. TiVi22S1)"
@@ -103,10 +133,10 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleAdd}
-          disabled={!groupId || !startingYear || !studentCount || !degreeProgram}
+          onClick={handleSubmit}
+          disabled={isInvalid}
         >
-          Lisää ryhmä
+          {data ? 'Tallenna' : 'Lisää'}
         </Button>
       </DialogActions>
     </Dialog>
