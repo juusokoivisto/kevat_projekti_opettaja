@@ -12,6 +12,7 @@ export interface Teacher {
   sahkoposti: string;
   sopimustunnit: number;
   vapaaResurssi: number;
+  vari?: string | null;
 }
 
 export interface StudentGroup {

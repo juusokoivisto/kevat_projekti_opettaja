@@ -4,6 +4,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
 } from '@mui/material';
+import { HexColorPicker } from 'react-colorful';
 
 interface TeacherFormDialogProps {
   open: boolean;
@@ -16,6 +17,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
   const [teacherLastName, setTeacherLastName] = useState('');
   const [email, setEmail] = useState('');
   const [hoursPerYear, setHoursPerYear] = useState('');
+  const [color, setColor] = useState('#aabbcc');
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
@@ -32,6 +34,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       setTeacherLastName(data.sukunimi || '');
       setEmail(data.sahkoposti || '');
       setHoursPerYear(String(data.sopimustunnit || ''));
+      setColor(data.vari || '#aabbcc');
     } else {
       reset();
     }
@@ -44,6 +47,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
         sukunimi: teacherLastName,
         sahkoposti: email,
         sopimustunnit: Number(hoursPerYear),
+        vari: color,
       };
 
       if (data) {
@@ -101,6 +105,20 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
             onChange={(e) => setHoursPerYear(e.target.value)}
             helperText="Syötä vain numeroita"
           />
+
+          <Box>
+            <Box sx={{ mb: 1 }}>Valitse väri</Box>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <HexColorPicker color={color} onChange={setColor} />
+              <TextField
+                label="HEX"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                helperText="Syötä hex-koodi, esim. #ff0000"
+              />
+              <Box sx={{ width: 36, height: 36, borderRadius: 1, border: '1px solid #ccc', background: color }} />
+            </Box>
+          </Box>
 
         </Box>
       </DialogContent>
