@@ -12,10 +12,10 @@ export const getTeachers = async (_req: Request, res: Response) => {
 };
 
 export const createTeacher = async (req: Request<{}, {}, TeacherBody>, res: Response) => {
-  const { nimi, sukunimi, sahkoposti, sopimustunnit = 0, vapaaResurssi = 0 } = req.body;
+  const { nimi, sukunimi, sahkoposti, sopimustunnit = 0, vapaaResurssi = 0, vari } = req.body;
   try {
     const opettaja = await prisma.opettaja.create({
-      data: { nimi, sukunimi, sahkoposti, sopimustunnit, vapaaResurssi }
+      data: { nimi, sukunimi, sahkoposti, sopimustunnit, vapaaResurssi, vari }
     });
     res.status(201).json(opettaja);
   } catch (err) {
@@ -60,7 +60,7 @@ export const updateTeacher = async (
   res: Response
 ) => {
   const { id } = req.params;
-  const { nimi, sukunimi, sahkoposti, sopimustunnit } = req.body;
+  const { nimi, sukunimi, sahkoposti, sopimustunnit, vari } = req.body;
 
   try {
     const updated = await prisma.opettaja.update({
@@ -70,6 +70,7 @@ export const updateTeacher = async (
         sukunimi,
         sahkoposti,
         sopimustunnit: Number(sopimustunnit),
+        vari: vari ?? undefined,
       }
     });
 

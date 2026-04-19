@@ -4,6 +4,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box
 } from '@mui/material';
+import { HexColorPicker } from 'react-colorful';
 
 interface TeacherFormDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
   const [email, setEmail] = useState('');
   const [hoursPerYear, setHoursPerYear] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [color, setColor] = useState<string>('#1976d2');
 
   const reset = () => {
     setTeacherFirstName('');
@@ -24,6 +26,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
     setEmail('');
     setHoursPerYear('');
     setError(null);
+    setColor('#1976d2');
   };
 
   useEffect(() => {
@@ -32,6 +35,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       setTeacherLastName(data.sukunimi || '');
       setEmail(data.sahkoposti || '');
       setHoursPerYear(String(data.sopimustunnit || ''));
+      setColor(data.vari || '#1976d2');
     } else {
       reset();
     }
@@ -44,6 +48,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
         sukunimi: teacherLastName,
         sahkoposti: email,
         sopimustunnit: Number(hoursPerYear),
+        vari: color,
       };
 
       if (data) {
@@ -101,6 +106,19 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
             onChange={(e) => setHoursPerYear(e.target.value)}
             helperText="Syötä vain numeroita"
           />
+
+            <Box>
+              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ width: 28, height: 28, background: color, borderRadius: 1, border: '1px solid rgba(0,0,0,0.12)' }} />
+                <Box>
+                  <div style={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>Väri</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.6)' }}>{color}</div>
+                </Box>
+              </Box>
+              <Box sx={{ maxWidth: 320 }}>
+                <HexColorPicker color={color} onChange={setColor} />
+              </Box>
+            </Box>
 
         </Box>
       </DialogContent>
