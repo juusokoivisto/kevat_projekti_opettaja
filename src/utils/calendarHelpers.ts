@@ -40,7 +40,7 @@ export const formatCalendarEvent = (
     title: e.kurssi?.nimi || 'Tapahtuma',
     start: e.alkaa,
     end: e.paattyy,
-    backgroundColor: darkMode ? '#1976d2' : '#3788d8',
+    backgroundColor: e.opettaja?.vari || (darkMode ? '#1976d2' : '#3788d8'),
     extendedProps: {
       ryhmaId: e.ryhmaId,
       ryhmaTunnus: e.ryhma?.ryhmatunnus || 'N/A',

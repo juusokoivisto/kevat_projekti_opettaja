@@ -10,6 +10,7 @@ export interface TeacherBody {
   sahkoposti: string;
   sopimustunnit?: number;
   vapaaResurssi?: number;
+  vari?: string;
 }
 
 export interface RoomBody {
