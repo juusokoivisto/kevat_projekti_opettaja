@@ -62,14 +62,14 @@ export default function TeacherDetailsPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 6, mb: 4, mt: 2 }}>
         <Box
           onClick={() => { if (user?.username === 'ADMIN') setEditOpen(true) }}
-          sx={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: '50%', 
-            background: teacher.vari || '#1976d2', 
-            boxShadow: 2, 
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: teacher.vari || '#1976d2',
+            boxShadow: 2,
             cursor: user?.username === 'ADMIN' ? 'pointer' : 'default',
-            flexShrink: 0 
+            flexShrink: 0
           }}
           title={user?.username === 'ADMIN' ? 'Muokkaa opettajan väriä' : ''}
         />

@@ -145,6 +145,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   }, [rawEvents, filters, darkMode])
 
   const handleEventDidMount = useCallback((info: any) => {
+    const bgColor = info.event.backgroundColor
+    if (bgColor) {
+      info.el.style.borderColor = bgColor
+    }
+
     info.el.addEventListener('contextmenu', (e: MouseEvent) => {
       e.preventDefault()
       setSelectedEventId(info.event.id)
