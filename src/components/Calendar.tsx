@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
-import { useState, useContext, useMemo } from 'react'
+import { useState, useContext, useMemo, useCallback } from 'react'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext, UserContext } from '../App'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
@@ -19,10 +19,85 @@ import {
   Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import type { EventContentArg } from '@fullcalendar/core'
 
 interface FCResource {
   id: string;
   title: string;
+}
+
+const renderEventContent = (eventInfo: EventContentArg) => {
+  const {
+    opettaja,
+    opettajaLyhyt,
+    ryhmaTunnus,
+    huoneNumero,
+    opettajaId
+  } = eventInfo.event.extendedProps
+  const title = eventInfo.event.title
+
+  return (
+    <Tooltip title={opettaja || ''} arrow placement="top" disableInteractive>
+      <Box sx={{
+        width: '100%',
+        height: '100%',
+        padding: '2px 4px',
+        display: 'flex',
+        flexDirection: 'column',
+        color: '#fff',
+        overflow: 'hidden',
+        boxSizing: 'border-box'
+      }}>
+        <Typography variant="caption" sx={{
+          fontWeight: 'bold',
+          lineHeight: 1.1,
+          fontSize: '0.75rem',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}>
+          {title}
+        </Typography>
+
+        <Typography variant="caption" sx={{
+          fontSize: '0.65rem',
+          lineHeight: 1,
+          opacity: 0.9
+        }}>
+          {ryhmaTunnus}
+        </Typography>
+
+        <Typography variant="caption" sx={{
+          fontSize: '0.65rem',
+          lineHeight: 1,
+          opacity: 0.9
+        }}>
+          {huoneNumero}
+        </Typography>
+
+        {opettajaLyhyt && (
+          <Typography
+            variant="caption"
+            component="a"
+            href={`/teachers/${opettajaId}`}
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              mt: 'auto',
+              alignSelf: 'flex-end',
+              fontWeight: 'bold',
+              fontSize: '0.7rem',
+              color: 'inherit',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            {opettajaLyhyt}
+          </Typography>
+        )}
+      </Box>
+    </Tooltip>
+  )
 }
 
 export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
@@ -61,13 +136,21 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
     return rawEvents
       .map(e => formatCalendarEvent(e, darkMode))
       .filter(e => {
-        if (filters.room && e.resourceId !== filters.room) return false;
-        if (filters.teacher && e.extendedProps.opettaja !== filters.teacher) return false;
-        if (filters.group !== '' && e.extendedProps.ryhmaId !== filters.group) return false;
-        if (filters.course && e.extendedProps.kurssi !== filters.course) return false;
-        return true;
-      });
-  }, [rawEvents, filters, darkMode]);
+        if (filters.room && e.resourceId !== filters.room) return false
+        if (filters.teacher && e.extendedProps.opettaja !== filters.teacher) return false
+        if (filters.group !== '' && e.extendedProps.ryhmaId !== filters.group) return false
+        if (filters.course && e.extendedProps.kurssi !== filters.course) return false
+        return true
+      })
+  }, [rawEvents, filters, darkMode])
+
+  const handleEventDidMount = useCallback((info: any) => {
+    info.el.addEventListener('contextmenu', (e: MouseEvent) => {
+      e.preventDefault()
+      setSelectedEventId(info.event.id)
+      setMenuAnchor(info.el as HTMLElement)
+    })
+  }, [])
 
   return (
     <Box sx={{ p: 1 }}>
@@ -128,94 +211,15 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             center: 'title',
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
           }}
-          eventDidMount={(info) => {
-            info.el.addEventListener('contextmenu', (e) => {
-              e.preventDefault()
-              setSelectedEventId(info.event.id)
-              setMenuAnchor(info.el as HTMLElement)
-            })
-          }}
+          eventDidMount={handleEventDidMount}
           resources={resources}
           events={[...filteredEvents, LunchBreak]}
           resourceAreaHeaderContent='Tilat'
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-          eventContent={(eventInfo) => {
-            const {
-              opettaja,
-              opettajaLyhyt,
-              ryhmaTunnus,
-              huoneNumero,
-              opettajaId
-            } = eventInfo.event.extendedProps;
-            const title = eventInfo.event.title;
-
-            return (
-              <Tooltip title={opettaja || ''} arrow placement="top" disableInteractive>
-                <Box sx={{
-                  width: '100%',
-                  height: '100%',
-                  padding: '2px 4px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  color: '#fff',
-                  overflow: 'hidden',
-                  boxSizing: 'border-box'
-                }}>
-                  <Typography variant="caption" sx={{
-                    fontWeight: 'bold',
-                    lineHeight: 1.1,
-                    fontSize: '0.75rem',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>
-                    {title}
-                  </Typography>
-
-                  <Typography variant="caption" sx={{
-                    fontSize: '0.65rem',
-                    lineHeight: 1,
-                    opacity: 0.9
-                  }}>
-                    {ryhmaTunnus}
-                  </Typography>
-
-                  <Typography variant="caption" sx={{
-                    fontSize: '0.65rem',
-                    lineHeight: 1,
-                    opacity: 0.9
-                  }}>
-                    {huoneNumero}
-                  </Typography>
-
-                  {opettajaLyhyt && (
-                    <Typography
-                      variant="caption"
-                      component="a"
-                      href={`/teachers/${opettajaId}`}
-                      onClick={(e) => e.stopPropagation()}
-                      sx={{
-                        mt: 'auto',
-                        alignSelf: 'flex-end',
-                        fontWeight: 'bold',
-                        fontSize: '0.7rem',
-                        color: 'inherit',
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {opettajaLyhyt}
-                    </Typography>
-                  )}
-                </Box>
-              </Tooltip>
-            )
-          }}
+          eventContent={renderEventContent}
         />
+
         {user && menuAnchor && (
           <Menu
             anchorEl={menuAnchor}
@@ -238,24 +242,20 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             </MenuItem>
           </Menu>
         )}
+
         <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
           <DialogTitle>Vahvista poisto</DialogTitle>
-
           <DialogContent>
             Haluatko varmasti poistaa tämän tapahtuman?
           </DialogContent>
-
           <DialogActions>
             <Button onClick={() => setConfirmOpen(false)}>
               Peruuta
             </Button>
-
             <Button
               color="error"
               onClick={() => {
-                if (selectedEventId) {
-                  deleteEventMutation.mutate(selectedEventId)
-                }
+                if (selectedEventId) deleteEventMutation.mutate(selectedEventId)
                 setConfirmOpen(false)
                 setSelectedEventId(null)
               }}

@@ -1,23 +1,26 @@
-import './App.css'
 import * as React from 'react'
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
-import MainPage from './pages/MainPage.tsx'
-import AdminPanel from './pages/AdminPage.tsx'
-import TeachersPage from './pages/TeachersPage.tsx'
-import ClassroomPage from './pages/ClassroomPage.tsx'
+import CircularProgress from '@mui/material/CircularProgress'
+
 import Navbar from './components/Navbar.tsx'
 import Footer from './components/Footer.tsx'
 import Login from './components/Login.tsx'
-import GroupPage from './pages/GroupPage.tsx'
-import CoursePage from './pages/CoursePage.tsx'
-import TeacherDetailPage from './pages/TeacherDetailPage';
+
+const MainPage = lazy(() => import('./pages/MainPage.tsx'))
+const AdminPanel = lazy(() => import('./pages/AdminPage.tsx'))
+const TeachersPage = lazy(() => import('./pages/TeachersPage.tsx'))
+const ClassroomPage = lazy(() => import('./pages/ClassroomPage.tsx'))
+const GroupPage = lazy(() => import('./pages/GroupPage.tsx'))
+const CoursePage = lazy(() => import('./pages/CoursePage.tsx'))
+const TeacherDetailPage = lazy(() => import('./pages/TeacherDetailPage'))
+
 import type { AuthUser } from './api/types/api.types'
-import getDesignTokens from './Theme.tsx'
-import { jwtDecode } from 'jwt-decode';
+import { getDesignTokens } from './Theme.tsx'
+import { jwtDecode } from 'jwt-decode'
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -85,6 +88,12 @@ function App() {
 
   const [loginOpen, setLoginOpen] = useState(false)
 
+  const PageLoader = () => (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <CircularProgress />
+    </Box>
+  )
+
   return (
     <ColorModeContext.Provider value={colorMode}>
       <UserContext.Provider value={{ user, setUser }}>
@@ -92,20 +101,18 @@ function App() {
           <CssBaseline />
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar onLoginClick={() => setLoginOpen(true)} />
-            <Box component="main" sx={{
-              flexGrow: 1,
-              pt: { xs: 8, sm: 9 },
-              pb: 4
-            }}>
-              <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/teachers" element={<TeachersPage />} />
-                <Route path="/classrooms" element={<ClassroomPage />} />
-                <Route path="/group" element={<GroupPage />} />
-                <Route path="/courses" element={<CoursePage />} />
-                <Route path="/teachers/:id" element={<TeacherDetailPage />} />
-              </Routes>
+            <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9 }, pb: 4 }}>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/teachers" element={<TeachersPage />} />
+                  <Route path="/classrooms" element={<ClassroomPage />} />
+                  <Route path="/group" element={<GroupPage />} />
+                  <Route path="/courses" element={<CoursePage />} />
+                  <Route path="/teachers/:id" element={<TeacherDetailPage />} />
+                </Routes>
+              </Suspense>
             </Box>
             <Footer />
           </Box>

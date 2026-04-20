@@ -1,9 +1,10 @@
-import { useContext, useState } from 'react'
-import Calendar from './../components/Calendar.tsx'
+import { useContext, useState, lazy } from 'react'
 import { Box, Button, Container, Paper } from '@mui/material'
 import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
 import { UserContext } from '../App'
 import { useInvalidate } from '../hooks/useQueries'
+
+const Calendar = lazy(() => import('./../components/Calendar.tsx'))
 
 export default function MainPage() {
   const [open, setOpen] = useState(false)

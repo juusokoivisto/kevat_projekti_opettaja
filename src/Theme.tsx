@@ -14,8 +14,10 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       }),
   },
   typography: {
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: '"Roboto", sans-serif',
+    h1: { fontFamily: '"Roboto", sans-serif', fontWeight: 600 },
+    h2: { fontFamily: '"Roboto", sans-serif', fontWeight: 600 },
+    h3: { fontFamily: '"Roboto", sans-serif', fontWeight: 600 },
+    button: { textTransform: 'none', fontWeight: 500, letterSpacing: '0.01em' },
   },
 });
-
-export default getDesignTokens;
