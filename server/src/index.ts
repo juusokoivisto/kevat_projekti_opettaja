@@ -4,6 +4,7 @@ import cors from 'cors';
 import routes from './routes';
 import { logger } from './config/logger';
 import { requestLogger } from './middleware/requestLogger';
+import { slidingSession } from './middleware/refreshToken';
 
 if (!process.env.JWT_SECRET) {
   logger.error('FATAL ERROR: JWT_SECRET is not defined in .env');
@@ -12,9 +13,10 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 app.use(requestLogger);
+app.use(slidingSession);
 
 app.use('/', routes);
 

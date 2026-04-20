@@ -221,7 +221,13 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogTitle sx={{ pb: 1 }}>Uusi kalenteritapahtuma</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
-            {error && <Alert severity="error">{error}</Alert>}
+            {error && (
+              <Alert severity="error">
+                {error.split('\n').map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </Alert>
+            )}
 
             <Box>
               <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>

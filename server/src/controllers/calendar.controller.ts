@@ -37,7 +37,7 @@ export const deleteEvent = async (req: Request<{ id: string }>, res: Response) =
     });
 
     if (!existing) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Tapahtumaa ei löydy' });
     }
 
     await prisma.tyojarjestys.delete({

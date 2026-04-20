@@ -44,17 +44,16 @@ export default function Login({ open = true, onClose }: LoginProps) {
 
       if (data.token) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
       }
 
       setUser(data.user);
 
-      // Clear local fields on success
       setUsername('')
       setPassword('')
       onClose?.()
     } catch (err) {
       const apiErr = err as T.ApiError;
-      // Use the error message from backend, or a fallback
       setError(apiErr.error || 'Kirjautuminen epäonnistui');
     } finally {
       setLoading(false)
@@ -73,7 +72,6 @@ export default function Login({ open = true, onClose }: LoginProps) {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
 
-            {/* Proper Error Message UI */}
             <Collapse in={!!error}>
               <Alert severity="error" sx={{ mb: 1 }}>
                 {error}

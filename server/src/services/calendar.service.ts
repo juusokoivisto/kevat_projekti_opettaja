@@ -19,22 +19,18 @@ export const validateEvent = async (
     throw new Error(`Lounastauon päällekkäisyys päivänä ${start.toLocaleDateString('fi-FI')}`);
   }
 
-  const conflict = await tx.tyojarjestys.findFirst({
-    where: {
-      OR: [
-        { tilaId: huoneId },
-        { opettajaId: opettajaId },
-        { ryhmaId: ryhmaId }
-      ],
-      alkaa: { lt: end },
-      paattyy: { gt: start }
-    }
-  });
+  const [roomConflict, teacherConflict, groupConflict] = await Promise.all([
+    tx.tyojarjestys.findFirst({ where: { tilaId: huoneId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+    tx.tyojarjestys.findFirst({ where: { opettajaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+    tx.tyojarjestys.findFirst({ where: { ryhmaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+  ]);
 
-  if (conflict) {
-    const dateStr = start.toLocaleDateString('fi-FI');
-    if (conflict.tilaId === huoneId) throw new Error(`Huone on jo varattu päivänä ${dateStr}`);
-    if (conflict.opettajaId === opettajaId) throw new Error(`Opettajalla on jo varaus päivänä ${dateStr}`);
-    if (conflict.ryhmaId === ryhmaId) throw new Error(`Ryhmällä on jo varaus päivänä ${dateStr}`);
-  }
+  const dateStr = start.toLocaleDateString('fi-FI');
+  const errors: string[] = [];
+
+  if (roomConflict) errors.push(`Huone on jo varattu päivänä ${dateStr}`);
+  if (teacherConflict) errors.push(`Opettajalla on jo varaus päivänä ${dateStr}`);
+  if (groupConflict) errors.push(`Ryhmällä on jo varaus päivänä ${dateStr}`);
+
+  if (errors.length > 0) throw new Error(errors.join('\n'));
 };
