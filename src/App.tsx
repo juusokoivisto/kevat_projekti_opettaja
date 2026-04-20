@@ -6,10 +6,9 @@ import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 
-import Navbar from './components/Navbar.tsx'
-import Footer from './components/Footer.tsx'
-import Login from './components/Login.tsx'
-
+const Navbar = lazy(() => import('./components/Navbar.tsx'))
+const Footer = lazy(() => import('./components/Footer.tsx'))
+const Login = lazy(() => import('./components/Login.tsx'))
 const MainPage = lazy(() => import('./pages/MainPage.tsx'))
 const AdminPanel = lazy(() => import('./pages/AdminPage.tsx'))
 const TeachersPage = lazy(() => import('./pages/TeachersPage.tsx'))
@@ -48,6 +47,10 @@ function App() {
       setDarkMode((prev) => {
         const next = !prev;
         localStorage.setItem('darkMode', String(next));
+        document.documentElement.classList.replace(
+          next ? 'light-mode' : 'dark-mode',
+          next ? 'dark-mode' : 'light-mode'
+        );
         return next;
       });
     },

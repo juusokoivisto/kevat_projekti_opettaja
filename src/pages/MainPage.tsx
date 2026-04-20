@@ -1,9 +1,9 @@
-import { useContext, useState, lazy } from 'react'
+import { useContext, useState, lazy, Suspense } from 'react'
 import { Box, Button, Container, Paper } from '@mui/material'
-import CalendarEventFormDialog from '../components/dialogs/CalendarEventFormDialog'
 import { UserContext } from '../App'
 import { useInvalidate } from '../hooks/useQueries'
 
+const CalendarEventFormDialog = lazy(() => import('../components/dialogs/CalendarEventFormDialog'))
 const Calendar = lazy(() => import('./../components/Calendar.tsx'))
 
 export default function MainPage() {
@@ -23,7 +23,9 @@ export default function MainPage() {
           <Button variant="contained" onClick={() => setOpen(true)}>
             Lisää tapahtuma
           </Button>
-          <CalendarEventFormDialog open={open} onClose={handleDialogClose} />
+          <Suspense fallback={null}>
+            {open && <CalendarEventFormDialog open={open} onClose={handleDialogClose} />}
+          </Suspense>
         </Box>
       )}
 

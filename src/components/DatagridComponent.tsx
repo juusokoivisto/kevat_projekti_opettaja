@@ -21,8 +21,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import EditIcon from '@mui/icons-material/Edit';
 
-
-
 import { useContext } from 'react';
 import { UserContext } from '../App';
 

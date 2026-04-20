@@ -26,11 +26,15 @@ function getAttemptKey(req: Request, username: string): string {
 function checkBruteForce(key: string): { blocked: boolean; retryAfterMs?: number } {
   const now = Date.now();
   const record = attemptMap.get(key);
-
   if (!record) return { blocked: false };
 
-  if (record.lockedUntil && now < record.lockedUntil) {
-    return { blocked: true, retryAfterMs: record.lockedUntil - now };
+  if (record.lockedUntil) {
+    if (now < record.lockedUntil) {
+      return { blocked: true, retryAfterMs: record.lockedUntil - now };
+    }
+
+    attemptMap.delete(key);
+    return { blocked: false };
   }
 
   if (now - record.firstAttempt > WINDOW_MS) {
