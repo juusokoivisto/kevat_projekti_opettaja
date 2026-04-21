@@ -5,7 +5,7 @@ import { getTeachers, createTeacher, deleteTeachers, getTeacherById, updateTeach
 import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/room.controller';
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
-import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent } from '../controllers/calendar.controller';
+import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent, updateEvent } from '../controllers/calendar.controller';
 
 const router = Router();
 
@@ -47,6 +47,8 @@ router.post('/kalenteri/batch', authenticateToken, createManyEvents);
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
 
 router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
+
+router.put('/kalenteri/:id', updateEvent);
 
 router.get('/test-auth', authenticateToken, (req, res) => {
   res.json({

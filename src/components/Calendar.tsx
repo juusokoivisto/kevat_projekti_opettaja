@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
+import EditIcon from '@mui/icons-material/Edit';
 import { useState, useContext, useMemo, useCallback } from 'react'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext, UserContext } from '../App'
@@ -100,7 +101,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   )
 }
 
-export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
+export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherId?: number; hideFilters?: boolean; onEdit?: (Event: any) => void; }) {
   const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
 
@@ -114,6 +115,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -184,6 +186,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
     info.el.addEventListener('contextmenu', (e: MouseEvent) => {
       e.preventDefault()
       setSelectedEventId(info.event.id)
+      setSelectedEvent(info.event.extendedProps)
       setMenuAnchor(info.el as HTMLElement)
     })
   }, [])
@@ -276,6 +279,24 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             open={Boolean(menuAnchor)}
             onClose={() => setMenuAnchor(null)}
           >
+            <MenuItem
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onClick={() => {
+                if (onEdit && selectedEvent) {
+                  onEdit({
+                    id: selectedEventId,
+                    ...selectedEvent
+                  })
+                }
+                setMenuAnchor(null)
+              }}
+            >
+              <EditIcon sx={{ color: '#90caf9', mr: 1 }} />
+              Muokkaa
+            </MenuItem>
             <MenuItem
               onClick={() => {
                 setConfirmOpen(true)
