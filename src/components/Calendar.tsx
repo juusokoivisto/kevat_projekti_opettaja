@@ -194,54 +194,76 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
   return (
     <Box sx={{ p: 1 }}>
       {!hideFilters && (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Huone</InputLabel>
-            <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
-              <MenuItem value="">Kaikki</MenuItem>
-              {sortedResources.map(r => (
-                <MenuItem key={r.id} value={r.id}>
-                  {r.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <Box
+          sx={{
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            p: 2,
+            mb: 2,
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Box
+            sx={{
+              fontWeight: 600,
+              mb: 1,
+              fontSize: 14,
+              color: 'text.secondary',
+            }}
+          >
+            Filtterit
+          </Box>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Opettaja</InputLabel>
-            <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
-              <MenuItem value="">Kaikki</MenuItem>
-              {sortedTeachers.map(t => (
-                <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
-                  {t.nimi} {t.sukunimi}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Huone</InputLabel>
+              <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedResources.map(r => (
+                  <MenuItem key={r.id} value={r.id}>
+                    {r.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Ryhmä</InputLabel>
-            <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
-              <MenuItem value="">Kaikki</MenuItem>
-              {sortedGroups.map(g => (
-                <MenuItem key={g.id} value={g.id}>
-                  {g.ryhmatunnus}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Opettaja</InputLabel>
+              <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedTeachers.map(t => (
+                  <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
+                    {t.nimi} {t.sukunimi}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Kurssi</InputLabel>
-            <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
-              <MenuItem value="">Kaikki</MenuItem>
-              {sortedCourses.map(c => (
-                <MenuItem key={c.id} value={c.nimi}>
-                  {c.nimi}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Ryhmä</InputLabel>
+              <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedGroups.map(g => (
+                  <MenuItem key={g.id} value={g.id}>
+                    {g.ryhmatunnus}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Kurssi</InputLabel>
+              <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedCourses.map(c => (
+                  <MenuItem key={c.id} value={c.nimi}>
+                    {c.nimi}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       )}
 
