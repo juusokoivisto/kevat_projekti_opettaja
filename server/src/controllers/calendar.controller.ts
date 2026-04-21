@@ -50,6 +50,43 @@ export const deleteEvent = async (req: Request<{ id: string }>, res: Response) =
   }
 };
 
+export const updateEvent = async (
+  req: Request<{ id: string }, {}, CalendarBody>,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+    const start = new Date(req.body.alkaa);
+    const end = new Date(req.body.paattyy);
+
+    const result = await prisma.$transaction(async (tx) => {
+      await CalendarService.validateEvent(tx, {
+        huoneId: req.body.huoneId,
+        opettajaId: req.body.opettajaId,
+        ryhmaId: req.body.ryhmaId,
+        start,
+        end
+      });
+
+      return await tx.tyojarjestys.update({
+        where: { id },
+        data: {
+          tilaId: Number(req.body.huoneId),
+          opettajaId: Number(req.body.opettajaId),
+          kurssiId: Number(req.body.kurssiId),
+          ryhmaId: Number(req.body.ryhmaId),
+          alkaa: start,
+          paattyy: end,
+        }
+      });
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+};
+
 export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Response) => {
   try {
     const start = new Date(req.body.alkaa);

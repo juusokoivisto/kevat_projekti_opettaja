@@ -23,6 +23,7 @@ dayjs.extend(isSameOrBefore);
 interface CalendarEventFormDialogProps {
   open: boolean;
   onClose: (refresh?: boolean) => void;
+  data?: T.CalendarEvent | null;
 }
 
 const SLOTS = {
@@ -58,7 +59,7 @@ const getWeekdaysBetween = (start: Dayjs, end: Dayjs): Dayjs[] => {
   return days;
 };
 
-const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose }) => {
+const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose, data }) => {
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
   const [courses, setCourses] = useState<T.Course[]>([]);
@@ -112,6 +113,17 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     };
     loadFormData();
   }, [open]);
+useEffect(() => {
+  if (data) {
+    setClassroom(classrooms.find(r => r.id === data.tilaId) ?? null);
+    setTeacher(teachers.find(t => t.id === data.opettajaId) ?? null);
+    setCourse(courses.find(c => c.id === data.kurssiId) ?? null);
+    setGroup(groups.find(g => g.id === data.ryhmaId) ?? null);
+
+    setDate(dayjs(data.alkaa));
+    setUseDateRange(false);
+  }
+}, [data, classrooms, teachers, courses, groups]);
 
   const resetForm = () => {
     setClassroom(null); setTeacher(null); setCourse(null); setGroup(null);
@@ -150,7 +162,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
     const days: Dayjs[] = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
 
-    const eventsToCreate: T.CalendarBody[] = [];
+    const eventsToCreate: T.CalendarBody[] = []
+    ;
 
     days.forEach((day) => {
       const slotsForDay: Array<{ start: Dayjs; end: Dayjs }> = [];
@@ -180,7 +193,11 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     });
 
     try {
-      await api.calendar.createBatch(eventsToCreate);
+      if (data) {
+  await api.calendar.update(data.id, eventsToCreate[0]);
+} else {
+  await api.calendar.createBatch(eventsToCreate);
+};
 
       saveDefaults({
         classroomId: classroom!.id,
@@ -218,8 +235,10 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ pb: 1 }}>Uusi kalenteritapahtuma</DialogTitle>
-        <DialogContent>
+      <DialogTitle>
+        {data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}
+      </DialogTitle>
+<DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             {error && (
               <Alert severity="error">
