@@ -41,7 +41,7 @@ export default function GroupPage() {
       alert(`Poisto epäonnistui: ${apiErr.error}`)
     }
   }
-    const handleEditRow = (id: any) => {
+  const handleEditRow = (id: any) => {
     const row = rows.find(r => r.id === id)
     setEditingRow(row)
     setOpen(true)
@@ -75,7 +75,11 @@ export default function GroupPage() {
           rows={rows}
           columns={columns}
           initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
+          pageSizeOptions={[
+            5,
+            10,
+            { value: rows.length, label: 'Kaikki' }
+          ]}
           checkboxSelection
           autoHeight={false}
           onDeleteRows={handleDelete}
@@ -85,7 +89,7 @@ export default function GroupPage() {
         />
       </Paper>
 
-       <GroupFormDialog
+      <GroupFormDialog
         open={open}
         data={editingRow}
         onClose={() => {
