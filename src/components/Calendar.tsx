@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
-import type { EventContentArg, EventMountArg } from '@fullcalendar/core'
+import EditIcon from '@mui/icons-material/Edit';
 import { useState, useContext, useMemo, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
@@ -108,7 +108,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   )
 }
 
-export default function Calendar({ teacherId, hideFilters }: { teacherId?: number; hideFilters?: boolean }) {
+export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherId?: number; hideFilters?: boolean; onEdit?: (Event: any) => void; }) {
   const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
 
@@ -122,6 +122,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -152,14 +153,47 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
       })
   }, [rawEvents, filters, darkMode])
 
-  const handleEventDidMount = useCallback((info: EventMountArg) => {
-    if (info.event.backgroundColor) {
-      info.el.style.borderColor = info.event.backgroundColor
+  const sortedResources = useMemo(() =>
+    resources.slice().sort((a, b) =>
+      a.title.localeCompare(b.title, 'fi')
+    ),
+    [resources]
+  )
+
+  const sortedTeachers = useMemo(() =>
+    teachers.slice().sort((a, b) =>
+      `${a.nimi} ${a.sukunimi}`.localeCompare(
+        `${b.nimi} ${b.sukunimi}`,
+        'fi'
+      )
+    ),
+    [teachers]
+  )
+
+  const sortedGroups = useMemo(() =>
+    groups.slice().sort((a, b) =>
+      a.ryhmatunnus.localeCompare(b.ryhmatunnus, 'fi')
+    ),
+    [groups]
+  )
+
+  const sortedCourses = useMemo(() =>
+    courses.slice().sort((a, b) =>
+      a.nimi.localeCompare(b.nimi, 'fi')
+    ),
+    [courses]
+  )
+
+  const handleEventDidMount = useCallback((info: any) => {
+    const bgColor = info.event.backgroundColor
+    if (bgColor) {
+      info.el.style.borderColor = bgColor
     }
 
     const handler = (e: MouseEvent) => {
       e.preventDefault()
       setSelectedEventId(info.event.id)
+      setSelectedEvent(info.event.extendedProps)
       setMenuAnchor(info.el as HTMLElement)
     }
 
@@ -171,40 +205,76 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
   return (
     <Box sx={{ p: 1 }}>
       {!hideFilters && (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Huone</InputLabel>
-            <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
-              <MenuItem value="">Kaikki</MenuItem>
-              {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
-            </Select>
-          </FormControl>
+        <Box
+          sx={{
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            p: 2,
+            mb: 2,
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Box
+            sx={{
+              fontWeight: 600,
+              mb: 1,
+              fontSize: 14,
+              color: 'text.secondary',
+            }}
+          >
+            Filtterit
+          </Box>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Opettaja</InputLabel>
-            <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
-              <MenuItem value="">Kaikki</MenuItem>
-              {teachers.map(t => (
-                <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Huone</InputLabel>
+              <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedResources.map(r => (
+                  <MenuItem key={r.id} value={r.id}>
+                    {r.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Ryhmä</InputLabel>
-            <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
-              <MenuItem value="">Kaikki</MenuItem>
-              {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
-            </Select>
-          </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Opettaja</InputLabel>
+              <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedTeachers.map(t => (
+                  <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
+                    {t.nimi} {t.sukunimi}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Kurssi</InputLabel>
-            <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
-              <MenuItem value="">Kaikki</MenuItem>
-              {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
-            </Select>
-          </FormControl>
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Ryhmä</InputLabel>
+              <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedGroups.map(g => (
+                  <MenuItem key={g.id} value={g.id}>
+                    {g.ryhmatunnus}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl sx={{ minWidth: 150 }}>
+              <InputLabel>Kurssi</InputLabel>
+              <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
+                <MenuItem value="">Kaikki</MenuItem>
+                {sortedCourses.map(c => (
+                  <MenuItem key={c.id} value={c.nimi}>
+                    {c.nimi}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       )}
 
@@ -243,6 +313,24 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             onClose={() => setMenuAnchor(null)}
 
           >
+            <MenuItem
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onClick={() => {
+                if (onEdit && selectedEvent) {
+                  onEdit({
+                    id: selectedEventId,
+                    ...selectedEvent
+                  })
+                }
+                setMenuAnchor(null)
+              }}
+            >
+              <EditIcon sx={{ color: '#90caf9', mr: 1 }} />
+              Muokkaa
+            </MenuItem>
             <MenuItem
               onClick={() => {
                 setConfirmOpen(true)

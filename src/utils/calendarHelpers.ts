@@ -14,8 +14,10 @@ export interface FormattedCalendarEvent {
     opettajaLyhyt: string;
     opettajaId?: number;
     kurssi: string;
+    kurssiId?: number;
     kurssiKoodi: string;
     huoneNumero: string;
+    tilaId?: number
   };
 }
 
@@ -48,8 +50,11 @@ export const formatCalendarEvent = (
       opettajaLyhyt: getTeacherShortName(e.opettaja),
       opettajaId: e.opettaja?.id,
       kurssi: e.kurssi?.nimi || '',
+      kurssiId: e.kurssi?.id,   
       kurssiKoodi: e.kurssi?.koodi || '',
-      huoneNumero: e.tila?.huoneenNumero || '?'
+      huoneNumero: e.tila?.huoneenNumero || '?',
+      tilaId: e.huoneId || e.tila?.id,
+
     }
   };
 };

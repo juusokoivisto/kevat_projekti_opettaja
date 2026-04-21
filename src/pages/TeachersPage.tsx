@@ -79,7 +79,11 @@ export default function TeachersPage() {
           rows={rows}
           columns={columns}
           initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
+          pageSizeOptions={[
+            5,
+            10,
+            { value: rows.length, label: 'Kaikki' }
+          ]}
           checkboxSelection
           autoHeight={false}
           showOpenButton={true}

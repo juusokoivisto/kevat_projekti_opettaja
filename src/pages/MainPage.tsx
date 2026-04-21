@@ -10,6 +10,7 @@ export default function MainPage() {
   const [open, setOpen] = useState(false)
   const { user } = useContext(UserContext)
   const invalidate = useInvalidate()
+  const [editingEvent, setEditingEvent] = useState<any | null>(null);
 
   const handleDialogClose = (shouldRefresh?: boolean) => {
     setOpen(false)
@@ -20,17 +21,35 @@ export default function MainPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {user && (
         <Box sx={{ mb: 2 }}>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            Lisää tapahtuma
-          </Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setEditingEvent(null);
+            setOpen(true);
+          }}
+        >
+          Lisää tapahtuma
+        </Button>
           <Suspense fallback={null}>
-            {open && <CalendarEventFormDialog open={open} onClose={handleDialogClose} />}
+            {open && (
+              <CalendarEventFormDialog
+                open={open}
+                data={editingEvent}
+                onClose={handleDialogClose}
+              />
+            )}          
           </Suspense>
         </Box>
       )}
 
       <Paper elevation={2}>
-        <Calendar teacherId={undefined} />
+        <Calendar
+          teacherId={undefined}
+          onEdit={(event) => {
+            setEditingEvent(event)
+            setOpen(true)
+          }}
+        />      
       </Paper>
     </Container>
   )

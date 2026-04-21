@@ -121,5 +121,11 @@ export const api = {
 
     exportExcel: () =>
       downloadFile('/kalenteri/export', `kalenteri-export-${Date.now()}.xlsx`),
+
+    update: (id: number, data: any) =>
+      request<T.CalendarEvent>(`/kalenteri/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      }),
   },
 };
