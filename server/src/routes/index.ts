@@ -6,6 +6,7 @@ import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/ro
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
 import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent } from '../controllers/calendar.controller';
+import { exportToExcel } from '../controllers/export.controller';
 
 const router = Router();
 
@@ -47,6 +48,8 @@ router.post('/kalenteri/batch', authenticateToken, createManyEvents);
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
 
 router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
+
+router.get('/kalenteri/export', authenticateToken, exportToExcel);
 
 router.get('/test-auth', authenticateToken, (req, res) => {
   res.json({

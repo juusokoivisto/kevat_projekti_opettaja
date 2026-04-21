@@ -1,4 +1,4 @@
-import { request } from './client';
+import { request, downloadFile } from './client';
 import * as T from './types/api.types';
 
 export const api = {
@@ -118,5 +118,8 @@ export const api = {
       request<void>(`/kalenteri/${id}`, {
         method: 'DELETE'
       }),
+
+    exportExcel: () =>
+      downloadFile('/kalenteri/export', `kalenteri-export-${Date.now()}.xlsx`),
   },
 };

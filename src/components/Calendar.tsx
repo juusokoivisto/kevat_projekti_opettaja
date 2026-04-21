@@ -4,22 +4,30 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
+import type { EventContentArg, EventMountArg } from '@fullcalendar/core'
 import { useState, useContext, useMemo, useCallback } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import Box from '@mui/material/Box'
+import Tooltip from '@mui/material/Tooltip'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
+import Menu from '@mui/material/Menu'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
+import DeleteIcon from '@mui/icons-material/Delete'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext, UserContext } from '../App'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
-import Box from '@mui/material/Box'
-import {
-  Tooltip, FormControl, InputLabel, Select, MenuItem, Typography,
-  Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button
-} from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import type { EventContentArg } from '@fullcalendar/core'
 
 interface FCResource {
   id: string;
@@ -144,17 +152,20 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
       })
   }, [rawEvents, filters, darkMode])
 
-  const handleEventDidMount = useCallback((info: any) => {
-    const bgColor = info.event.backgroundColor
-    if (bgColor) {
-      info.el.style.borderColor = bgColor
+  const handleEventDidMount = useCallback((info: EventMountArg) => {
+    if (info.event.backgroundColor) {
+      info.el.style.borderColor = info.event.backgroundColor
     }
 
-    info.el.addEventListener('contextmenu', (e: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       e.preventDefault()
       setSelectedEventId(info.event.id)
       setMenuAnchor(info.el as HTMLElement)
-    })
+    }
+
+    info.el.addEventListener('contextmenu', handler)
+
+    return () => info.el.removeEventListener('contextmenu', handler)
   }, [])
 
   return (
@@ -230,6 +241,7 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
             onClose={() => setMenuAnchor(null)}
+
           >
             <MenuItem
               onClick={() => {

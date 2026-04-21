@@ -42,3 +42,23 @@ export async function request<T>(path: string, options: RequestInit): Promise<T>
 
   return handleRes<T>(res);
 }
+
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'GET',
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) throw { error: res.statusText, status: res.status };
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
