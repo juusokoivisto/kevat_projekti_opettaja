@@ -28,6 +28,7 @@ import { api } from '../api'
 import * as T from '../api/types/api.types'
 import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
+import type { EventContentArg } from '@fullcalendar/core'
 
 interface FCResource {
   id: string;
