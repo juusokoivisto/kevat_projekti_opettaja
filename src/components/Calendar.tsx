@@ -144,6 +144,37 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
       })
   }, [rawEvents, filters, darkMode])
 
+  const sortedResources = useMemo(() =>
+    resources.slice().sort((a, b) =>
+      a.title.localeCompare(b.title, 'fi')
+    ),
+    [resources]
+  )
+
+  const sortedTeachers = useMemo(() =>
+    teachers.slice().sort((a, b) =>
+      `${a.nimi} ${a.sukunimi}`.localeCompare(
+        `${b.nimi} ${b.sukunimi}`,
+        'fi'
+      )
+    ),
+    [teachers]
+  )
+
+  const sortedGroups = useMemo(() =>
+    groups.slice().sort((a, b) =>
+      a.ryhmatunnus.localeCompare(b.ryhmatunnus, 'fi')
+    ),
+    [groups]
+  )
+
+  const sortedCourses = useMemo(() =>
+    courses.slice().sort((a, b) =>
+      a.nimi.localeCompare(b.nimi, 'fi')
+    ),
+    [courses]
+  )
+
   const handleEventDidMount = useCallback((info: any) => {
     const bgColor = info.event.backgroundColor
     if (bgColor) {
@@ -165,7 +196,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             <InputLabel>Huone</InputLabel>
             <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
               <MenuItem value="">Kaikki</MenuItem>
-              {resources.map(r => <MenuItem key={r.id} value={r.id}>{r.title}</MenuItem>)}
+              {sortedResources.map(r => (
+                <MenuItem key={r.id} value={r.id}>
+                  {r.title}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -173,8 +208,10 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             <InputLabel>Opettaja</InputLabel>
             <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
               <MenuItem value="">Kaikki</MenuItem>
-              {teachers.map(t => (
-                <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>{t.nimi} {t.sukunimi}</MenuItem>
+              {sortedTeachers.map(t => (
+                <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
+                  {t.nimi} {t.sukunimi}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -183,7 +220,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             <InputLabel>Ryhmä</InputLabel>
             <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
               <MenuItem value="">Kaikki</MenuItem>
-              {groups.map(g => <MenuItem key={g.id} value={g.id}>{g.ryhmatunnus}</MenuItem>)}
+              {sortedGroups.map(g => (
+                <MenuItem key={g.id} value={g.id}>
+                  {g.ryhmatunnus}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -191,7 +232,11 @@ export default function Calendar({ teacherId, hideFilters }: { teacherId?: numbe
             <InputLabel>Kurssi</InputLabel>
             <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
               <MenuItem value="">Kaikki</MenuItem>
-              {courses.map(c => <MenuItem key={c.id} value={c.nimi}>{c.nimi}</MenuItem>)}
+              {sortedCourses.map(c => (
+                <MenuItem key={c.id} value={c.nimi}>
+                  {c.nimi}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Box>
