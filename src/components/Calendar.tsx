@@ -188,6 +188,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
     const bgColor = info.event.backgroundColor
     if (bgColor) {
       info.el.style.borderColor = bgColor
+      info.el.style.backgroundColor = bgColor
     }
 
     const handler = (e: MouseEvent) => {
