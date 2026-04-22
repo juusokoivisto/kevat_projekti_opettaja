@@ -61,6 +61,7 @@ export const deleteTeachers = async (ids: number[]) => {
   await prisma.$transaction([
     prisma.tyojarjestys.deleteMany({ where: { opettajaId: { in: ids } } }),
     prisma.resurssivaraus.deleteMany({ where: { opettajaId: { in: ids } } }),
+    prisma.opettajaKurssi.deleteMany({ where: { opettajaId: { in: ids } } }),
     prisma.opettaja.deleteMany({ where: { id: { in: ids } } }),
   ]);
 };
