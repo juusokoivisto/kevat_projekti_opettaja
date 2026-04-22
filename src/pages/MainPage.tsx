@@ -1,6 +1,5 @@
-import { useContext, useState, lazy, Suspense } from 'react'
-import { Box, Button, Container, Paper } from '@mui/material'
-import { UserContext } from '../App'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import { Container, Paper } from '@mui/material'
 import { useInvalidate, useCalendarEvents } from '../hooks/useQueries'
 import * as T from '../api/types/api.types'
 
@@ -9,10 +8,13 @@ const Calendar = lazy(() => import('./../components/Calendar.tsx'))
 
 export default function MainPage() {
   const [open, setOpen] = useState(false)
-  const { user } = useContext(UserContext)
   const invalidate = useInvalidate()
   const { data: calendarData } = useCalendarEvents()
   const [editingEvent, setEditingEvent] = useState<T.CalendarEvent | null>(null);
+
+  useEffect(() => {
+    import('../components/dialogs/CalendarEventFormDialog');
+  }, []);
 
   const handleDialogClose = async (shouldRefresh?: boolean) => {
     setOpen(false);
@@ -21,29 +23,16 @@ export default function MainPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {user && (
-        <Box sx={{ mb: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setEditingEvent(null);
-              setOpen(true);
-            }}
-          >
-            Lisää tapahtuma
-          </Button>
-          <Suspense fallback={null}>
-            {open && (
-              <CalendarEventFormDialog
-                open={open}
-                data={editingEvent}
-                onClose={handleDialogClose}
-              />
-            )}
-          </Suspense>
-        </Box>
-      )}
+    <Container maxWidth="xl">
+      <Suspense fallback={null}>
+        {open && (
+          <CalendarEventFormDialog
+            open={open}
+            data={editingEvent}
+            onClose={handleDialogClose}
+          />
+        )}
+      </Suspense>
 
       <Paper elevation={2}>
         <Calendar
@@ -53,8 +42,12 @@ export default function MainPage() {
             setEditingEvent(fresh);
             setOpen(true);
           }}
+          onAdd={() => {
+            setEditingEvent(null);
+            setOpen(true);
+          }}
         />
       </Paper>
-    </Container>
+    </Container >
   )
 }

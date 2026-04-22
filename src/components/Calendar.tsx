@@ -109,7 +109,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   )
 }
 
-export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherId?: number; hideFilters?: boolean; onEdit?: (id: string) => void; }) {
+export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { teacherId?: number; hideFilters?: boolean; onEdit?: (id: string) => void; onAdd?: () => void; }) {
   const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
 
@@ -292,7 +292,11 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
           contentHeight="auto"
           locale={fiLocale}
           slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-          headerToolbar={{
+          headerToolbar={user ? {
+            left: 'prev,next today addEventButton',
+            center: 'title',
+            right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
+          } : {
             left: 'prev,next today',
             center: 'title',
             right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,multiMonthYear'
@@ -304,6 +308,14 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
           resourceAreaWidth="200px"
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
           eventContent={renderEventContent}
+          customButtons={{
+            addEventButton: {
+              text: 'Lisää tapahtuma',
+              click: () => {
+                if (onAdd) onAdd();
+              },
+            },
+          }}
         />
 
         {user && menuAnchor && (

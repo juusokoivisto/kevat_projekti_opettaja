@@ -27,13 +27,14 @@ const NAV_ITEMS = [
   { label: 'Kurssit', path: '/courses' },
 ];
 
+// Thinner styling for buttons: smaller font and less padding
 const navButtonSx = {
   color: 'white',
   height: '100%',
   borderRadius: 0,
-  px: 3,
+  px: 2, // Reduced padding from 3
   textTransform: 'none',
-  fontSize: '1rem',
+  fontSize: '0.875rem', // Reduced from 1rem
   '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
 };
 
@@ -43,13 +44,13 @@ type NavbarProps = {
 
 function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
-
   const displayName = user.nimi || user.username || 'User';
 
   return (
     <Box sx={{ ml: 1 }}>
       <IconButton onClick={(e) => setAnchor(e.currentTarget)} sx={{ p: 0 }}>
-        <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+        {/* Slightly smaller avatar */}
+        <Avatar sx={{ width: 28, height: 28, bgcolor: 'secondary.main', fontSize: '0.875rem' }}>
           {displayName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
@@ -58,7 +59,7 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
         open={Boolean(anchor)}
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        sx={{ mt: '45px' }}
+        sx={{ mt: '40px' }} // Adjusted for thinner bar
       >
         <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
         <MenuItem
@@ -68,9 +69,7 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
             fontWeight: 500,
             display: 'flex',
             gap: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(255, 23, 68, 0.08)',
-            },
+            '&:hover': { backgroundColor: 'rgba(255, 23, 68, 0.08)' },
           }}
         >
           <LogoutIcon fontSize="small" />
@@ -94,13 +93,21 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
   return (
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
-        <Toolbar disableGutters sx={{ height: 64 }}>
+        {/* Reduced height to 48px and used variant="dense" */}
+        <Toolbar variant="dense" disableGutters sx={{ minHeight: 48, height: 48 }}>
           <Typography
-            variant="h6" noWrap component="a" href="/"
+            variant="subtitle1" // Changed from h6 for a smaller footprint
+            noWrap
+            component="a"
+            href="/"
             sx={{
-              mr: 2, px: 2,
-              fontFamily: 'monospace', fontWeight: 700,
-              letterSpacing: '.1rem', color: 'inherit', textDecoration: 'none',
+              mr: 3,
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.05rem',
+              color: 'inherit',
+              textDecoration: 'none',
+              fontSize: '1.1rem',
             }}
           >
             Työjärjestykset
@@ -108,7 +115,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
 
           {/* Mobile menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton size="large" onClick={(e) => setMobileMenuAnchor(e.currentTarget)} color="inherit">
+            <IconButton size="small" onClick={(e) => setMobileMenuAnchor(e.currentTarget)} color="inherit">
               <MenuIcon />
             </IconButton>
             <Menu
@@ -119,7 +126,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             >
               {NAV_ITEMS.map(({ label, path }) => (
                 <MenuItem key={label} onClick={() => { closeMobileMenu(); navigate(path); }}>
-                  <Typography>{label}</Typography>
+                  <Typography variant="body2">{label}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -143,8 +150,8 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             )}
 
             <Tooltip title="Vaihda teema">
-              <IconButton onClick={toggleDarkMode} color="inherit">
-                {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              <IconButton onClick={toggleDarkMode} color="inherit" size="small" sx={{ ml: 1 }}>
+                {theme.palette.mode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
               </IconButton>
             </Tooltip>
 

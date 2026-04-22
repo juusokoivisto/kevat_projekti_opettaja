@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
+import { loginRateLimiter } from '../middleware/rateLimiter';
 import { login } from '../controllers/auth.controller';
 import { getTeachers, createTeacher, deleteTeachers, getTeacherById, updateTeacher } from '../controllers/teacher.controller';
 import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/room.controller';
@@ -11,7 +12,7 @@ import { exportToExcel } from '../controllers/export.controller';
 const router = Router();
 
 router.get('/health', (_req, res) => res.json({ status: 'ok' }));
-router.post('/login', login);
+router.post('/login', loginRateLimiter, login);
 
 router.route('/opettajat')
   .get(getTeachers)
