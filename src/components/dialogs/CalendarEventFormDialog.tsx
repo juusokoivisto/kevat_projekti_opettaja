@@ -106,7 +106,6 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         if (data) {
           setClassroom(roomsRes.find((r: T.Classroom) => r.id === data.tilaId) ?? null);
           setTeacher(teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null);
-          // prefer teacher-specific kurssit if provided
           const selTeacher = teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null;
           if (selTeacher && (selTeacher as any).kurssit && (selTeacher as any).kurssit.length > 0) {
             setCourses((selTeacher as any).kurssit);
