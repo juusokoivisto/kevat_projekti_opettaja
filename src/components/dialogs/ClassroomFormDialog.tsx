@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface ClassroomFormDialogProps {
@@ -29,36 +29,36 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
       setHuoneenNumero(data.huoneenNumero || '');
       setKapasiteetti(String(data.kapasiteetti || ''));
       setTyyppi(data.tyyppi || '');
-} else {
-  reset();
-      }
-    }, [data, open]);
-
-const handleSubmit = async () => {
-  try {
-    const payload = {
-      huoneenNumero,
-      kapasiteetti: Number(kapasiteetti),
-      tyyppi
-    };
-
-    if (data) {
-      await api.rooms.update(data.id, payload);
     } else {
-      await api.rooms.create(payload);
+      reset();
     }
+  }, [data, open]);
 
-    reset();
-    onClose();
-  } catch (err: any) {
-    setError(err?.error || 'Tallennus epäonnistui');
-  }
-};
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        huoneenNumero,
+        kapasiteetti: Number(kapasiteetti),
+        tyyppi
+      };
 
-const isInvalid =
+      if (data) {
+        await api.rooms.update(data.id, payload);
+      } else {
+        await api.rooms.create(payload);
+      }
+
+      reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.error || 'Tallennus epäonnistui');
+    }
+  };
+
+  const isInvalid =
     !huoneenNumero || !kapasiteetti || !tyyppi;
 
-return (
+  return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>
         {data ? 'Muokkaa huonetta' : 'Lisää huone'}
@@ -68,9 +68,11 @@ return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
           {error && (
-            <Box sx={{ color: 'red' }}>
-              {error}
-            </Box>
+            <Alert severity="error">
+              {error.split('\n').map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </Alert>
           )}
 
           <TextField

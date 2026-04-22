@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface Props {
@@ -72,11 +72,12 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
           {error && (
-            <Box sx={{ color: 'red' }}>
-              {error}
-            </Box>
+            <Alert severity="error">
+              {error.split('\n').map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </Alert>
           )}
-
           <TextField
             label="Nimi"
             value={nimi}

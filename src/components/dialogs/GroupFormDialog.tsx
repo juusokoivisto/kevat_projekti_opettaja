@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box
+  TextField, Button, Box, Alert
 } from '@mui/material';
 
 interface GroupFormDialogProps {
   open: boolean;
   onClose: () => void;
   data?: any | null;
-  
+
 }
 
 const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }) => {
@@ -19,7 +19,7 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }
   const [degreeProgram, setDegreeProgram] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-    const reset = () => {
+  const reset = () => {
     setGroupId('');
     setStartingYear('');
     setStudentCount('');
@@ -27,32 +27,32 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }
     setError(null);
   };
 
-    useEffect(() => {
+  useEffect(() => {
+    if (data) {
+      setGroupId(data.ryhmatunnus || '');
+      setStartingYear(String(data.aloitusvuosi || ''));
+      setStudentCount(String(data.opiskelijamaara || ''));
+      setDegreeProgram(data.tutkintoOhjelma || '');
+    } else {
+      reset();
+    }
+  }, [data, open]);
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        ryhmatunnus: groupId,
+        aloitusvuosi: Number(startingYear),
+        opiskelijamaara: Number(studentCount),
+        tutkintoOhjelma: degreeProgram
+      };
+
       if (data) {
-        setGroupId(data.ryhmatunnus || '');
-        setStartingYear(String(data.aloitusvuosi || ''));
-        setStudentCount(String(data.opiskelijamaara || ''));
-        setDegreeProgram(data.tutkintoOhjelma || '');
+        await api.groups.update(data.id, payload);
       } else {
-        reset();
+        await api.groups.create(payload);
       }
-    }, [data, open]);
-  
-      const handleSubmit = async () => {
-        try {
-          const payload = {
-            ryhmatunnus: groupId,
-            aloitusvuosi: Number(startingYear),
-            opiskelijamaara: Number(studentCount),
-            tutkintoOhjelma: degreeProgram
-          };
-    
-          if (data) {
-            await api.groups.update(data.id, payload);
-          } else {
-            await api.groups.create(payload);
-          }
-                reset();
+      reset();
       onClose();
     } catch (err: any) {
       setError(err?.error || 'Tallennus epäonnistui');
@@ -89,9 +89,11 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
           {error && (
-            <Box sx={{ color: 'red' }}>
-              {error}
-            </Box>
+            <Alert severity="error">
+              {error.split('\n').map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </Alert>
           )}
 
           <TextField

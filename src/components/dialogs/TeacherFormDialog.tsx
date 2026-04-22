@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Autocomplete, Chip, CircularProgress
+  TextField, Button, Box, Autocomplete, Chip, CircularProgress, Alert
 } from '@mui/material';
 import { HexColorPicker } from 'react-colorful';
 
@@ -105,9 +105,11 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
 
           {error && (
-            <Box sx={{ color: 'red' }}>
-              {error}
-            </Box>
+            <Alert severity="error">
+              {error.split('\n').map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </Alert>
           )}
 
           <TextField
@@ -165,18 +167,18 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
             )}
           />
 
-            <Box>
-              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 28, height: 28, background: color, borderRadius: 1, border: '1px solid rgba(0,0,0,0.12)' }} />
-                <Box>
-                  <div style={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>Väri</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.6)' }}>{color}</div>
-                </Box>
-              </Box>
-              <Box sx={{ maxWidth: 320 }}>
-                <HexColorPicker color={color} onChange={setColor} />
+          <Box>
+            <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ width: 28, height: 28, background: color, borderRadius: 1, border: '1px solid rgba(0,0,0,0.12)' }} />
+              <Box>
+                <div style={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>Väri</div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.6)' }}>{color}</div>
               </Box>
             </Box>
+            <Box sx={{ maxWidth: 320 }}>
+              <HexColorPicker color={color} onChange={setColor} />
+            </Box>
+          </Box>
 
         </Box>
       </DialogContent>

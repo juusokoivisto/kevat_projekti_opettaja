@@ -9,9 +9,8 @@ import { useState, useContext, useMemo, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import Select from '@mui/material/Select'
+import Autocomplete from '@mui/material/Autocomplete'
+import TextField from '@mui/material/TextField'
 import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 import Menu from '@mui/material/Menu'
@@ -218,7 +217,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           <Box
             sx={{
               fontWeight: 600,
-              mb: 1,
+              mb: 2,
               fontSize: 14,
               color: 'text.secondary',
             }}
@@ -227,53 +226,60 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Huone</InputLabel>
-              <Select value={filters.room} onChange={(e) => setFilters(prev => ({ ...prev, room: e.target.value }))} label="Huone">
-                <MenuItem value="">Kaikki</MenuItem>
-                {sortedResources.map(r => (
-                  <MenuItem key={r.id} value={r.id}>
-                    {r.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {/* Huone Autocomplete */}
+            <Autocomplete
+              sx={{ width: 200 }}
+              options={sortedResources}
+              getOptionLabel={(option) => option.title || ''}
+              value={sortedResources.find((r) => r.id === filters.room) || null}
+              onChange={(_, newValue) => {
+                setFilters((prev) => ({ ...prev, room: newValue ? newValue.id : '' }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Huone" />}
+            />
 
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Opettaja</InputLabel>
-              <Select value={filters.teacher} onChange={(e) => setFilters(prev => ({ ...prev, teacher: e.target.value }))} label="Opettaja">
-                <MenuItem value="">Kaikki</MenuItem>
-                {sortedTeachers.map(t => (
-                  <MenuItem key={t.id} value={`${t.nimi} ${t.sukunimi}`}>
-                    {t.nimi} {t.sukunimi}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {/* Opettaja Autocomplete */}
+            <Autocomplete
+              sx={{ width: 200 }}
+              options={sortedTeachers}
+              getOptionLabel={(option) => `${option.nimi} ${option.sukunimi}`}
+              value={
+                sortedTeachers.find(
+                  (t) => `${t.nimi} ${t.sukunimi}` === filters.teacher
+                ) || null
+              }
+              onChange={(_, newValue) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  teacher: newValue ? `${newValue.nimi} ${newValue.sukunimi}` : '',
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Opettaja" />}
+            />
 
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Ryhmä</InputLabel>
-              <Select value={filters.group} onChange={(e) => setFilters(prev => ({ ...prev, group: e.target.value }))} label="Ryhmä">
-                <MenuItem value="">Kaikki</MenuItem>
-                {sortedGroups.map(g => (
-                  <MenuItem key={g.id} value={g.id}>
-                    {g.ryhmatunnus}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {/* Ryhmä Autocomplete */}
+            <Autocomplete
+              sx={{ width: 200 }}
+              options={sortedGroups}
+              getOptionLabel={(option) => option.ryhmatunnus || ''}
+              value={sortedGroups.find((g) => g.id === filters.group) || null}
+              onChange={(_, newValue) => {
+                setFilters((prev) => ({ ...prev, group: newValue ? newValue.id : '' }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Ryhmä" />}
+            />
 
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>Kurssi</InputLabel>
-              <Select value={filters.course} onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))} label="Kurssi">
-                <MenuItem value="">Kaikki</MenuItem>
-                {sortedCourses.map(c => (
-                  <MenuItem key={c.id} value={c.nimi}>
-                    {c.nimi}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {/* Kurssi Autocomplete */}
+            <Autocomplete
+              sx={{ width: 200 }}
+              options={sortedCourses}
+              getOptionLabel={(option) => option.nimi || ''}
+              value={sortedCourses.find((c) => c.nimi === filters.course) || null}
+              onChange={(_, newValue) => {
+                setFilters((prev) => ({ ...prev, course: newValue ? newValue.nimi : '' }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Kurssi" />}
+            />
           </Box>
         </Box>
       )}
