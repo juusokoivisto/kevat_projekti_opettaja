@@ -2,6 +2,7 @@ import { useContext, useState, lazy, Suspense } from 'react'
 import { Box, Button, Container, Paper } from '@mui/material'
 import { UserContext } from '../App'
 import { useInvalidate, useCalendarEvents } from '../hooks/useQueries'
+import * as T from '../api/types/api.types'
 
 const CalendarEventFormDialog = lazy(() => import('../components/dialogs/CalendarEventFormDialog'))
 const Calendar = lazy(() => import('./../components/Calendar.tsx'))
@@ -11,7 +12,7 @@ export default function MainPage() {
   const { user } = useContext(UserContext)
   const invalidate = useInvalidate()
   const { data: calendarData } = useCalendarEvents()
-  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [editingEvent, setEditingEvent] = useState<T.CalendarEvent | null>(null);
 
   const handleDialogClose = async (shouldRefresh?: boolean) => {
     setOpen(false);
@@ -47,9 +48,9 @@ export default function MainPage() {
       <Paper elevation={2}>
         <Calendar
           teacherId={undefined}
-          onEdit={(event) => {
-            const fresh = calendarData?.find(e => e.id === Number(event.id));
-            setEditingEvent(fresh ?? null);
+          onEdit={(id) => {
+            const fresh = calendarData?.find(e => e.id === Number(id)) ?? null;
+            setEditingEvent(fresh);
             setOpen(true);
           }}
         />

@@ -109,7 +109,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   )
 }
 
-export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherId?: number; hideFilters?: boolean; onEdit?: (Event: any) => void; }) {
+export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherId?: number; hideFilters?: boolean; onEdit?: (id: string) => void; }) {
   const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
 
@@ -320,11 +320,8 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
                 alignItems: 'center',
               }}
               onClick={() => {
-                if (onEdit && selectedEvent) {
-                  onEdit({
-                    id: selectedEventId,
-                    ...selectedEvent
-                  })
+                if (onEdit && selectedEventId) {
+                  onEdit(selectedEventId)
                 }
                 setMenuAnchor(null)
               }}
