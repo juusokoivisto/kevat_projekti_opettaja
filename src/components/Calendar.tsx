@@ -123,7 +123,6 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -194,7 +193,6 @@ export default function Calendar({ teacherId, hideFilters, onEdit, }: { teacherI
     const handler = (e: MouseEvent) => {
       e.preventDefault()
       setSelectedEventId(info.event.id)
-      setSelectedEvent(info.event.extendedProps)
       setMenuAnchor(info.el as HTMLElement)
     }
 
