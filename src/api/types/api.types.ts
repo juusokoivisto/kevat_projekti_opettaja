@@ -13,6 +13,7 @@ export interface Teacher {
   sopimustunnit: number;
   vapaaResurssi: number;
   vari?: string;
+  kurssit?: Course[];
 }
 
 export interface StudentGroup {
