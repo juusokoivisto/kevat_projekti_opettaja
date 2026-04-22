@@ -17,6 +17,7 @@ export const validateEvent = async (
   lunchStart.setHours(11, 0, 0, 0);
   const lunchEnd = new Date(start);
   lunchEnd.setHours(11, 45, 0, 0);
+
   if (start < lunchEnd && end > lunchStart) {
     throw new Error(`Lounastauon päällekkäisyys päivänä ${start.toLocaleDateString('fi-FI')}`);
   }

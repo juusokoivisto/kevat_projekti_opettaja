@@ -100,30 +100,29 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           api.rooms.getAll(), api.teachers.getAll(), api.courses.getAll(), api.groups.getAll()
         ]);
         setClassrooms(roomsRes); setTeachers(teachersRes); setCourses(coursesRes); setGroups(groupsRes);
-        const defaults = loadDefaults();
-        if (defaults.classroomId) setClassroom(roomsRes.find((r: T.Classroom) => r.id === defaults.classroomId) ?? null);
-        if (defaults.teacherId) setTeacher(teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null);
-        if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
-        if (defaults.groupId) setGroup(groupsRes.find((g: T.StudentGroup) => g.id === defaults.groupId) ?? null);
-        if (defaults.slotKey) setSelectedSlot(defaults.slotKey);
+
+        if (data) {
+          setClassroom(roomsRes.find((r: T.Classroom) => r.id === data.tilaId) ?? null);
+          setTeacher(teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null);
+          setCourse(coursesRes.find((c: T.Course) => c.id === data.kurssiId) ?? null);
+          setGroup(groupsRes.find((g: T.StudentGroup) => g.id === data.ryhmaId) ?? null);
+          setDate(dayjs(data.alkaa));
+          setUseDateRange(false);
+        } else {
+          const defaults = loadDefaults();
+          if (defaults.classroomId) setClassroom(roomsRes.find((r: T.Classroom) => r.id === defaults.classroomId) ?? null);
+          if (defaults.teacherId) setTeacher(teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null);
+          if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
+          if (defaults.groupId) setGroup(groupsRes.find((g: T.StudentGroup) => g.id === defaults.groupId) ?? null);
+          if (defaults.slotKey) setSelectedSlot(defaults.slotKey);
+        }
       } catch (err) {
         const apiErr = err as T.ApiError;
         setError("Lomaketietojen haku epäonnistui: " + apiErr.error);
       }
     };
     loadFormData();
-  }, [open]);
-  useEffect(() => {
-    if (data) {
-      setClassroom(classrooms.find(r => r.id === data.tilaId) ?? null);
-      setTeacher(teachers.find(t => t.id === data.opettajaId) ?? null);
-      setCourse(courses.find(c => c.id === data.kurssiId) ?? null);
-      setGroup(groups.find(g => g.id === data.ryhmaId) ?? null);
-
-      setDate(dayjs(data.alkaa));
-      setUseDateRange(false);
-    }
-  }, [data, classrooms, teachers, courses, groups]);
+  }, [open, data]);
 
   const resetForm = () => {
     setClassroom(null); setTeacher(null); setCourse(null); setGroup(null);
