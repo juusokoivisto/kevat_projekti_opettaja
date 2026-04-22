@@ -113,17 +113,17 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     };
     loadFormData();
   }, [open]);
-useEffect(() => {
-  if (data) {
-    setClassroom(classrooms.find(r => r.id === data.tilaId) ?? null);
-    setTeacher(teachers.find(t => t.id === data.opettajaId) ?? null);
-    setCourse(courses.find(c => c.id === data.kurssiId) ?? null);
-    setGroup(groups.find(g => g.id === data.ryhmaId) ?? null);
+  useEffect(() => {
+    if (data) {
+      setClassroom(classrooms.find(r => r.id === data.tila?.id) ?? null);
+      setTeacher(teachers.find(t => t.id === data.opettajaId) ?? null);
+      setCourse(courses.find(c => c.id === data.kurssiId) ?? null);
+      setGroup(groups.find(g => g.id === data.ryhmaId) ?? null);
 
-    setDate(dayjs(data.alkaa));
-    setUseDateRange(false);
-  }
-}, [data, classrooms, teachers, courses, groups]);
+      setDate(dayjs(data.alkaa));
+      setUseDateRange(false);
+    }
+  }, [data, classrooms, teachers, courses, groups]);
 
   const resetForm = () => {
     setClassroom(null); setTeacher(null); setCourse(null); setGroup(null);
@@ -163,7 +163,7 @@ useEffect(() => {
     const days: Dayjs[] = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
 
     const eventsToCreate: T.CalendarBody[] = []
-    ;
+      ;
 
     days.forEach((day) => {
       const slotsForDay: Array<{ start: Dayjs; end: Dayjs }> = [];
@@ -194,10 +194,10 @@ useEffect(() => {
 
     try {
       if (data) {
-  await api.calendar.update(data.id, eventsToCreate[0]);
-} else {
-  await api.calendar.createBatch(eventsToCreate);
-};
+        await api.calendar.update(data.id, eventsToCreate[0]);
+      } else {
+        await api.calendar.createBatch(eventsToCreate);
+      };
 
       saveDefaults({
         classroomId: classroom!.id,
@@ -235,10 +235,10 @@ useEffect(() => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>
-        {data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}
-      </DialogTitle>
-<DialogContent>
+        <DialogTitle>
+          {data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}
+        </DialogTitle>
+        <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             {error && (
               <Alert severity="error">
