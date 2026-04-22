@@ -11,30 +11,23 @@
   <title>kevatprojekti</title>
 </head>
 
-<body>
+<body class="dark-mode">
   <style>
     html,
     body,
     #root {
       margin: 0;
+      height: 100%;
     }
 
+    html,
     .dark-mode {
       background-color: #121212;
-    }
-
-    .light-mode {
-      background-color: #f5f5f5;
+      color-scheme: dark;
     }
   </style>
 
   <div id="root"></div>
-
-  <script>
-    const mode = localStorage.getItem('darkMode');
-    const isDark = mode === 'true' || (!mode && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.classList.add(isDark ? 'dark-mode' : 'light-mode');
-  </script>
 
   <script type="module" src="/src/main.tsx"></script>
 </body>

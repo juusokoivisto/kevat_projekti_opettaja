@@ -9,13 +9,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { ColorModeContext, UserContext } from '../App';
+import { UserContext } from '../App';
 import LogoutIcon from '@mui/icons-material/Logout';
 import type { AuthUser } from '../api/types/api.types';
 
@@ -83,8 +79,6 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
 export default function Navbar({ onLoginClick }: NavbarProps) {
   const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
 
-  const theme = useTheme();
-  const { toggleDarkMode } = React.useContext(ColorModeContext);
   const { user, setUser } = React.useContext(UserContext);
   const navigate = useNavigate();
 
@@ -148,12 +142,6 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
                 Kirjaudu
               </Button>
             )}
-
-            <Tooltip title="Vaihda teema">
-              <IconButton onClick={toggleDarkMode} color="inherit" size="small" sx={{ ml: 1 }}>
-                {theme.palette.mode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
-              </IconButton>
-            </Tooltip>
 
             {user && (
               <UserMenu

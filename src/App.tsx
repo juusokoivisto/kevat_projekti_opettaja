@@ -35,29 +35,7 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
-const [darkMode, setDarkMode] = useState(() => {
-  const saved = localStorage.getItem('darkMode');
-  return saved === null ? true : saved === 'true';
-});
-  const theme = React.useMemo(
-    () => createTheme(getDesignTokens(darkMode ? 'dark' : 'light')),
-    [darkMode]
-  );
-
-  const colorMode = React.useMemo(() => ({
-    toggleDarkMode: () => {
-      setDarkMode((prev) => {
-        const next = !prev;
-        localStorage.setItem('darkMode', String(next));
-        document.documentElement.classList.replace(
-          next ? 'light-mode' : 'dark-mode',
-          next ? 'dark-mode' : 'light-mode'
-        );
-        return next;
-      });
-    },
-    darkMode,
-  }), [darkMode]);
+  const theme = React.useMemo(() => createTheme(getDesignTokens()), []);
 
   const [user, setUserState] = useState<AuthUser | null>(() => {
     const savedUser = localStorage.getItem('user');
@@ -100,31 +78,29 @@ const [darkMode, setDarkMode] = useState(() => {
   )
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <UserContext.Provider value={{ user, setUser }}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Navbar onLoginClick={() => setLoginOpen(true)} />
-            <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9 }, pb: 4 }}>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<MainPage />} />
-                  <Route path="/admin" element={<AdminPanel />} />
-                  <Route path="/teachers" element={<TeachersPage />} />
-                  <Route path="/classrooms" element={<ClassroomPage />} />
-                  <Route path="/group" element={<GroupPage />} />
-                  <Route path="/courses" element={<CoursePage />} />
-                  <Route path="/teachers/:id" element={<TeacherDetailPage />} />
-                </Routes>
-              </Suspense>
-            </Box>
-            <Footer />
+    <UserContext.Provider value={{ user, setUser }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Navbar onLoginClick={() => setLoginOpen(true)} />
+          <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9 }, pb: 4 }}>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/teachers" element={<TeachersPage />} />
+                <Route path="/classrooms" element={<ClassroomPage />} />
+                <Route path="/group" element={<GroupPage />} />
+                <Route path="/courses" element={<CoursePage />} />
+                <Route path="/teachers/:id" element={<TeacherDetailPage />} />
+              </Routes>
+            </Suspense>
           </Box>
-          <Login open={loginOpen} onClose={() => setLoginOpen(false)} />
-        </ThemeProvider>
-      </UserContext.Provider>
-    </ColorModeContext.Provider>
+          <Footer />
+        </Box>
+        <Login open={loginOpen} onClose={() => setLoginOpen(false)} />
+      </ThemeProvider>
+    </UserContext.Provider>
   )
 }
 
