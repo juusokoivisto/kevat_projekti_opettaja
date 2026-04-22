@@ -35,8 +35,10 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-
+const [darkMode, setDarkMode] = useState(() => {
+  const saved = localStorage.getItem('darkMode');
+  return saved === null ? true : saved === 'true';
+});
   const theme = React.useMemo(
     () => createTheme(getDesignTokens(darkMode ? 'dark' : 'light')),
     [darkMode]
