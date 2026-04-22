@@ -5,7 +5,9 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
 import EditIcon from '@mui/icons-material/Edit';
-import { useState, useContext, useMemo, useCallback } from 'react'
+import TuneIcon from '@mui/icons-material/Tune';
+import CloseIcon from '@mui/icons-material/Close';
+import { useState, useContext, useMemo, useCallback, } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Tooltip from '@mui/material/Tooltip'
@@ -19,6 +21,11 @@ import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import Popover from '@mui/material/Popover'
+import Badge from '@mui/material/Badge'
+import Chip from '@mui/material/Chip'
+import Divider from '@mui/material/Divider'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext, UserContext } from '../App'
@@ -119,6 +126,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
     course: ''
   })
 
+  const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
@@ -153,35 +161,37 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
   }, [rawEvents, filters, darkMode])
 
   const sortedResources = useMemo(() =>
-    resources.slice().sort((a, b) =>
-      a.title.localeCompare(b.title, 'fi')
-    ),
+    resources.slice().sort((a, b) => a.title.localeCompare(b.title, 'fi')),
     [resources]
   )
 
   const sortedTeachers = useMemo(() =>
     teachers.slice().sort((a, b) =>
-      `${a.nimi} ${a.sukunimi}`.localeCompare(
-        `${b.nimi} ${b.sukunimi}`,
-        'fi'
-      )
+      `${a.nimi} ${a.sukunimi}`.localeCompare(`${b.nimi} ${b.sukunimi}`, 'fi')
     ),
     [teachers]
   )
 
   const sortedGroups = useMemo(() =>
-    groups.slice().sort((a, b) =>
-      a.ryhmatunnus.localeCompare(b.ryhmatunnus, 'fi')
-    ),
+    groups.slice().sort((a, b) => a.ryhmatunnus.localeCompare(b.ryhmatunnus, 'fi')),
     [groups]
   )
 
   const sortedCourses = useMemo(() =>
-    courses.slice().sort((a, b) =>
-      a.nimi.localeCompare(b.nimi, 'fi')
-    ),
+    courses.slice().sort((a, b) => a.nimi.localeCompare(b.nimi, 'fi')),
     [courses]
   )
+
+  const activeFilterCount = [
+    filters.room,
+    filters.teacher,
+    filters.group !== '' ? filters.group : '',
+    filters.course
+  ].filter(Boolean).length
+
+  const clearAllFilters = () => {
+    setFilters({ room: '', teacher: '', group: '', course: '' })
+  }
 
   const handleEventDidMount = useCallback((info: any) => {
     const bgColor = info.event.backgroundColor
@@ -197,90 +207,149 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
     }
 
     info.el.addEventListener('contextmenu', handler)
-
     return () => info.el.removeEventListener('contextmenu', handler)
   }, [])
+
+  const filterOpen = Boolean(filterAnchor)
 
   return (
     <Box sx={{ p: 1 }}>
       {!hideFilters && (
-        <Box
-          sx={{
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            p: 2,
-            mb: 2,
-            backgroundColor: 'background.paper',
-          }}
-        >
-          <Box
-            sx={{
-              fontWeight: 600,
-              mb: 2,
-              fontSize: 14,
-              color: 'text.secondary',
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1, gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          {filters.room && (
+            <Chip
+              size="small"
+              label={`Huone: ${sortedResources.find(r => r.id === filters.room)?.title ?? filters.room}`}
+              onDelete={() => setFilters(f => ({ ...f, room: '' }))}
+              sx={{ height: 26 }}
+            />
+          )}
+          {filters.teacher && (
+            <Chip
+              size="small"
+              label={`Opettaja: ${filters.teacher}`}
+              onDelete={() => setFilters(f => ({ ...f, teacher: '' }))}
+              sx={{ height: 26 }}
+            />
+          )}
+          {filters.group !== '' && (
+            <Chip
+              size="small"
+              label={`Ryhmä: ${sortedGroups.find(g => g.id === filters.group)?.ryhmatunnus ?? filters.group}`}
+              onDelete={() => setFilters(f => ({ ...f, group: '' }))}
+              sx={{ height: 26 }}
+            />
+          )}
+          {filters.course && (
+            <Chip
+              size="small"
+              label={`Kurssi: ${filters.course}`}
+              onDelete={() => setFilters(f => ({ ...f, course: '' }))}
+              sx={{ height: 26 }}
+            />
+          )}
+
+          <Tooltip title="Filtterit" placement="left">
+            <IconButton
+              onClick={(e) => setFilterAnchor(e.currentTarget)}
+              size="small"
+              sx={{
+                border: '1px solid',
+                borderColor: activeFilterCount > 0 ? 'primary.main' : 'divider',
+                borderRadius: 1.5,
+                px: 1,
+                gap: 0.5,
+                color: activeFilterCount > 0 ? 'primary.main' : 'text.secondary',
+                '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
+              }}
+            >
+              <Badge badgeContent={activeFilterCount} color="primary" sx={{ '& .MuiBadge-badge': { fontSize: 10, minWidth: 16, height: 16 } }}>
+                <TuneIcon fontSize="small" />
+              </Badge>
+              <Typography variant="caption" sx={{ fontWeight: 500, ml: 0.25 }}>
+                Filtterit
+              </Typography>
+            </IconButton>
+          </Tooltip>
+
+          <Popover
+            open={filterOpen}
+            anchorEl={filterAnchor}
+            onClose={() => setFilterAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 0.75,
+                  width: 280,
+                  p: 2,
+                  borderRadius: 2,
+                  boxShadow: 6,
+                }
+              }
             }}
           >
-            Filtterit
-          </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                Filtterit
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                {activeFilterCount > 0 && (
+                  <Button
+                    size="small"
+                    onClick={clearAllFilters}
+                    sx={{ fontSize: 11, py: 0.25, px: 1, minWidth: 0, color: 'text.secondary' }}
+                  >
+                    Tyhjennä
+                  </Button>
+                )}
+                <IconButton size="small" onClick={() => setFilterAnchor(null)}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            {/* Huone Autocomplete */}
-            <Autocomplete
-              sx={{ width: 200 }}
-              options={sortedResources}
-              getOptionLabel={(option) => option.title || ''}
-              value={sortedResources.find((r) => r.id === filters.room) || null}
-              onChange={(_, newValue) => {
-                setFilters((prev) => ({ ...prev, room: newValue ? newValue.id : '' }));
-              }}
-              renderInput={(params) => <TextField {...params} label="Huone" />}
-            />
+            <Divider sx={{ mb: 2 }} />
 
-            {/* Opettaja Autocomplete */}
-            <Autocomplete
-              sx={{ width: 200 }}
-              options={sortedTeachers}
-              getOptionLabel={(option) => `${option.nimi} ${option.sukunimi}`}
-              value={
-                sortedTeachers.find(
-                  (t) => `${t.nimi} ${t.sukunimi}` === filters.teacher
-                ) || null
-              }
-              onChange={(_, newValue) => {
-                setFilters((prev) => ({
-                  ...prev,
-                  teacher: newValue ? `${newValue.nimi} ${newValue.sukunimi}` : '',
-                }));
-              }}
-              renderInput={(params) => <TextField {...params} label="Opettaja" />}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Autocomplete
+                size="small"
+                options={sortedResources}
+                getOptionLabel={(option) => option.title || ''}
+                value={sortedResources.find((r) => r.id === filters.room) || null}
+                onChange={(_, newValue) => setFilters(prev => ({ ...prev, room: newValue ? newValue.id : '' }))}
+                renderInput={(params) => <TextField {...params} label="Huone" />}
+              />
 
-            {/* Ryhmä Autocomplete */}
-            <Autocomplete
-              sx={{ width: 200 }}
-              options={sortedGroups}
-              getOptionLabel={(option) => option.ryhmatunnus || ''}
-              value={sortedGroups.find((g) => g.id === filters.group) || null}
-              onChange={(_, newValue) => {
-                setFilters((prev) => ({ ...prev, group: newValue ? newValue.id : '' }));
-              }}
-              renderInput={(params) => <TextField {...params} label="Ryhmä" />}
-            />
+              <Autocomplete
+                size="small"
+                options={sortedTeachers}
+                getOptionLabel={(option) => `${option.nimi} ${option.sukunimi}`}
+                value={sortedTeachers.find(t => `${t.nimi} ${t.sukunimi}` === filters.teacher) || null}
+                onChange={(_, newValue) => setFilters(prev => ({ ...prev, teacher: newValue ? `${newValue.nimi} ${newValue.sukunimi}` : '' }))}
+                renderInput={(params) => <TextField {...params} label="Opettaja" />}
+              />
 
-            {/* Kurssi Autocomplete */}
-            <Autocomplete
-              sx={{ width: 200 }}
-              options={sortedCourses}
-              getOptionLabel={(option) => option.nimi || ''}
-              value={sortedCourses.find((c) => c.nimi === filters.course) || null}
-              onChange={(_, newValue) => {
-                setFilters((prev) => ({ ...prev, course: newValue ? newValue.nimi : '' }));
-              }}
-              renderInput={(params) => <TextField {...params} label="Kurssi" />}
-            />
-          </Box>
+              <Autocomplete
+                size="small"
+                options={sortedGroups}
+                getOptionLabel={(option) => option.ryhmatunnus || ''}
+                value={sortedGroups.find((g) => g.id === filters.group) || null}
+                onChange={(_, newValue) => setFilters(prev => ({ ...prev, group: newValue ? newValue.id : '' }))}
+                renderInput={(params) => <TextField {...params} label="Ryhmä" />}
+              />
+
+              <Autocomplete
+                size="small"
+                options={sortedCourses}
+                getOptionLabel={(option) => option.nimi || ''}
+                value={sortedCourses.find((c) => c.nimi === filters.course) || null}
+                onChange={(_, newValue) => setFilters(prev => ({ ...prev, course: newValue ? newValue.nimi : '' }))}
+                renderInput={(params) => <TextField {...params} label="Kurssi" />}
+              />
+            </Box>
+          </Popover>
         </Box>
       )}
 
@@ -317,9 +386,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           customButtons={{
             addEventButton: {
               text: 'Lisää tapahtuma',
-              click: () => {
-                if (onAdd) onAdd();
-              },
+              click: () => { if (onAdd) onAdd() },
             },
           }}
         />
@@ -329,17 +396,11 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
             onClose={() => setMenuAnchor(null)}
-
           >
             <MenuItem
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              sx={{ display: 'flex', alignItems: 'center' }}
               onClick={() => {
-                if (onEdit && selectedEventId) {
-                  onEdit(selectedEventId)
-                }
+                if (onEdit && selectedEventId) onEdit(selectedEventId)
                 setMenuAnchor(null)
               }}
             >
@@ -351,11 +412,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
                 setConfirmOpen(true)
                 setMenuAnchor(null)
               }}
-              sx={{
-                color: 'error.main',
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              sx={{ color: 'error.main', display: 'flex', alignItems: 'center' }}
             >
               <DeleteIcon sx={{ color: 'error.main', mr: 1 }} />
               Poista
@@ -369,9 +426,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
             Haluatko varmasti poistaa tämän tapahtuman?
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setConfirmOpen(false)}>
-              Peruuta
-            </Button>
+            <Button onClick={() => setConfirmOpen(false)}>Peruuta</Button>
             <Button
               color="error"
               onClick={() => {
