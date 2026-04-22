@@ -11,6 +11,7 @@ export interface TeacherBody {
   sopimustunnit?: number;
   vapaaResurssi?: number;
   vari?: string;
+  courseIds?: number[];
 }
 
 export interface RoomBody {

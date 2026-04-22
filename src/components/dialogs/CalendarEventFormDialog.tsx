@@ -63,6 +63,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
   const [courses, setCourses] = useState<T.Course[]>([]);
+  const [allCourses, setAllCourses] = useState<T.Course[]>([]);
   const [groups, setGroups] = useState<T.StudentGroup[]>([]);
 
   const [classroom, setClassroom] = useState<T.Classroom | null>(null);
@@ -100,19 +101,36 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           api.rooms.getAll(), api.teachers.getAll(), api.courses.getAll(), api.groups.getAll()
         ]);
         setClassrooms(roomsRes); setTeachers(teachersRes); setCourses(coursesRes); setGroups(groupsRes);
+        setAllCourses(coursesRes);
 
         if (data) {
           setClassroom(roomsRes.find((r: T.Classroom) => r.id === data.tilaId) ?? null);
           setTeacher(teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null);
-          setCourse(coursesRes.find((c: T.Course) => c.id === data.kurssiId) ?? null);
+          // prefer teacher-specific kurssit if provided
+          const selTeacher = teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null;
+          if (selTeacher && (selTeacher as any).kurssit && (selTeacher as any).kurssit.length > 0) {
+            setCourses((selTeacher as any).kurssit);
+            setCourse((selTeacher as any).kurssit.find((c: any) => c.id === data.kurssiId) ?? null);
+          } else {
+            setCourse(coursesRes.find((c: T.Course) => c.id === data.kurssiId) ?? null);
+          }
           setGroup(groupsRes.find((g: T.StudentGroup) => g.id === data.ryhmaId) ?? null);
           setDate(dayjs(data.alkaa));
           setUseDateRange(false);
         } else {
           const defaults = loadDefaults();
           if (defaults.classroomId) setClassroom(roomsRes.find((r: T.Classroom) => r.id === defaults.classroomId) ?? null);
-          if (defaults.teacherId) setTeacher(teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null);
-          if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
+          if (defaults.teacherId) {
+            const t = teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null;
+            setTeacher(t);
+            if (t && (t as any).kurssit && (t as any).kurssit.length > 0) {
+              setCourses((t as any).kurssit);
+              if (defaults.courseId) setCourse((t as any).kurssit.find((c: any) => c.id === defaults.courseId) ?? null);
+            } else {
+              if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
+            }
+          }
+          if (!defaults.teacherId && defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
           if (defaults.groupId) setGroup(groupsRes.find((g: T.StudentGroup) => g.id === defaults.groupId) ?? null);
           if (defaults.slotKey) setSelectedSlot(defaults.slotKey);
         }
@@ -293,7 +311,16 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 <Autocomplete
                   options={teachers}
                   value={teacher}
-                  onChange={(_, val) => { setTeacher(val); setError(null); }}
+                  onChange={(_, val) => {
+                    setTeacher(val);
+                    setError(null);
+                    if (val && (val as any).kurssit && (val as any).kurssit.length > 0) {
+                      setCourses((val as any).kurssit);
+                    } else {
+                      setCourses(allCourses);
+                    }
+                    setCourse(null);
+                  }}
                   getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderInput={(params) => (
                     <TextField
