@@ -39,7 +39,6 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       setEmail(data.sahkoposti || '');
       setHoursPerYear(String(data.sopimustunnit || ''));
       setColor(data.vari || '#1976d2');
-      // set selected courses if provided by server
       if (data.kurssit && Array.isArray(data.kurssit)) {
         setSelectedCourses(data.kurssit);
       } else if (data.opettajaKurssit && Array.isArray(data.opettajaKurssit)) {
@@ -62,7 +61,6 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
         if (!mounted) return;
         setCourses(res || []);
       } catch (err) {
-        // ignore
       } finally {
         if (mounted) setLoadingCourses(false);
       }

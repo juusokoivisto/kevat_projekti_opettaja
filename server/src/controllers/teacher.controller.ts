@@ -9,9 +9,7 @@ export const getTeachers = async (_req: Request, res: Response) => {
     });
 
     const mapped = opettajat.map(o => {
-      // @ts-ignore
       const kurssit = (o.opettajaKurssit || []).map((r: any) => r.kurssi);
-      // @ts-ignore
       return { ...o, kurssit };
     });
 
@@ -33,11 +31,8 @@ export const createTeacher = async (req: Request<{}, {}, TeacherBody>, res: Resp
         const relationData = courseIds.map((kurssiId) => ({ opettajaId: opettaja.id, kurssiId }));
         for (const d of relationData) {
           try {
-            // create individually; ignore duplicate errors
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await tx.opettajaKurssi.create({ data: d as any });
           } catch (e: any) {
-            // ignore unique constraint errors (duplicate pairs)
             if (e?.code && String(e.code).startsWith('P2')) continue;
             throw e;
           }
@@ -93,10 +88,7 @@ export const getTeacherById = async (req: Request<{ id: string }>, res: Response
       return res.status(404).json({ error: 'Opettajaa ei löytynyt' });
     }
 
-    // map relation to kurssit for frontend convenience
-    // @ts-ignore
     const kurssit = (opettaja.opettajaKurssit || []).map((r: any) => r.kurssi);
-    // @ts-ignore
     res.json({ ...opettaja, kurssit });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
