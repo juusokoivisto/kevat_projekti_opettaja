@@ -1,17 +1,17 @@
 import { useState, useContext, useMemo, type JSX } from 'react'
 import {
-  Button, Box, Paper, Container, Tabs, Tab, 
-  Typography, Stack, CircularProgress, Chip
+  Box, Paper, Container, Tabs, Tab, 
+  CircularProgress
 } from '@mui/material'
 import { 
-  School, Group, MeetingRoom, Book, Add 
+  School, Group, MeetingRoom, Book
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../App'
 import { api } from '../api'
 import { useCourses, useGroups, useTeachers, useRooms, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 // Form Dialogs
 import CourseFormDialog from '../components/dialogs/CourseFormDialog'
@@ -19,16 +19,16 @@ import GroupFormDialog from '../components/dialogs/GroupFormDialog'
 import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
 
-// Type definition to satisfy TypeScript for the dynamic API calls
 interface ManagementConfig {
   label: string;
+  singularLabel: string;
   key: string;
   icon: JSX.Element;
   data: any[];
   deleteApi: (ids: any[]) => Promise<any>;
   Dialog: React.ComponentType<any>;
   columns: GridColDef[];
-  detailPath?: string; // Optional path for "Open" button navigation
+  detailPath?: string;
 }
 
 export default function UnifiedManagementPage() {
@@ -40,7 +40,6 @@ export default function UnifiedManagementPage() {
   const [open, setOpen] = useState(false)
   const [editingRow, setEditingRow] = useState<any | null>(null)
 
-  // Fetching all resources
   const courses = useCourses()
   const groups = useGroups()
   const teachers = useTeachers()
@@ -49,13 +48,13 @@ export default function UnifiedManagementPage() {
   const configs: ManagementConfig[] = useMemo(() => [
     {
       label: 'Kurssit',
+      singularLabel: 'kurssi',
       key: 'courses',
       icon: <Book />,
       data: courses.data || [],
       deleteApi: (ids) => api.courses.deleteMany(ids),
       Dialog: CourseFormDialog,
       columns: [
-        { field: 'id', headerName: 'ID', width: 90 },
         { field: 'nimi', headerName: 'Kurssi', flex: 1 },
         { field: 'koodi', headerName: 'Koodi', width: 120 },
         { field: 'opintopisteet', headerName: 'OP', width: 80 },
@@ -63,13 +62,13 @@ export default function UnifiedManagementPage() {
     },
     {
       label: 'Ryhmät',
+      singularLabel: 'ryhmä',
       key: 'groups',
       icon: <Group />,
       data: groups.data || [],
       deleteApi: (ids) => api.groups.deleteMany(ids as number[]),
       Dialog: GroupFormDialog,
       columns: [
-        { field: 'id', headerName: 'ID', width: 90 },
         { field: 'ryhmatunnus', headerName: 'Ryhmatunnus', flex: 1 },
         { field: 'tutkintoOhjelma', headerName: 'Tutkinto-ohjelma', flex: 1 },
         { field: 'opiskelijamaara', headerName: 'Määrä', width: 100 }
@@ -77,6 +76,7 @@ export default function UnifiedManagementPage() {
     },
     {
       label: 'Opettajat',
+      singularLabel: 'opettaja',
       key: 'teachers',
       icon: <School />,
       data: teachers.data || [],
@@ -87,40 +87,19 @@ export default function UnifiedManagementPage() {
         { field: 'nimi', headerName: 'Etunimi', flex: 1 },
         { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
         { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1.5 },
-        { 
-          field: 'vapaaResurssi', 
-          headerName: 'Resurssi', 
-          width: 120,
-          renderCell: (params) => (
-            <Chip 
-              label={`${params.value}h`} 
-              color={params.value > 10 ? "success" : "warning"} 
-              variant="outlined" 
-              size="small" 
-            />
-          )
-        }
       ]
     },
     {
       label: 'Luokkahuoneet',
+      singularLabel: 'luokkahuone',
       key: 'rooms',
       icon: <MeetingRoom />,
       data: rooms.data || [],
       deleteApi: (ids) => api.rooms.deleteMany(ids),
       Dialog: ClassroomFormDialog,
       columns: [
-        { field: 'id', headerName: 'ID', width: 90 },
         { field: 'huoneenNumero', headerName: 'Huone', flex: 1 },
         { field: 'kapasiteetti', headerName: 'Kapasiteetti', width: 130 },
-        { 
-          field: 'tyyppi', 
-          headerName: 'Tyyppi', 
-          flex: 1,
-          renderCell: (params) => (
-            <Chip label={params.value} size="small" color="primary" />
-          )
-        }
       ]
     }
   ], [courses.data, groups.data, teachers.data, rooms.data])
@@ -137,28 +116,6 @@ export default function UnifiedManagementPage() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.5px' }}>
-            Hallintapaneeli
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Hallitse oppilaitoksen resursseja yhdessä näkymässä
-          </Typography>
-        </Box>
-        
-        {user && (
-          <Button 
-            variant="contained" 
-            startIcon={<Add />} 
-            onClick={() => { setEditingRow(null); setOpen(true); }}
-            sx={{ borderRadius: '8px', px: 3, py: 1.2, textTransform: 'none', fontWeight: 'bold' }}
-          >
-            Lisää uusi {current.label.toLowerCase()}
-          </Button>
-        )}
-      </Stack>
-
       <Paper 
         elevation={0} 
         sx={{ 
@@ -192,9 +149,12 @@ export default function UnifiedManagementPage() {
             columns={current.columns}
             checkboxSelection
             disableRowSelectionOnClick
+            onAddRow={user ? () => { setEditingRow(null); setOpen(true); } : undefined}
+            addButtonLabel={`Lisää uusi ${current.singularLabel}`}
             showOpenButton={Boolean(current.detailPath)}
-            onOpenRow={current.detailPath ? (id) => navigate(`${current.detailPath}/${id}`) : undefined}
-            onDeleteRows={async (ids: (string | number)[]) => {
+            onRowClick={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
+            onOpenRow={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
+            onDeleteRows={async (ids: GridRowId[]) => {
               try {
                 await current.deleteApi(ids);
                 invalidate(current.key);
@@ -202,7 +162,7 @@ export default function UnifiedManagementPage() {
                 console.error("Delete failed", err);
               }
             }}
-            onEditRow={(id) => {
+            onEditRow={(id: GridRowId) => {
               setEditingRow(current.data.find((r: any) => r.id === id))
               setOpen(true)
             }}
@@ -211,15 +171,17 @@ export default function UnifiedManagementPage() {
         </Box>
       </Paper>
 
-      <current.Dialog
-        open={open}
-        data={editingRow}
-        onClose={() => {
-          setOpen(false)
-          setEditingRow(null)
-          invalidate(current.key)
-        }}
-      />
+      {user && (
+        <current.Dialog
+          open={open}
+          data={editingRow}
+          onClose={() => {
+            setOpen(false)
+            setEditingRow(null)
+            invalidate(current.key)
+          }}
+        />
+      )}
     </Container>
   )
 }
