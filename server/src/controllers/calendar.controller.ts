@@ -61,6 +61,7 @@ export const updateEvent = async (
 
     const result = await prisma.$transaction(async (tx) => {
       await CalendarService.validateEvent(tx, {
+        id,
         huoneId: req.body.huoneId,
         opettajaId: req.body.opettajaId,
         ryhmaId: req.body.ryhmaId,

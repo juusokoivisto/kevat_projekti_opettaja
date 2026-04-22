@@ -40,8 +40,15 @@ export interface CalendarBody {
   paattyy: string;
 }
 
-export interface CalendarEvent extends CalendarBody {
+export interface CalendarEvent {
   id: number;
+  tilaId: number;
+  opettajaId: number;
+  kurssiId: number;
+  ryhmaId: number;
+  alkaa: string;
+  paattyy: string;
+
   tila?: Classroom;
   opettaja?: Teacher;
   kurssi?: Course;

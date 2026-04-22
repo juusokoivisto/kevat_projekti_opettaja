@@ -34,7 +34,7 @@ export const formatCalendarEvent = (
   e: T.CalendarEvent,
   darkMode: boolean
 ): FormattedCalendarEvent => {
-  const resId = String(e.huoneId || e.tila?.id || 'unassigned');
+  const resId = String(e.tilaId || e.tila?.id || 'unassigned');
 
   return {
     id: String(e.id),
@@ -50,10 +50,10 @@ export const formatCalendarEvent = (
       opettajaLyhyt: getTeacherShortName(e.opettaja),
       opettajaId: e.opettaja?.id,
       kurssi: e.kurssi?.nimi || '',
-      kurssiId: e.kurssi?.id,   
+      kurssiId: e.kurssi?.id,
       kurssiKoodi: e.kurssi?.koodi || '',
       huoneNumero: e.tila?.huoneenNumero || '?',
-      tilaId: e.huoneId || e.tila?.id,
+      tilaId: e.tilaId || e.tila?.id,
 
     }
   };

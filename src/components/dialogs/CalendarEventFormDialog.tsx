@@ -115,7 +115,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   }, [open]);
   useEffect(() => {
     if (data) {
-      setClassroom(classrooms.find(r => r.id === data.tila?.id) ?? null);
+      setClassroom(classrooms.find(r => r.id === data.tilaId) ?? null);
       setTeacher(teachers.find(t => t.id === data.opettajaId) ?? null);
       setCourse(courses.find(c => c.id === data.kurssiId) ?? null);
       setGroup(groups.find(g => g.id === data.ryhmaId) ?? null);

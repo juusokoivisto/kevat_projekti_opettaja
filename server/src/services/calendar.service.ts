@@ -1,6 +1,7 @@
 export const validateEvent = async (
   tx: any,
   data: {
+    id?: number;
     huoneId: number;
     opettajaId: number;
     ryhmaId: number;
@@ -8,21 +9,22 @@ export const validateEvent = async (
     end: Date;
   }
 ) => {
-  const { huoneId, opettajaId, ryhmaId, start, end } = data;
+  const { id, huoneId, opettajaId, ryhmaId, start, end } = data;
+
+  const notSelf = id ? { NOT: { id } } : {};
 
   const lunchStart = new Date(start);
   lunchStart.setHours(11, 0, 0, 0);
   const lunchEnd = new Date(start);
   lunchEnd.setHours(11, 45, 0, 0);
-
   if (start < lunchEnd && end > lunchStart) {
     throw new Error(`Lounastauon päällekkäisyys päivänä ${start.toLocaleDateString('fi-FI')}`);
   }
 
   const [roomConflict, teacherConflict, groupConflict] = await Promise.all([
-    tx.tyojarjestys.findFirst({ where: { tilaId: huoneId, alkaa: { lt: end }, paattyy: { gt: start } } }),
-    tx.tyojarjestys.findFirst({ where: { opettajaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
-    tx.tyojarjestys.findFirst({ where: { ryhmaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+    tx.tyojarjestys.findFirst({ where: { ...notSelf, tilaId: huoneId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+    tx.tyojarjestys.findFirst({ where: { ...notSelf, opettajaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
+    tx.tyojarjestys.findFirst({ where: { ...notSelf, ryhmaId, alkaa: { lt: end }, paattyy: { gt: start } } }),
   ]);
 
   const dateStr = start.toLocaleDateString('fi-FI');
