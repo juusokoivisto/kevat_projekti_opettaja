@@ -1,109 +1,123 @@
 // Prisma Schema v4.16
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Opettaja {
-  id                Int                 @id @default(autoincrement())
-  nimi              String
-  sukunimi          String
-  sahkoposti        String              @unique
-  sopimustunnit     Int                 @map("sopimustunnit_vuosi")
-  vapaaResurssi     Int                 @map("vapaa_resurssi")
-  vari              String?             @map("vari")
-  
-  // Suhteet
-  varaukset         Resurssivaraus[]
-  tyojarjestykset   Tyojarjestys[]
+  id                Int                 @id @default(autoincrement())
+  nimi              String
+  sukunimi          String
+  sahkoposti        String              @unique
+  sopimustunnit     Int                 @map("sopimustunnit_vuosi")
+  vapaaResurssi     Int                 @map("vapaa_resurssi")
+  vari              String?             @map("vari")
+  
+  // Suhteet
+  varaukset         Resurssivaraus[]
+  tyojarjestykset   Tyojarjestys[]
+  opettajaKurssit   OpettajaKurssi[]
 
-  @@map("opettajat")
+  @@map("opettajat")
 }
 
 model Kurssi {
-  id                Int                 @id @default(autoincrement())
-  nimi              String
-  koodi              String              @unique
-  opintopisteet     Int
-  suunnitellutTunnit Int                 @map("suunnitellut_tunnit")
+  id                Int                 @id @default(autoincrement())
+  nimi              String
+  koodi              String              @unique
+  opintopisteet     Int
+  suunnitellutTunnit Int                 @map("suunnitellut_tunnit")
 
-  // Suhteet
-  varaukset         Resurssivaraus[]
-  tyojarjestykset   Tyojarjestys[]
+  // Suhteet
+  varaukset         Resurssivaraus[]
+  tyojarjestykset   Tyojarjestys[]
+  opettajaKurssit   OpettajaKurssi[]
 
-  @@map("kurssit")
+  @@map("kurssit")
 }
 
 model Opiskelijaryhma {
-  id                Int                 @id @default(autoincrement())
-  ryhmatunnus       String              @unique
-  aloitusvuosi      Int
-  opiskelijamaara   Int
-  tutkintoOhjelma   String              @map("tutkinto_ohjelma")
+  id                Int                 @id @default(autoincrement())
+  ryhmatunnus       String              @unique
+  aloitusvuosi      Int
+  opiskelijamaara   Int
+  tutkintoOhjelma   String              @map("tutkinto_ohjelma")
 
-  // Suhteet
-  varaukset         Resurssivaraus[]
-  tyojarjestykset   Tyojarjestys[]
+  // Suhteet
+  varaukset         Resurssivaraus[]
+  tyojarjestykset   Tyojarjestys[]
 
-  @@map("opiskelijaryhmat")
+  @@map("opiskelijaryhmat")
 }
 
 model Resurssivaraus {
-  id                Int                 @id @default(autoincrement())
-  opettajaId        Int                 @map("opettaja_id")
-  kurssiId          Int                 @map("kurssi_id")
-  ryhmaId           Int                 @map("ryhma_id")
-  varatutTunnit     Int                 @map("varatut_tunnit")
-  rooli             String
+  id                Int                 @id @default(autoincrement())
+  opettajaId        Int                 @map("opettaja_id")
+  kurssiId          Int                 @map("kurssi_id")
+  ryhmaId           Int                 @map("ryhma_id")
+  varatutTunnit     Int                 @map("varatut_tunnit")
+  rooli             String
 
-  // Suhteet
-  opettaja          Opettaja            @relation(fields: [opettajaId], references: [id])
-  kurssi            Kurssi              @relation(fields: [kurssiId], references: [id])
-  ryhma             Opiskelijaryhma     @relation(fields: [ryhmaId], references: [id])
+  // Suhteet
+  opettaja          Opettaja            @relation(fields: [opettajaId], references: [id])
+  kurssi            Kurssi              @relation(fields: [kurssiId], references: [id])
+  ryhma             Opiskelijaryhma     @relation(fields: [ryhmaId], references: [id])
 
-  @@map("resurssivaraukset")
+  @@map("resurssivaraukset")
 }
 
 model Tyojarjestys {
-  id                Int                 @id @default(autoincrement())
-  kurssiId          Int                 @map("kurssi_id")
-  opettajaId        Int                 @map("opettaja_id")
-  ryhmaId           Int                 @map("ryhma_id")
-  tilaId            Int                 @map("tila_id")
-  alkaa             DateTime
-  paattyy           DateTime
+  id                Int                 @id @default(autoincrement())
+  kurssiId          Int                 @map("kurssi_id")
+  opettajaId        Int                 @map("opettaja_id")
+  ryhmaId           Int                 @map("ryhma_id")
+  tilaId            Int                 @map("tila_id")
+  alkaa             DateTime
+  paattyy           DateTime
 
-  // Suhteet
-  kurssi            Kurssi              @relation(fields: [kurssiId], references: [id])
-  opettaja          Opettaja            @relation(fields: [opettajaId], references: [id])
-  ryhma             Opiskelijaryhma     @relation(fields: [ryhmaId], references: [id])
-  tila              Tila                @relation(fields: [tilaId], references: [id])
+  // Suhteet
+  kurssi            Kurssi              @relation(fields: [kurssiId], references: [id])
+  opettaja          Opettaja            @relation(fields: [opettajaId], references: [id])
+  ryhma             Opiskelijaryhma     @relation(fields: [ryhmaId], references: [id])
+  tila              Tila                @relation(fields: [tilaId], references: [id])
 
-  @@map("tyojarjestys")
+  @@map("tyojarjestys")
 }
 
 model Tila {
-  id                Int                 @id @default(autoincrement())
-  huoneenNumero     String              @map("huoneen_numero")
-  kapasiteetti      Int
-  tyyppi            String
+  id                Int                 @id @default(autoincrement())
+  huoneenNumero     String              @map("huoneen_numero")
+  kapasiteetti      Int
+  tyyppi            String
 
-  // Suhteet
-  tyojarjestykset   Tyojarjestys[]
+  // Suhteet
+  tyojarjestykset   Tyojarjestys[]
 
-  @@map("tilat")
+  @@map("tilat")
 }
 
 model Yllapitaja {
-  id                Int                 @id @default(autoincrement())
-  kayttajatunnus    String              @unique
-  salasanaHash      String              @map("salasana_hash")
-  nimi              String
+  id                Int                 @id @default(autoincrement())
+  kayttajatunnus    String              @unique
+  salasanaHash      String              @map("salasana_hash")
+  nimi              String
 
-  @@map("yllapitajat")
+  @@map("yllapitajat")
+}
+
+model OpettajaKurssi {
+  id          Int      @id @default(autoincrement())
+  opettajaId  Int      @map("opettaja_id")
+  kurssiId    Int      @map("kurssi_id")
+
+  opettaja    Opettaja @relation(fields: [opettajaId], references: [id])
+  kurssi      Kurssi   @relation(fields: [kurssiId], references: [id])
+
+  @@unique([opettajaId, kurssiId])
+  @@map("opettaja_kurssit")
 }
