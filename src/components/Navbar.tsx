@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { label: 'Luokkahuoneet', path: '/classrooms' },
   { label: 'Ryhmät', path: '/group' },
   { label: 'Kurssit', path: '/courses' },
+  { label: 'Hallinta', path: '/management' },
 ];
 
 // Thinner styling for buttons: smaller font and less padding
