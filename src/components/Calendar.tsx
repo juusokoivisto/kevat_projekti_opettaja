@@ -363,7 +363,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           filterResourcesWithEvents={true}
           allDaySlot={false}
           slotMinTime="07:00:00"
-          slotMaxTime="20:00:00"
+          slotMaxTime="22:00:00"
           contentHeight="auto"
           locale={fiLocale}
           slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
