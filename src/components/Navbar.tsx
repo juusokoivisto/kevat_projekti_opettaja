@@ -17,10 +17,11 @@ import type { AuthUser } from '../api/types/api.types';
 
 const NAV_ITEMS = [
   { label: 'Kalenteri', path: '/' },
-  { label: 'Opettajat', path: '/teachers' },
-  { label: 'Luokkahuoneet', path: '/classrooms' },
-  { label: 'Ryhmät', path: '/group' },
-  { label: 'Kurssit', path: '/courses' },
+  // { label: 'Opettajat', path: '/teachers' },
+  // { label: 'Luokkahuoneet', path: '/classrooms' },
+  // { label: 'Ryhmät', path: '/group' },
+  // { label: 'Kurssit', path: '/courses' },
+  { label: 'Hallinta', path: '/management' },
 ];
 
 const navButtonSx = {
@@ -53,6 +54,7 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
         open={Boolean(anchor)}
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{ mt: '40px' }}
         sx={{ mt: '40px' }}
       >
         <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
@@ -104,7 +106,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             Työjärjestykset
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'none' }, ml: 2 }}>
             <IconButton size="small" onClick={(e) => setMobileMenuAnchor(e.currentTarget)} color="inherit">
               <MenuIcon />
             </IconButton>
@@ -122,7 +124,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             </Menu>
           </Box>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, alignSelf: 'stretch' }}>
+          <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' }, alignSelf: 'stretch', ml: 3 }}>
             {NAV_ITEMS.map(({ label, path }) => (
               <Button key={label} onClick={() => navigate(path)} sx={navButtonSx}>
                 {label}
@@ -130,7 +132,7 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             ))}
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch', ml: 'auto' }}>
             {!user && (
               <Button onClick={onLoginClick} sx={navButtonSx}>
                 Kirjaudu

@@ -52,64 +52,62 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   const title = eventInfo.event.title
 
   return (
-    <Tooltip title={opettaja || ''} arrow placement="top" disableInteractive>
+    <Tooltip title={`${title} | ${opettaja}`} arrow placement="top" disableInteractive>
       <Box sx={{
         width: '100%',
         height: '100%',
-        padding: '2px 4px',
+        padding: '1px 3px',
         display: 'flex',
         flexDirection: 'column',
         color: '#fff',
         overflow: 'hidden',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        gap: '0.5px'
       }}>
-        <Typography variant="caption" sx={{
+        <Typography sx={{
           fontWeight: 'bold',
           lineHeight: 1.1,
-          fontSize: '0.75rem',
+          fontSize: '0.65rem',
           display: '-webkit-box',
-          WebkitLineClamp: 2,
+          WebkitLineClamp: 3,
           WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          wordBreak: 'break-all'
         }}>
           {title}
         </Typography>
 
-        <Typography variant="caption" sx={{
-          fontSize: '0.65rem',
-          lineHeight: 1,
-          opacity: 0.9
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          mt: 0.1
         }}>
-          {ryhmaTunnus}
-        </Typography>
-
-        <Typography variant="caption" sx={{
-          fontSize: '0.65rem',
-          lineHeight: 1,
-          opacity: 0.9
-        }}>
-          {huoneNumero}
-        </Typography>
-
-        {opettajaLyhyt && (
-          <Typography
-            variant="caption"
-            component="a"
-            href={`/teachers/${opettajaId}`}
-            onClick={(e) => e.stopPropagation()}
-            sx={{
-              mt: 'auto',
-              alignSelf: 'flex-end',
-              fontWeight: 'bold',
-              fontSize: '0.7rem',
-              color: 'inherit',
-              textDecoration: 'none',
-              '&:hover': { textDecoration: 'underline' }
-            }}
-          >
-            {opettajaLyhyt}
+          <Typography sx={{ fontSize: '0.55rem', fontWeight: 600, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+            {ryhmaTunnus}
           </Typography>
-        )}
+          <Typography sx={{ fontSize: '0.55rem', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+            {huoneNumero}
+          </Typography>
+          {opettajaLyhyt && (
+            <Typography
+              component="a"
+              href={`/teachers/${opettajaId}`}
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                fontSize: '0.55rem',
+                fontWeight: 600,
+                color: 'inherit',
+                textDecoration: 'none',
+                opacity: 0.95,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+            >
+              {opettajaLyhyt}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Tooltip>
   )
@@ -196,7 +194,6 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
   const handleEventDidMount = useCallback((info: any) => {
     const bgColor = info.event.backgroundColor
     if (bgColor) {
-      info.el.style.borderColor = bgColor
       info.el.style.backgroundColor = bgColor
     }
 
@@ -363,7 +360,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           filterResourcesWithEvents={true}
           allDaySlot={false}
           slotMinTime="07:00:00"
-          slotMaxTime="20:00:00"
+          slotMaxTime="22:00:00"
           contentHeight="auto"
           locale={fiLocale}
           slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
