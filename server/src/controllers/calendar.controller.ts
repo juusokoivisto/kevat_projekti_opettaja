@@ -102,7 +102,7 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
         end
       });
 
-      return await tx.tyojarjestys.create({
+      const created = await tx.tyojarjestys.create({
         data: {
           tilaId: Number(req.body.huoneId),
           opettajaId: Number(req.body.opettajaId),
@@ -113,6 +113,18 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
         },
         include: { tila: true, opettaja: true, kurssi: true },
       });
+
+      
+      const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
+      const decrement = Math.ceil(durationHours);
+      if (created.opettajaId) {
+        const teacher = await tx.opettaja.findUnique({ where: { id: created.opettajaId } });
+        const current = teacher?.vapaaResurssi ?? 0;
+        const updated = Math.max(0, current - decrement);
+        await tx.opettaja.update({ where: { id: created.opettajaId }, data: { vapaaResurssi: updated } });
+      }
+
+      return created;
     });
 
     res.status(201).json(result);
@@ -147,6 +159,17 @@ export const createManyEvents = async (req: Request<{}, {}, CalendarBody[]>, res
             paattyy: end,
           }
         });
+
+        
+        const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
+        const decrement = Math.ceil(durationHours);
+        if (newEvent.opettajaId) {
+          const teacher = await tx.opettaja.findUnique({ where: { id: newEvent.opettajaId } });
+          const current = teacher?.vapaaResurssi ?? 0;
+          const updated = Math.max(0, current - decrement);
+          await tx.opettaja.update({ where: { id: newEvent.opettajaId }, data: { vapaaResurssi: updated } });
+        }
+
         created.push(newEvent);
       }
       return created;
