@@ -7,6 +7,7 @@ import { Menu as MenuIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../App';
 import type { AuthUser } from '../api/types/api.types';
+import { useQueryClient } from '@tanstack/react-query';
 
 const NAV_ITEMS = [
   { label: 'Kalenteri', path: '/' },
@@ -86,9 +87,16 @@ export default function Navbar({ onLoginClick }: { onLoginClick: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const queryClient = useQueryClient();
+
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
     setUser(null);
+
+    queryClient.clear();
+
     navigate('/');
   };
 
