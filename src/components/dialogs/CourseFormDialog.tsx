@@ -93,13 +93,23 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
           <TextField
             label="Opintopisteet"
             value={op}
-            onChange={(e) => setOp(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setOp(value);
+              }
+            }}
           />
 
           <TextField
             label="Suunnitellut tunnit"
             value={suunnitellutTunnit}
-            onChange={(e) => setSuunnitellutTunnit(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setSuunnitellutTunnit(value);
+              }
+            }}
           />
 
         </Box>
