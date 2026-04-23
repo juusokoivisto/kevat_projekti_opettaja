@@ -21,11 +21,14 @@ export const findTeacherById = async (id: number) => {
 };
 
 export const createTeacher = async (body: TeacherBody) => {
-  const { nimi, sukunimi, sahkoposti, sopimustunnit = 0, vapaaResurssi = 0, vari, courseIds = [] } = body;
+  const { nimi, sukunimi, sahkoposti, sopimustunnit = 0, vapaaResurssi, vari, courseIds = [] } = body;
+
+  // If vapaaResurssi not provided, initialize it equal to sopimustunnit
+  const initialVapaa = typeof vapaaResurssi === 'number' ? vapaaResurssi : sopimustunnit;
 
   return prisma.$transaction(async (tx) => {
     const opettaja = await tx.opettaja.create({
-      data: { nimi, sukunimi, sahkoposti, sopimustunnit, vapaaResurssi, vari },
+      data: { nimi, sukunimi, sahkoposti, sopimustunnit, vapaaResurssi: initialVapaa, vari },
     });
 
     for (const kurssiId of courseIds) {

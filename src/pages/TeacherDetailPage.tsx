@@ -55,7 +55,10 @@ export default function TeacherDetailsPage() {
   const handleEventDialogClose = async (shouldRefresh?: boolean) => {
     setEventEditOpen(false)
     setEditingEvent(null)
-    if (shouldRefresh === true) await invalidate('calendar')
+    if (shouldRefresh === true) {
+      await invalidate('calendar')
+      await invalidate('teachers')
+    }
   }
 
   return (
