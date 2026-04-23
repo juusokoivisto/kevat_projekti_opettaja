@@ -23,7 +23,9 @@ export default function MainPage() {
   }
 
   return (
-    <Container maxWidth="xl">
+    // disableGutters prevent the side-padding that shifts the layout on mobile
+    // sx={{ mt: 2 }} ensures it doesn't sit directly under the fixed header
+    <Container maxWidth="xl" disableGutters sx={{ mt: 1, px: { xs: 0, sm: 1 } }}>
       <Suspense fallback={null}>
         {open && (
           <CalendarEventFormDialog
@@ -34,7 +36,14 @@ export default function MainPage() {
         )}
       </Suspense>
 
-      <Paper elevation={2}>
+      <Paper
+        elevation={2}
+        sx={{
+          borderRadius: 0,
+          overflow: 'hidden',
+          width: '100%'
+        }}
+      >
         <Calendar
           teacherId={undefined}
           onEdit={(id) => {
@@ -48,6 +57,6 @@ export default function MainPage() {
           }}
         />
       </Paper>
-    </Container >
+    </Container>
   )
 }

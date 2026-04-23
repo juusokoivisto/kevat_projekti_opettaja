@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {
   AppBar, Box, Toolbar, IconButton, Typography,
-  Menu, Container, Avatar, Button, MenuItem, Divider
+  Menu, Avatar, Button, MenuItem, Divider
 } from '@mui/material';
 import { Menu as MenuIcon, Logout as LogoutIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../App';
 import type { AuthUser } from '../api/types/api.types';
 
@@ -26,8 +26,9 @@ const navButtonSx = {
   '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.12)' },
 };
 
-type NavbarProps = {
-  onLoginClick: () => void;
+const dividerSx = {
+  borderColor: 'rgba(255, 255, 255, 0.1)',
+  borderWidth: '1px',
 };
 
 function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
@@ -35,35 +36,41 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
   const displayName = user.nimi || user.username || 'User';
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <IconButton
+    <Box sx={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
+      <Divider orientation="vertical" flexItem sx={dividerSx} />
+      <Button
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ p: 0, width: 36, height: 36 }}
+        sx={{ ...navButtonSx, px: 2, display: 'flex', gap: 1.5 }}
       >
-        <Avatar sx={{ width: 28, height: 28, bgcolor: 'secondary.main', fontSize: '0.875rem' }}>
+        <Typography variant="body2" sx={{ fontWeight: 500, color: 'inherit' }}>
+          {displayName}
+        </Typography>
+        <Avatar
+          sx={{
+            width: 26,
+            height: 26,
+            bgcolor: '#C697E1',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: 'black'
+          }}
+        >
           {displayName.charAt(0).toUpperCase()}
         </Avatar>
-      </IconButton>
+      </Button>
+
       <Menu
         anchorEl={anchor}
         open={Boolean(anchor)}
         onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        sx={{ mt: '40px' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        disableScrollLock
+        slotProps={{ paper: { sx: { mt: '1px', minWidth: 180, borderRadius: 0 } } }}
       >
-        <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
-
-        <Divider />
-
         <MenuItem
           onClick={() => { onLogout(); setAnchor(null); }}
-          sx={{
-            color: '#ff1744',
-            fontWeight: 500,
-            display: 'flex',
-            gap: 1,
-            '&:hover': { backgroundColor: 'rgba(255, 23, 68, 0.08)' },
-          }}
+          sx={{ color: '#ff1744', fontSize: '0.875rem', gap: 1.5 }}
         >
           <LogoutIcon fontSize="small" />
           Kirjaudu ulos
@@ -73,106 +80,116 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
   );
 }
 
-export default function Navbar({ onLoginClick }: NavbarProps) {
-  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
+export default function Navbar({ onLoginClick }: { onLoginClick: () => void }) {
+  const [mobileAnchor, setMobileAnchor] = React.useState<null | HTMLElement>(null);
   const { user, setUser } = React.useContext(UserContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const closeMobileMenu = () => setMobileMenuAnchor(null);
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
+  };
 
   return (
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
-        <Toolbar
-          variant="dense"
-          disableGutters
-          sx={{ height: 48, minHeight: 48, gap: 1 }}
-        >
+      <Toolbar
+        variant="dense"
+        disableGutters
+        sx={{
+          height: 48,
+          minHeight: 48,
+          display: 'flex',
+          justifyContent: 'space-between',
+          px: 0
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
+          <IconButton
+            color="inherit"
+            onClick={(e) => setMobileAnchor(e.currentTarget)}
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              px: 2,
+              borderRadius: 0,
+              ml: 0
+            }}
+          >
+            <MenuIcon fontSize="small" />
+          </IconButton>
+
           <Typography
             variant="subtitle1"
-            component="a"
-            href="/"
-            noWrap
+            component="div"
+            onClick={() => navigate('/')}
             sx={{
               fontFamily: 'monospace',
               fontWeight: 700,
               letterSpacing: '.05rem',
               fontSize: '1.05rem',
-              color: 'inherit',
-              textDecoration: 'none',
-              flexShrink: 0,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              px: 2,
             }}
           >
             Työjärjestykset
           </Typography>
 
-          <Box
-            component="nav"
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'stretch',
-              height: '100%',
-              ml: 3,
-            }}
-          >
-            {NAV_ITEMS.map(({ label, path }) => (
-              <Button key={label} onClick={() => navigate(path)} sx={navButtonSx}>
-                {label}
-              </Button>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'stretch' }}>
+            <Divider orientation="vertical" flexItem sx={dividerSx} />
+            {NAV_ITEMS.map((item) => (
+              <React.Fragment key={item.label}>
+                <Button
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    ...navButtonSx,
+                    backgroundColor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent'
+                  }}
+                >
+                  {item.label}
+                </Button>
+                <Divider orientation="vertical" flexItem sx={dividerSx} />
+              </React.Fragment>
             ))}
           </Box>
+        </Box>
 
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-            {!user && (
+        <Box sx={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
+          {user ? (
+            <UserMenu user={user} onLogout={handleLogout} />
+          ) : (
+            <>
+              <Divider orientation="vertical" flexItem sx={dividerSx} />
               <Button onClick={onLoginClick} sx={navButtonSx}>
                 Kirjaudu
               </Button>
-            )}
+              <Divider orientation="vertical" flexItem sx={dividerSx} />
+            </>
+          )}
+        </Box>
 
-            {user && (
-              <UserMenu
-                user={user}
-                onLogout={() => {
-                  localStorage.removeItem('token');
-                  setUser(null);
-                  navigate('/');
-                }}
-              />
-            )}
-
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
-              sx={{ display: { xs: 'flex', md: 'none' } }}
+        <Menu
+          anchorEl={mobileAnchor}
+          open={Boolean(mobileAnchor)}
+          onClose={() => setMobileAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          disableScrollLock
+          slotProps={{ paper: { sx: { width: 200, borderRadius: 0, mt: '1px' } } }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <MenuItem
+              key={item.label}
+              onClick={() => { navigate(item.path); setMobileAnchor(null); }}
+              selected={location.pathname === item.path}
             >
-              <MenuIcon fontSize="small" />
-            </IconButton>
-          </Box>
-
-          <Menu
-            anchorEl={mobileMenuAnchor}
-            open={Boolean(mobileMenuAnchor)}
-            onClose={closeMobileMenu}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            slotProps={{ paper: { elevation: 2, sx: { mt: 0.5, minWidth: 160 } } }}
-            sx={{ display: { xs: 'block', md: 'none' } }}
-          >
-            {NAV_ITEMS.map(({ label, path }) => (
-              <MenuItem
-                key={label}
-                onClick={() => { closeMobileMenu(); navigate(path); }}
-                sx={{ fontSize: '0.875rem' }}
-              >
-                {label}
-              </MenuItem>
-            ))}
-          </Menu>
-        </Toolbar>
-      </Container>
+              {item.label}
+            </MenuItem>
+          ))}
+        </Menu>
+      </Toolbar>
     </AppBar>
   );
 }
