@@ -1,9 +1,0 @@
-sc
-slc
-sl
-s
-s
-s
-s
-s
-sss

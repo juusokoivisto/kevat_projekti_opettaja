@@ -21,7 +21,6 @@ const ManagementPage = lazy(() => import('./pages/Management.tsx'))
 import type { AuthUser } from './api/types/api.types'
 import { getDesignTokens } from './Theme.tsx'
 import { jwtDecode } from 'jwt-decode'
-import UnifiedManagementPage from './pages/Management.tsx'
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
