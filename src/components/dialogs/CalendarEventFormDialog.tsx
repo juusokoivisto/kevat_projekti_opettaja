@@ -291,7 +291,22 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 <Autocomplete
                   options={courses}
                   value={course}
-                  onChange={(_, val) => { setCourse(val); setError(null); }}
+                  onChange={(_, val) => {
+                    setCourse(val);
+                    setError(null);
+
+                    if (!val) return;
+
+                    if (teacher) return;
+
+                    const foundTeacher = teachers.find(t =>
+                      (t as any).kurssit?.some((c: any) => c.id === val.id)
+                    );
+
+                    if (foundTeacher) {
+                      setTeacher(foundTeacher);
+                    }
+                  }}
                   getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
                   renderInput={(params) => (
                     <TextField
@@ -300,7 +315,11 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                       slotProps={{
                         input: {
                           ...params.InputProps,
-                          startAdornment: <InputAdornment position="start"><Book fontSize="small" /></InputAdornment>
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Book fontSize="small" />
+                            </InputAdornment>
+                          )
                         }
                       }}
                     />
@@ -313,12 +332,13 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                   onChange={(_, val) => {
                     setTeacher(val);
                     setError(null);
+
                     if (val && (val as any).kurssit && (val as any).kurssit.length > 0) {
                       setCourses((val as any).kurssit);
                     } else {
                       setCourses(allCourses);
                     }
-                    setCourse(null);
+
                   }}
                   getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderInput={(params) => (
