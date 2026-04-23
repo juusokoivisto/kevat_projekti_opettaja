@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo, type JSX } from 'react'
+import { useState, useContext, useMemo, useEffect, type JSX } from 'react'
 import {
   Box, Paper, Container, Tabs, Tab, 
   CircularProgress
@@ -6,7 +6,7 @@ import {
 import { 
   School, Group, MeetingRoom, Book
 } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { UserContext } from '../App'
 import { api } from '../api'
 import { useCourses, useGroups, useTeachers, useRooms, useInvalidate } from '../hooks/useQueries'
@@ -39,6 +39,7 @@ export default function UnifiedManagementPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [open, setOpen] = useState(false)
   const [editingRow, setEditingRow] = useState<any | null>(null)
+  const location = useLocation()
 
   const courses = useCourses()
   const groups = useGroups()
@@ -105,6 +106,14 @@ export default function UnifiedManagementPage() {
   ], [courses.data, groups.data, teachers.data, rooms.data])
 
   const current = configs[activeTab]
+
+  useEffect(() => {
+    const search = new URLSearchParams(location.search)
+    const tabParam = (search.get('tab') as string) || (location.state as any)?.tab
+    if (!tabParam) return
+    const idx = configs.findIndex(c => c.key === tabParam || c.label?.toLowerCase() === String(tabParam).toLowerCase())
+    if (idx >= 0) setActiveTab(idx)
+  }, [location.search, location.state, configs])
 
   if (courses.isLoading || groups.isLoading || teachers.isLoading || rooms.isLoading) {
     return (
