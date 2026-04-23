@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { DataGrid, type GridRowSelectionModel, type GridRowId, type GridColDef } from '@mui/x-data-grid';
+import {
+  DataGrid, type GridRowSelectionModel, type
+    GridRowId, type GridColDef
+} from '@mui/x-data-grid';
 import {
   TextField, Box, Button, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
+import {
+  Delete as DeleteIcon, OpenInFull as OpenInFullIcon,
+  Edit as EditIcon, Add as AddIcon
+} from '@mui/icons-material';
 import { UserContext } from '../App';
 
 interface DatagridComponentProps {
@@ -180,13 +183,13 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
         }}
         onRowSelectionModelChange={(newModel) => setSelectionModel(newModel as GridRowSelectionModel)}
         rowSelectionModel={selectionModel}
-        sx={{ 
-          width: '100%', 
+        sx={{
+          width: '100%',
           cursor: onRowClick ? 'pointer' : 'default',
           '& .MuiDataGrid-row:hover': {
             bgcolor: onRowClick ? 'action.hover' : 'inherit',
           },
-          ...(typeof sx === 'object' ? sx : {}) 
+          ...(typeof sx === 'object' ? sx : {})
         }}
       />
 

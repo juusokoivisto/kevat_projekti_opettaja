@@ -7,9 +7,7 @@ import {
   ToggleButton, ToggleButtonGroup, FormControlLabel,
   Switch, Typography, Divider, Box, InputAdornment
 } from '@mui/material';
-import {
-  School, Person, Room, Book, AccessTime
-} from '@mui/icons-material';
+import { School, Person, Room, Book, AccessTime } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -17,6 +15,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import 'dayjs/locale/fi';
+import {
+  SLOTS, type SlotKey,
+  saveDefaults, loadDefaults,
+  isWeekday, getWeekdaysBetween, getSlotTimes, buildEventsToCreate,
+} from '../../utils/calendarEventFormHelpers';
 
 dayjs.extend(isSameOrBefore);
 
@@ -25,39 +28,6 @@ interface CalendarEventFormDialogProps {
   onClose: (refresh?: boolean) => void;
   data?: T.CalendarEvent | null;
 }
-
-const SLOTS = {
-  aamu: { label: 'Aamutunnit', start: { h: 8, m: 0 }, end: { h: 11, m: 0 } },
-  iltapaiva: { label: 'Iltapäivätunnit', start: { h: 11, m: 45 }, end: { h: 14, m: 45 } },
-} as const;
-
-type SlotKey = keyof typeof SLOTS | 'molemmat';
-
-const STORAGE_KEY = 'calendarEventFormDefaults';
-
-const saveDefaults = (data: { classroomId?: number; teacherId?: number; courseId?: number; groupId?: number; slotKey?: SlotKey; }) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-};
-
-const loadDefaults = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
-};
-
-const isWeekday = (day: Dayjs) => day.day() !== 0 && day.day() !== 6;
-
-const getWeekdaysBetween = (start: Dayjs, end: Dayjs): Dayjs[] => {
-  const days: Dayjs[] = [];
-  let current = start.startOf('day');
-  const last = end.startOf('day');
-  while (current.isSameOrBefore(last)) {
-    if (isWeekday(current)) days.push(current);
-    current = current.add(1, 'day');
-  }
-  return days;
-};
 
 const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose, data }) => {
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
@@ -87,60 +57,75 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const activeDate = useDateRange ? dateRangeStart : date;
   const isMonday = activeDate?.day() === 1;
 
-  const getSlotTimes = (key: keyof typeof SLOTS) => {
-    const slot = SLOTS[key];
-    const startH = key === 'aamu' && isMonday ? 9 : slot.start.h;
-    return `${startH}:${String(slot.start.m).padStart(2, '0')} – ${slot.end.h}:${String(slot.end.m).padStart(2, '0')}`;
-  };
-
+  // ── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
-    const loadFormData = async () => {
+
+    const load = async () => {
       try {
         const [roomsRes, teachersRes, coursesRes, groupsRes] = await Promise.all([
-          api.rooms.getAll(), api.teachers.getAll(), api.courses.getAll(), api.groups.getAll()
+          api.rooms.getAll(), api.teachers.getAll(), api.courses.getAll(), api.groups.getAll(),
         ]);
-        setClassrooms(roomsRes); setTeachers(teachersRes); setCourses(coursesRes); setGroups(groupsRes);
-        setAllCourses(coursesRes);
+        setClassrooms(roomsRes); setTeachers(teachersRes);
+        setCourses(coursesRes); setAllCourses(coursesRes); setGroups(groupsRes);
 
         if (data) {
-          setClassroom(roomsRes.find((r: T.Classroom) => r.id === data.tilaId) ?? null);
-          setTeacher(teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null);
-          const selTeacher = teachersRes.find((t: T.Teacher) => t.id === data.opettajaId) ?? null;
-          if (selTeacher && (selTeacher as any).kurssit && (selTeacher as any).kurssit.length > 0) {
-            setCourses((selTeacher as any).kurssit);
-            setCourse((selTeacher as any).kurssit.find((c: any) => c.id === data.kurssiId) ?? null);
-          } else {
-            setCourse(coursesRes.find((c: T.Course) => c.id === data.kurssiId) ?? null);
-          }
-          setGroup(groupsRes.find((g: T.StudentGroup) => g.id === data.ryhmaId) ?? null);
-          setDate(dayjs(data.alkaa));
-          setUseDateRange(false);
+          applyEditDefaults(roomsRes, teachersRes, coursesRes, groupsRes);
         } else {
-          const defaults = loadDefaults();
-          if (defaults.classroomId) setClassroom(roomsRes.find((r: T.Classroom) => r.id === defaults.classroomId) ?? null);
-          if (defaults.teacherId) {
-            const t = teachersRes.find((t: T.Teacher) => t.id === defaults.teacherId) ?? null;
-            setTeacher(t);
-            if (t && (t as any).kurssit && (t as any).kurssit.length > 0) {
-              setCourses((t as any).kurssit);
-              if (defaults.courseId) setCourse((t as any).kurssit.find((c: any) => c.id === defaults.courseId) ?? null);
-            } else {
-              if (defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
-            }
-          }
-          if (!defaults.teacherId && defaults.courseId) setCourse(coursesRes.find((c: T.Course) => c.id === defaults.courseId) ?? null);
-          if (defaults.groupId) setGroup(groupsRes.find((g: T.StudentGroup) => g.id === defaults.groupId) ?? null);
-          if (defaults.slotKey) setSelectedSlot(defaults.slotKey);
+          applyStoredDefaults(teachersRes, coursesRes, groupsRes, roomsRes);
         }
       } catch (err) {
-        const apiErr = err as T.ApiError;
-        setError("Lomaketietojen haku epäonnistui: " + apiErr.error);
+        setError('Lomaketietojen haku epäonnistui: ' + (err as T.ApiError).error);
       }
     };
-    loadFormData();
+
+    load();
   }, [open, data]);
 
+  const applyEditDefaults = (
+    rooms: T.Classroom[], teachersRes: T.Teacher[],
+    coursesRes: T.Course[], groupsRes: T.StudentGroup[],
+  ) => {
+    if (!data) return;
+    setClassroom(rooms.find((r) => r.id === data.tilaId) ?? null);
+    const selTeacher = teachersRes.find((t) => t.id === data.opettajaId) ?? null;
+    setTeacher(selTeacher);
+    const teacherCourses = (selTeacher as any)?.kurssit;
+    if (teacherCourses?.length) {
+      setCourses(teacherCourses);
+      setCourse(teacherCourses.find((c: any) => c.id === data.kurssiId) ?? null);
+    } else {
+      setCourse(coursesRes.find((c) => c.id === data.kurssiId) ?? null);
+    }
+    setGroup(groupsRes.find((g) => g.id === data.ryhmaId) ?? null);
+    setDate(dayjs(data.alkaa));
+    setUseDateRange(false);
+  };
+
+  const applyStoredDefaults = (
+    teachersRes: T.Teacher[], coursesRes: T.Course[],
+    groupsRes: T.StudentGroup[], roomsRes: T.Classroom[],
+  ) => {
+    const d = loadDefaults();
+    if (d.classroomId) setClassroom(roomsRes.find((r) => r.id === d.classroomId) ?? null);
+    if (d.teacherId) {
+      const t = teachersRes.find((t) => t.id === d.teacherId) ?? null;
+      setTeacher(t);
+      const tc = (t as any)?.kurssit;
+      if (tc?.length) {
+        setCourses(tc);
+        if (d.courseId) setCourse(tc.find((c: any) => c.id === d.courseId) ?? null);
+      } else if (d.courseId) {
+        setCourse(coursesRes.find((c) => c.id === d.courseId) ?? null);
+      }
+    } else if (d.courseId) {
+      setCourse(coursesRes.find((c) => c.id === d.courseId) ?? null);
+    }
+    if (d.groupId) setGroup(groupsRes.find((g) => g.id === d.groupId) ?? null);
+    if (d.slotKey) setSelectedSlot(d.slotKey);
+  };
+
+  // ── Form actions ──────────────────────────────────────────────────────────
   const resetForm = () => {
     setClassroom(null); setTeacher(null); setCourse(null); setGroup(null);
     setDate(dayjs()); setUseDateRange(false); setDateRangeStart(dayjs()); setDateRangeEnd(null);
@@ -148,27 +133,21 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setError(null);
   };
 
-  const handleSlotChange = (_: React.MouseEvent<HTMLElement>, val: SlotKey | null) => {
-    setSelectedSlot(val);
+  const handleClose = () => { resetForm(); onClose(); };
+
+  const handleTeacherChange = (val: T.Teacher | null) => {
+    setTeacher(val);
     setError(null);
+    const tc = (val as any)?.kurssit;
+    setCourses(tc?.length ? tc : allCourses);
   };
 
-  const handleCustomTimeToggle = () => {
-    setUseCustomTime((prev) => !prev);
-    setSelectedSlot(null);
-    setCustomStart(null);
-    setCustomEnd(null);
+  const handleCourseChange = (val: T.Course | null) => {
+    setCourse(val);
     setError(null);
-  };
-
-  const buildSlotTimesForDay = (day: Dayjs, key: keyof typeof SLOTS): { start: Dayjs; end: Dayjs } => {
-    const slot = SLOTS[key];
-    const isDayMonday = day.day() === 1;
-    const startHour = key === 'aamu' && isDayMonday ? 9 : slot.start.h;
-    return {
-      start: day.hour(startHour).minute(slot.start.m).second(0).millisecond(0),
-      end: day.hour(slot.end.h).minute(slot.end.m).second(0).millisecond(0),
-    };
+    if (!val || teacher) return;
+    const found = teachers.find((t) => (t as any).kurssit?.some((c: any) => c.id === val.id));
+    if (found) setTeacher(found);
   };
 
   const handleAdd = async () => {
@@ -176,68 +155,35 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     setLoading(true);
     setError(null);
 
-    const days: Dayjs[] = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
-
-    const eventsToCreate: T.CalendarBody[] = []
-      ;
-
-    days.forEach((day) => {
-      const slotsForDay: Array<{ start: Dayjs; end: Dayjs }> = [];
-
-      if (useCustomTime) {
-        slotsForDay.push({
-          start: day.hour(customStart!.hour()).minute(customStart!.minute()).second(0).millisecond(0),
-          end: day.hour(customEnd!.hour()).minute(customEnd!.minute()).second(0).millisecond(0),
-        });
-      } else if (selectedSlot === 'molemmat') {
-        slotsForDay.push(buildSlotTimesForDay(day, 'aamu'));
-        slotsForDay.push(buildSlotTimesForDay(day, 'iltapaiva'));
-      } else {
-        slotsForDay.push(buildSlotTimesForDay(day, selectedSlot as keyof typeof SLOTS));
-      }
-
-      slotsForDay.forEach(({ start, end }) => {
-        eventsToCreate.push({
-          huoneId: classroom!.id,
-          opettajaId: teacher!.id,
-          kurssiId: course!.id,
-          ryhmaId: group!.id,
-          alkaa: start.toISOString(),
-          paattyy: end.toISOString(),
-        });
-      });
+    const days = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
+    const events = buildEventsToCreate({
+      days, classroom: classroom!, teacher: teacher!,
+      course: course!, group: group!,
+      useCustomTime, customStart, customEnd, selectedSlot,
     });
 
     try {
       if (data) {
-        await api.calendar.update(data.id, eventsToCreate[0]);
+        await api.calendar.update(data.id, events[0]);
       } else {
-        await api.calendar.createBatch(eventsToCreate);
-      };
-
-      saveDefaults({
-        classroomId: classroom!.id,
-        teacherId: teacher!.id,
-        courseId: course!.id,
-        groupId: group!.id,
-        slotKey: selectedSlot ?? undefined
-      });
-
+        await api.calendar.createBatch(events);
+      }
+      saveDefaults({ classroomId: classroom!.id, teacherId: teacher!.id, courseId: course!.id, groupId: group!.id, slotKey: selectedSlot ?? undefined });
       resetForm();
       onClose(true);
     } catch (err) {
-      const apiErr = err as T.ApiError;
-      setError(apiErr.error || "Tapahtumien luonti epäonnistui");
+      setError((err as T.ApiError).error || 'Tapahtumien luonti epäonnistui');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => { resetForm(); onClose(); };
-
+  // ── Derived state ─────────────────────────────────────────────────────────
   const isCustomTimeValid = !!(customStart && customEnd && customEnd.isAfter(customStart));
   const isDateRangeValid = !!(dateRangeStart && dateRangeEnd && dateRangeEnd.isAfter(dateRangeStart));
-  const isValid = !!(classroom && teacher && course && group && (useDateRange ? isDateRangeValid : date) && (useCustomTime ? isCustomTimeValid : selectedSlot));
+  const isValid = !!(classroom && teacher && course && group
+    && (useDateRange ? isDateRangeValid : date)
+    && (useCustomTime ? isCustomTimeValid : selectedSlot));
 
   const eventCount = (() => {
     if (!isValid) return 1;
@@ -248,129 +194,56 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
   const addButtonLabel = loading ? 'Lisätään...' : eventCount > 1 ? `Lisää ${eventCount} tapahtumaa` : 'Lisää tapahtuma';
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}
-        </DialogTitle>
+        <DialogTitle>{data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}</DialogTitle>
+
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             {error && (
               <Alert severity="error">
-                {error.split('\n').map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
+                {error.split('\n').map((line, i) => <div key={i}>{line}</div>)}
               </Alert>
             )}
 
+            {/* ── Basic info ── */}
             <Box>
               <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>
                 Perustiedot
               </Typography>
               <Stack spacing={2}>
                 <Autocomplete
-                  options={groups}
-                  value={group}
+                  options={groups} value={group}
                   onChange={(_, val) => { setGroup(val); setError(null); }}
                   getOptionLabel={(o) => o.ryhmatunnus}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Opiskelijaryhmä"
-                      slotProps={{
-                        input: {
-                          ...params.InputProps,
-                          startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment>
-                        }
-                      }}
-                    />
+                    <TextField {...params} label="Opiskelijaryhmä" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
-
                 <Autocomplete
-                  options={courses}
-                  value={course}
-                  onChange={(_, val) => {
-                    setCourse(val);
-                    setError(null);
-
-                    if (!val) return;
-
-                    if (teacher) return;
-
-                    const foundTeacher = teachers.find(t =>
-                      (t as any).kurssit?.some((c: any) => c.id === val.id)
-                    );
-
-                    if (foundTeacher) {
-                      setTeacher(foundTeacher);
-                    }
-                  }}
+                  options={courses} value={course}
+                  onChange={(_, val) => handleCourseChange(val)}
                   getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Kurssi"
-                      slotProps={{
-                        input: {
-                          ...params.InputProps,
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Book fontSize="small" />
-                            </InputAdornment>
-                          )
-                        }
-                      }}
-                    />
+                    <TextField {...params} label="Kurssi" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Book fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
-
                 <Autocomplete
-                  options={teachers}
-                  value={teacher}
-                  onChange={(_, val) => {
-                    setTeacher(val);
-                    setError(null);
-
-                    if (val && (val as any).kurssit && (val as any).kurssit.length > 0) {
-                      setCourses((val as any).kurssit);
-                    } else {
-                      setCourses(allCourses);
-                    }
-
-                  }}
+                  options={teachers} value={teacher}
+                  onChange={(_, val) => handleTeacherChange(val)}
                   getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Opettaja"
-                      slotProps={{
-                        input: {
-                          ...params.InputProps,
-                          startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment>
-                        }
-                      }}
-                    />
+                    <TextField {...params} label="Opettaja" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
-
                 <Autocomplete
-                  options={classrooms}
-                  value={classroom}
+                  options={classrooms} value={classroom}
                   onChange={(_, val) => { setClassroom(val); setError(null); }}
                   getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Huone"
-                      slotProps={{
-                        input: {
-                          ...params.InputProps,
-                          startAdornment: <InputAdornment position="start"><Room fontSize="small" /></InputAdornment>
-                        }
-                      }}
-                    />
+                    <TextField {...params} label="Huone" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Room fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
               </Stack>
@@ -378,55 +251,47 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
             <Divider />
 
+            {/* ── Timing ── */}
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                  Ajoitus
-                </Typography>
+                <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>Ajoitus</Typography>
                 <FormControlLabel
                   control={<Switch checked={useDateRange} onChange={(e) => setUseDateRange(e.target.checked)} size="small" />}
                   label={<Typography variant="body2">Päiväväli</Typography>}
                 />
               </Stack>
 
-              <Box sx={{ position: 'relative' }}>
-                {!useDateRange ? (
-                  <DatePicker
-                    label="Päivämäärä"
-                    value={date}
-                    onChange={(val) => { setDate(val); setError(null); }}
-                    shouldDisableDate={(day) => !isWeekday(day)}
-                    slotProps={{ textField: { fullWidth: true } }}
-                  />
-                ) : (
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={2}>
-                      <DatePicker
-                        label="Alkaa"
-                        value={dateRangeStart}
-                        onChange={(val) => { setDateRangeStart(val); setDateRangeEnd(null); setError(null); }}
-                        shouldDisableDate={(day) => !isWeekday(day)}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                      <DatePicker
-                        label="Asti"
-                        value={dateRangeEnd}
-                        onChange={(val) => { setDateRangeEnd(val); setError(null); }}
-                        shouldDisableDate={(day) => !isWeekday(day) || (dateRangeStart ? day.isSameOrBefore(dateRangeStart) : false)}
-                        minDate={dateRangeStart ?? undefined}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                    </Stack>
-                    {isDateRangeValid && (
-                      <Box sx={{ minHeight: '20px' }}>
-                        <Typography variant="caption" color="primary" sx={{ px: 1 }}>
-                          {getWeekdaysBetween(dateRangeStart!, dateRangeEnd!).length} arkipäivää valittuna
-                        </Typography>
-                      </Box>
-                    )}
+              {!useDateRange ? (
+                <DatePicker
+                  label="Päivämäärä" value={date}
+                  onChange={(val) => { setDate(val); setError(null); }}
+                  shouldDisableDate={(day) => !isWeekday(day)}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              ) : (
+                <Stack spacing={1}>
+                  <Stack direction="row" spacing={2}>
+                    <DatePicker
+                      label="Alkaa" value={dateRangeStart}
+                      onChange={(val) => { setDateRangeStart(val); setDateRangeEnd(null); setError(null); }}
+                      shouldDisableDate={(day) => !isWeekday(day)}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                    <DatePicker
+                      label="Asti" value={dateRangeEnd}
+                      onChange={(val) => { setDateRangeEnd(val); setError(null); }}
+                      shouldDisableDate={(day) => !isWeekday(day) || (dateRangeStart ? day.isSameOrBefore(dateRangeStart) : false)}
+                      minDate={dateRangeStart ?? undefined}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
                   </Stack>
-                )}
-              </Box>
+                  {isDateRangeValid && (
+                    <Typography variant="caption" color="primary" sx={{ px: 1 }}>
+                      {getWeekdaysBetween(dateRangeStart!, dateRangeEnd!).length} arkipäivää valittuna
+                    </Typography>
+                  )}
+                </Stack>
+              )}
 
               <Box sx={{ mt: 2 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
@@ -434,57 +299,34 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                     <AccessTime fontSize="inherit" /> Kellonaika
                   </Typography>
                   <FormControlLabel
-                    control={<Switch checked={useCustomTime} onChange={handleCustomTimeToggle} size="small" />}
+                    control={<Switch checked={useCustomTime} onChange={() => { setUseCustomTime(p => !p); setSelectedSlot(null); setCustomStart(null); setCustomEnd(null); setError(null); }} size="small" />}
                     label={<Typography variant="body2">Oma aika</Typography>}
                   />
                 </Stack>
 
-                <Box>
-                  {!useCustomTime ? (
-                    <ToggleButtonGroup
-                      value={selectedSlot}
-                      exclusive
-                      onChange={handleSlotChange}
-                      fullWidth
-                      color="primary"
-                    >
-                      {(Object.entries(SLOTS) as [keyof typeof SLOTS, typeof SLOTS[keyof typeof SLOTS]][]).map(([key, slot]) => (
-                        <ToggleButton key={key} value={key} sx={{ py: 1, textTransform: 'none' }}>
-                          <Stack alignItems="center">
-                            <Typography variant="body2" fontWeight="medium">{slot.label}</Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.8 }}>{getSlotTimes(key)}</Typography>
-                          </Stack>
-                        </ToggleButton>
-                      ))}
-                      <ToggleButton key="molemmat" value="molemmat" sx={{ py: 1, textTransform: 'none' }}>
+                {!useCustomTime ? (
+                  <ToggleButtonGroup value={selectedSlot} exclusive onChange={(_, val) => { setSelectedSlot(val); setError(null); }} fullWidth color="primary">
+                    {(Object.entries(SLOTS) as [keyof typeof SLOTS, typeof SLOTS[keyof typeof SLOTS]][]).map(([key, slot]) => (
+                      <ToggleButton key={key} value={key} sx={{ py: 1, textTransform: 'none' }}>
                         <Stack alignItems="center">
-                          <Typography variant="body2" fontWeight="medium">Molemmat</Typography>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            8:00 - 14:45 (Ma klo 9:00)
-                          </Typography>
+                          <Typography variant="body2" fontWeight="medium">{slot.label}</Typography>
+                          <Typography variant="caption" sx={{ opacity: 0.8 }}>{getSlotTimes(key, isMonday ?? false)}</Typography>
                         </Stack>
                       </ToggleButton>
-                    </ToggleButtonGroup>
-                  ) : (
-                    <Stack direction="row" spacing={2}>
-                      <TimePicker
-                        label="Alkaa"
-                        value={customStart}
-                        onChange={(val) => { setCustomStart(val); setError(null); }}
-                        ampm={false}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                      <TimePicker
-                        label="Päättyy"
-                        value={customEnd}
-                        onChange={(val) => { setCustomEnd(val); setError(null); }}
-                        ampm={false}
-                        minTime={customStart ?? undefined}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                    </Stack>
-                  )}
-                </Box>
+                    ))}
+                    <ToggleButton value="molemmat" sx={{ py: 1, textTransform: 'none' }}>
+                      <Stack alignItems="center">
+                        <Typography variant="body2" fontWeight="medium">Molemmat</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8 }}>8:00 - 14:45 (Ma klo 9:00)</Typography>
+                      </Stack>
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                ) : (
+                  <Stack direction="row" spacing={2}>
+                    <TimePicker label="Alkaa" value={customStart} onChange={(val) => { setCustomStart(val); setError(null); }} ampm={false} slotProps={{ textField: { fullWidth: true } }} />
+                    <TimePicker label="Päättyy" value={customEnd} onChange={(val) => { setCustomEnd(val); setError(null); }} ampm={false} minTime={customStart ?? undefined} slotProps={{ textField: { fullWidth: true } }} />
+                  </Stack>
+                )}
               </Box>
             </Box>
           </Stack>
@@ -493,7 +335,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <Divider />
 
         <DialogActions sx={{ p: 2, px: 3, justifyContent: 'space-between' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ minWidth: '150px' }}>
+          <Typography variant="caption" color="text.secondary">
             {isValid && !loading ? `${eventCount} tapahtumaa luodaan` : 'Täytä vaaditut kentät'}
           </Typography>
           <Stack direction="row" spacing={1}>

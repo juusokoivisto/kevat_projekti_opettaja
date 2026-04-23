@@ -1,5 +1,4 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import { Box, Typography } from "@mui/material";
 
 const names = ["Juuso Koivisto", "Eetu Kiljala", "Nico Pasanen", "Jesse Keski-Korhonen"];
 

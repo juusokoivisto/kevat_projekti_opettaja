@@ -4,29 +4,18 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import fiLocale from '@fullcalendar/core/locales/fi'
-import EditIcon from '@mui/icons-material/Edit';
-import TuneIcon from '@mui/icons-material/Tune';
-import CloseIcon from '@mui/icons-material/Close';
-import { useState, useContext, useMemo, useCallback, } from 'react'
+import type { EventContentArg } from '@fullcalendar/core'
+import { useState, useContext, useMemo, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import Box from '@mui/material/Box'
-import Tooltip from '@mui/material/Tooltip'
-import Autocomplete from '@mui/material/Autocomplete'
-import TextField from '@mui/material/TextField'
-import MenuItem from '@mui/material/MenuItem'
-import Typography from '@mui/material/Typography'
-import Menu from '@mui/material/Menu'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
-import Popover from '@mui/material/Popover'
-import Badge from '@mui/material/Badge'
-import Chip from '@mui/material/Chip'
-import Divider from '@mui/material/Divider'
-import DeleteIcon from '@mui/icons-material/Delete'
+import {
+  Box, Tooltip, Autocomplete, TextField, MenuItem, Typography,
+  Menu, Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, IconButton, Popover, Badge, Chip, Divider
+} from '@mui/material'
+import {
+  Edit as EditIcon, Tune as TuneIcon,
+  Close as CloseIcon, Delete as DeleteIcon
+} from '@mui/icons-material'
 import LunchBreak from './LunchBreak'
 import { ColorModeContext, UserContext } from '../App'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
@@ -34,7 +23,6 @@ import { api } from '../api'
 import * as T from '../api/types/api.types'
 import { formatCalendarEvent } from '../utils/calendarHelpers'
 import './Calendar.css'
-import type { EventContentArg } from '@fullcalendar/core'
 
 interface FCResource {
   id: string;
@@ -77,8 +65,8 @@ const renderEventContent = (eventInfo: EventContentArg) => {
           {title}
         </Typography>
 
-        <Box sx={{ 
-          display: 'flex', 
+        <Box sx={{
+          display: 'flex',
           flexDirection: 'column',
           mt: 0.1
         }}>
