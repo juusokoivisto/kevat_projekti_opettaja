@@ -114,7 +114,7 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
         include: { tila: true, opettaja: true, kurssi: true },
       });
 
-      // Decrease teacher's vapaaResurssi by the event duration (hours, rounded up), clamp to >= 0
+      
       const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
       const decrement = Math.ceil(durationHours);
       if (created.opettajaId) {
@@ -160,7 +160,7 @@ export const createManyEvents = async (req: Request<{}, {}, CalendarBody[]>, res
           }
         });
 
-        // Decrease teacher's vapaaResurssi for each created event (clamp to >= 0)
+        
         const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
         const decrement = Math.ceil(durationHours);
         if (newEvent.opettajaId) {
