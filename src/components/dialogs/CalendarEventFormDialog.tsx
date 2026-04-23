@@ -215,11 +215,11 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               </Typography>
               <Stack spacing={2}>
                 <Autocomplete
-                  options={groups} value={group}
-                  onChange={(_, val) => { setGroup(val); setError(null); }}
-                  getOptionLabel={(o) => o.ryhmatunnus}
+                  options={teachers} value={teacher}
+                  onChange={(_, val) => handleTeacherChange(val)}
+                  getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderInput={(params) => (
-                    <TextField {...params} label="Opiskelijaryhmä" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment> } }} />
+                    <TextField {...params} label="Opettaja" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
                 <Autocomplete
@@ -231,14 +231,6 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                   )}
                 />
                 <Autocomplete
-                  options={teachers} value={teacher}
-                  onChange={(_, val) => handleTeacherChange(val)}
-                  getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Opettaja" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> } }} />
-                  )}
-                />
-                <Autocomplete
                   options={classrooms} value={classroom}
                   onChange={(_, val) => { setClassroom(val); setError(null); }}
                   getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
@@ -246,6 +238,15 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                     <TextField {...params} label="Huone" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Room fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
+                <Autocomplete
+                  options={groups} value={group}
+                  onChange={(_, val) => { setGroup(val); setError(null); }}
+                  getOptionLabel={(o) => o.ryhmatunnus}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Opiskelijaryhmä" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment> } }} />
+                  )}
+                />
+
               </Stack>
             </Box>
 
