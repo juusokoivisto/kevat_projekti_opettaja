@@ -23,8 +23,6 @@ export default function MainPage() {
   }
 
   return (
-    // disableGutters prevent the side-padding that shifts the layout on mobile
-    // sx={{ mt: 2 }} ensures it doesn't sit directly under the fixed header
     <Container maxWidth="xl" disableGutters sx={{ mt: 1, px: { xs: 0, sm: 1 } }}>
       <Suspense fallback={null}>
         {open && (
