@@ -3,6 +3,24 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/x-data-grid',
+      '@mui/x-date-pickers',
+      '@fullcalendar/react',
+      '@fullcalendar/core',
+      '@fullcalendar/timegrid',
+      '@fullcalendar/daygrid',
+      '@fullcalendar/multimonth',
+      '@fullcalendar/resource-timeline',
+    ],
+  },
   build: {
     rollupOptions: {
       output: {
