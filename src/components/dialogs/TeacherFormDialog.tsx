@@ -133,8 +133,12 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
           <TextField
             label="Sopimustunnit (h/vuosi)"
             value={hoursPerYear}
-            onChange={(e) => setHoursPerYear(e.target.value)}
-            helperText="Syötä vain numeroita"
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setHoursPerYear(value);
+              }
+            }}
           />
 
           <Autocomplete
