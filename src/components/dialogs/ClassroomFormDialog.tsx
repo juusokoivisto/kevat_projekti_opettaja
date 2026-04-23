@@ -84,7 +84,12 @@ const ClassroomFormDialog: React.FC<ClassroomFormDialogProps> = ({ open, onClose
           <TextField
             label="Kapasiteetti"
             value={kapasiteetti}
-            onChange={(e) => setKapasiteetti(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setKapasiteetti(value);
+              }
+            }}
           />
 
           <TextField
