@@ -16,10 +16,12 @@ const ClassroomPage = lazy(() => import('./pages/ClassroomPage.tsx'))
 const GroupPage = lazy(() => import('./pages/GroupPage.tsx'))
 const CoursePage = lazy(() => import('./pages/CoursePage.tsx'))
 const TeacherDetailPage = lazy(() => import('./pages/TeacherDetailPage'))
+const ManagementPage = lazy(() => import('./pages/Management.tsx'))
 
 import type { AuthUser } from './api/types/api.types'
 import { getDesignTokens } from './Theme.tsx'
 import { jwtDecode } from 'jwt-decode'
+import UnifiedManagementPage from './pages/Management.tsx'
 
 export const ColorModeContext = React.createContext({
   toggleDarkMode: () => { },
@@ -93,6 +95,7 @@ function App() {
                 <Route path="/group" element={<GroupPage />} />
                 <Route path="/courses" element={<CoursePage />} />
                 <Route path="/teachers/:id" element={<TeacherDetailPage />} />
+                <Route path="/management" element={<ManagementPage />} />
               </Routes>
             </Suspense>
           </Box>

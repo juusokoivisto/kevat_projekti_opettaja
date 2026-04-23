@@ -41,7 +41,7 @@ export default function TeacherDetailsPage() {
   if (isError || !teacher) return (
     <Box sx={{ p: 4, textAlign: 'center' }}>
       <Typography color="error">Opettajaa ei löytynyt.</Typography>
-      <Button onClick={() => navigate('/teachers')}>Palaa listaan</Button>
+      <Button onClick={() => navigate('/management?tab=teachers')}>Palaa listaan</Button>
     </Box>
   )
 
@@ -63,7 +63,7 @@ export default function TeacherDetailsPage() {
       <Button
         variant="text"
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/teachers')}
+        onClick={() => navigate('/management?tab=teachers')}
         sx={{ mb: 3, color: 'text.primary' }}
       >
         Takaisin
