@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(slidingSession);
 
-app.use('/', routes);
+app.use('/api', routes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   logger.error(`${err.stack || err.message}`);

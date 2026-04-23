@@ -6,7 +6,12 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
 
   res.on('finish', () => {
     const duration = Date.now() - start;
-    logger.http(req.method, req.originalUrl, res.statusCode, duration, req.body);
+
+    logger.http(
+      { method: req.method, url: req.originalUrl },
+      { status: res.statusCode, time: duration },
+      req.body
+    );
   });
 
   next();

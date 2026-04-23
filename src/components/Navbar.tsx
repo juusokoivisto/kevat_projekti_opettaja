@@ -23,14 +23,13 @@ const NAV_ITEMS = [
   { label: 'Kurssit', path: '/courses' },
 ];
 
-// Thinner styling for buttons: smaller font and less padding
 const navButtonSx = {
   color: 'white',
   height: '100%',
   borderRadius: 0,
-  px: 2, // Reduced padding from 3
+  px: 2,
   textTransform: 'none',
-  fontSize: '0.875rem', // Reduced from 1rem
+  fontSize: '0.875rem',
   '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
 };
 
@@ -45,7 +44,6 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
   return (
     <Box sx={{ ml: 1 }}>
       <IconButton onClick={(e) => setAnchor(e.currentTarget)} sx={{ p: 0 }}>
-        {/* Slightly smaller avatar */}
         <Avatar sx={{ width: 28, height: 28, bgcolor: 'secondary.main', fontSize: '0.875rem' }}>
           {displayName.charAt(0).toUpperCase()}
         </Avatar>
@@ -55,7 +53,7 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
         open={Boolean(anchor)}
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        sx={{ mt: '40px' }} // Adjusted for thinner bar
+        sx={{ mt: '40px' }}
       >
         <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
         <MenuItem
@@ -87,10 +85,9 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
   return (
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
-        {/* Reduced height to 48px and used variant="dense" */}
         <Toolbar variant="dense" disableGutters sx={{ minHeight: 48, height: 48 }}>
           <Typography
-            variant="subtitle1" // Changed from h6 for a smaller footprint
+            variant="subtitle1"
             noWrap
             component="a"
             href="/"
@@ -107,7 +104,6 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             Työjärjestykset
           </Typography>
 
-          {/* Mobile menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton size="small" onClick={(e) => setMobileMenuAnchor(e.currentTarget)} color="inherit">
               <MenuIcon />
@@ -126,7 +122,6 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             </Menu>
           </Box>
 
-          {/* Desktop nav */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, alignSelf: 'stretch' }}>
             {NAV_ITEMS.map(({ label, path }) => (
               <Button key={label} onClick={() => navigate(path)} sx={navButtonSx}>
@@ -135,7 +130,6 @@ export default function Navbar({ onLoginClick }: NavbarProps) {
             ))}
           </Box>
 
-          {/* Right side */}
           <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
             {!user && (
               <Button onClick={onLoginClick} sx={navButtonSx}>

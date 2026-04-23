@@ -1,6 +1,6 @@
 import type { ApiError } from './types/api.types';
 
-const BASE: string = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const BASE: string = `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api`;
 
 async function handleRes<T>(res: Response): Promise<T> {
   if (res.status === 204) return {} as T;

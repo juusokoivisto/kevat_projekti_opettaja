@@ -7,7 +7,7 @@ import { getRooms, createRoom, deleteRooms, updateRoom } from '../controllers/ro
 import { getCourses, createCourse, deleteCourses, updateCourse } from '../controllers/course.controller';
 import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
 import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent, updateEvent } from '../controllers/calendar.controller';
-import { exportToExcel } from '../controllers/export.controller';
+import { exportToExcel, exportToIcs } from '../controllers/export.controller';
 
 const router = Router();
 
@@ -39,26 +39,20 @@ router.route('/opiskelijaryhmat')
   .delete(authenticateToken, deleteGroups);
 router.put('/opiskelijaryhmat/:id', authenticateToken, updateGroups);
 
-
 router.route('/kalenteri')
   .get(getAllEvents)
   .post(authenticateToken, createEvent);
-
 router.post('/kalenteri/batch', authenticateToken, createManyEvents);
-
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
-
 router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
-
 router.put('/kalenteri/:id', updateEvent);
 
-router.get('/kalenteri/export', authenticateToken, exportToExcel);
+router.get('/export/excel', authenticateToken, exportToExcel);
+router.get('/export/ics', authenticateToken, exportToIcs);
+//router.get('/calendar/feed', calendarFeed);
 
 router.get('/test-auth', authenticateToken, (req, res) => {
-  res.json({
-    message: 'You are authenticated!',
-    user: (req as any).user
-  });
+  res.json({ message: 'You are authenticated!', user: (req as any).user });
 });
 
 export default router;
