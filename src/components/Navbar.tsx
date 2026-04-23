@@ -55,7 +55,6 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         sx={{ mt: '40px' }}
-        sx={{ mt: '40px' }}
       >
         <MenuItem onClick={() => setAnchor(null)}>Profiili ({user.username})</MenuItem>
         <MenuItem
