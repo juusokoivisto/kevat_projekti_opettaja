@@ -100,7 +100,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
     : rows.length - selectionModel.ids.size;
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', height: '100%' }}>
       <Box
         sx={{
           mb: 2,
@@ -171,7 +171,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
         {...rest}
         rows={filteredRows}
         columns={columns}
-        autoHeight={autoHeight}
+        //autoHeight={autoHeight}
         checkboxSelection
         disableRowSelectionOnClick
         loading={loading}
