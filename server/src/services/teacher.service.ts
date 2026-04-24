@@ -7,9 +7,7 @@ const includeKurssit = {
 
 const mapKurssit = (o: any) => ({
   ...o,
-  kurssit: (o.opettajaKurssit || [])
-    .map((r: any) => r.kurssi.nimi)
-    .join(', ')
+  kurssit: (o.opettajaKurssit || []).map((r: any) => r.kurssi),
 });
 
 export const findAllTeachers = async () => {
