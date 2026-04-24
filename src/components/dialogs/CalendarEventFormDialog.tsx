@@ -279,7 +279,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                       slotProps={{ textField: { fullWidth: true } }}
                     />
                     <DatePicker
-                      label="Asti" value={dateRangeEnd}
+                      label="Loppuu" value={dateRangeEnd}
                       onChange={(val) => { setDateRangeEnd(val); setError(null); }}
                       shouldDisableDate={(day) => !isWeekday(day) || (dateRangeStart ? day.isSameOrBefore(dateRangeStart) : false)}
                       minDate={dateRangeStart ?? undefined}
