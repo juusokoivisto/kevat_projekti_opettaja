@@ -17,8 +17,10 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import 'dayjs/locale/fi';
 import {
   SLOTS, type SlotKey,
-  saveDefaults, loadDefaults,
-  isWeekday, getWeekdaysBetween, getSlotTimes, buildEventsToCreate,
+  saveDefaults, loadDefaults, getRecommendedCourses, getRecommendedTeachers, 
+  isCourseRecommended, isTeacherRecommended, isWeekday,
+   getWeekdaysBetween, getSlotTimes, buildEventsToCreate,
+   getDefaultCourseForTeacher, getDefaultTeacherForCourse,
 } from '../../utils/calendarEventFormHelpers';
 
 dayjs.extend(isSameOrBefore);
@@ -32,7 +34,6 @@ interface CalendarEventFormDialogProps {
 const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open, onClose, data }) => {
   const [classrooms, setClassrooms] = useState<T.Classroom[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
-  const [courses, setCourses] = useState<T.Course[]>([]);
   const [allCourses, setAllCourses] = useState<T.Course[]>([]);
   const [groups, setGroups] = useState<T.StudentGroup[]>([]);
 
@@ -67,7 +68,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           api.rooms.getAll(), api.teachers.getAll(), api.courses.getAll(), api.groups.getAll(),
         ]);
         setClassrooms(roomsRes); setTeachers(teachersRes);
-        setCourses(coursesRes); setAllCourses(coursesRes); setGroups(groupsRes);
+        setAllCourses(coursesRes); setGroups(groupsRes);
 
         if (data) {
           applyEditDefaults(roomsRes, teachersRes, coursesRes, groupsRes);
@@ -82,25 +83,37 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     load();
   }, [open, data]);
 
-  const applyEditDefaults = (
-    rooms: T.Classroom[], teachersRes: T.Teacher[],
-    coursesRes: T.Course[], groupsRes: T.StudentGroup[],
-  ) => {
-    if (!data) return;
-    setClassroom(rooms.find((r) => r.id === data.tilaId) ?? null);
-    const selTeacher = teachersRes.find((t) => t.id === data.opettajaId) ?? null;
-    setTeacher(selTeacher);
-    const teacherCourses = (selTeacher as any)?.kurssit;
-    if (teacherCourses?.length) {
-      setCourses(teacherCourses);
-      setCourse(teacherCourses.find((c: any) => c.id === data.kurssiId) ?? null);
-    } else {
-      setCourse(coursesRes.find((c) => c.id === data.kurssiId) ?? null);
-    }
-    setGroup(groupsRes.find((g) => g.id === data.ryhmaId) ?? null);
-    setDate(dayjs(data.alkaa));
-    setUseDateRange(false);
-  };
+const applyEditDefaults = (
+  rooms: T.Classroom[],
+  teachersRes: T.Teacher[],
+  coursesRes: T.Course[],
+  groupsRes: T.StudentGroup[],
+) => {
+  if (!data) return;
+
+  setClassroom(rooms.find((r) => r.id === data.tilaId) ?? null);
+
+  const selTeacher =
+    teachersRes.find((t) => t.id === data.opettajaId) ?? null;
+
+  setTeacher(selTeacher);
+
+  const teacherCourses = (selTeacher as any)?.kurssit;
+
+  if (teacherCourses?.length) {
+    setCourse(
+      teacherCourses.find((c: any) => c.id === data.kurssiId) ?? null
+    );
+  } else {
+    setCourse(
+      coursesRes.find((c) => c.id === data.kurssiId) ?? null
+    );
+  }
+
+  setGroup(groupsRes.find((g) => g.id === data.ryhmaId) ?? null);
+  setDate(dayjs(data.alkaa));
+  setUseDateRange(false);
+};
 
   const applyStoredDefaults = (
     teachersRes: T.Teacher[], coursesRes: T.Course[],
@@ -113,7 +126,6 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
       setTeacher(t);
       const tc = (t as any)?.kurssit;
       if (tc?.length) {
-        setCourses(tc);
         if (d.courseId) setCourse(tc.find((c: any) => c.id === d.courseId) ?? null);
       } else if (d.courseId) {
         setCourse(coursesRes.find((c) => c.id === d.courseId) ?? null);
@@ -135,59 +147,31 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
   const handleClose = () => { resetForm(); onClose(); };
 
-  const handleTeacherChange = (val: T.Teacher | null) => {
-    setTeacher(val);
-    setError(null);
-    setCourses(allCourses);
+const handleTeacherChange = (val: T.Teacher | null) => {
+  setTeacher(val);
+  setError(null);
 
-    const tc = (val as any)?.kurssit;
-    if (val && tc?.length && !course) {
-      setCourse(tc[0]);
-    }
-  };
+  const nextCourse = getDefaultCourseForTeacher(val, course);
+  setCourse(nextCourse);
+};
 
-  const handleCourseChange = (val: T.Course | null) => {
-    setCourse(val);
-    setError(null);
+const handleCourseChange = (val: T.Course | null) => {
+  setCourse(val);
+  setError(null);
+  
+  const nextTeacher = getDefaultTeacherForCourse(val, teacher, teachers);
+  setTeacher(nextTeacher);
+};
 
-    if (!val) return;
+const sortedCourses = React.useMemo(
+  () => getRecommendedCourses(teacher, allCourses),
+  [teacher, allCourses]
+);
 
-    if (!teacher) {
-      const found = teachers.find((t) =>
-        (t as any)?.kurssit?.some((c: any) => c.id === val.id)
-      );
-
-      if (found) {
-        setTeacher(found);
-      }
-    }
-  };
-
-  const sortedCourses = React.useMemo(() => {
-    if (!teacher) return courses;
-
-    const teacherCourseIds = (teacher as any)?.kurssit?.map((c: any) => c.id) || [];
-
-    return [...courses].sort((a, b) => {
-      const aMatch = teacherCourseIds.includes(a.id);
-      const bMatch = teacherCourseIds.includes(b.id);
-
-      if (aMatch === bMatch) return 0;
-      return aMatch ? -1 : 1;
-    });
-  }, [courses, teacher]);
-
-  const sortedTeachers = React.useMemo(() => {
-    if (!course) return teachers;
-
-    return [...teachers].sort((a, b) => {
-      const aMatch = (a as any)?.kurssit?.some((c: any) => c.id === course.id);
-      const bMatch = (b as any)?.kurssit?.some((c: any) => c.id === course.id);
-
-      if (aMatch === bMatch) return 0;
-      return aMatch ? -1 : 1; // suositellut ensin
-    });
-  }, [teachers, course]);
+const sortedTeachers = React.useMemo(
+  () => getRecommendedTeachers(course, teachers),
+  [course, teachers]
+);
 
   const handleAdd = async () => {
     if (!isValid) return;
@@ -258,10 +242,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                   onChange={(_, val) => handleTeacherChange(val)}
                   getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderOption={(props, option) => {
-                    const isRecommended =
-                      course &&
-                      (option as any)?.kurssit?.some((c: any) => c.id === course.id);
-
+                    const isRecommended = isTeacherRecommended(course, option);                    
                     return (
                       <li {...props}>
                         <Stack direction="row" justifyContent="space-between" width="100%">
@@ -297,10 +278,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                   onChange={(_, val) => handleCourseChange(val)}
                   getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
                   renderOption={(props, option) => {
-                    const isRecommended =
-                      teacher &&
-                      (teacher as any)?.kurssit?.some((c: any) => c.id === option.id);
-
+                    const isRecommended = isCourseRecommended(teacher, option);
                     return (
                       <li {...props}>
                         <Stack direction="row" justifyContent="space-between" width="100%">
