@@ -53,6 +53,93 @@ export const getSlotTimes = (key: keyof typeof SLOTS, isMonday: boolean) => {
   return `${startH}:${String(slot.start.m).padStart(2, '0')} – ${slot.end.h}:${String(slot.end.m).padStart(2, '0')}`;
 };
 
+export const getDefaultCourseForTeacher = (
+  teacher: T.Teacher | null,
+  currentCourse: T.Course | null
+): T.Course | null => {
+  if (!teacher) return currentCourse;
+
+  const teacherCourses = (teacher as any)?.kurssit;
+
+  if (!teacherCourses?.length) return currentCourse;
+
+  if (currentCourse) return currentCourse;
+
+  return teacherCourses[0] ?? null;
+};
+
+export const getDefaultTeacherForCourse = (
+  course: T.Course | null,
+  currentTeacher: T.Teacher | null,
+  teachers: T.Teacher[]
+): T.Teacher | null => {
+  if (!course) return currentTeacher;
+
+  if (currentTeacher) return currentTeacher;
+
+  const found = teachers.find((t) =>
+    (t as any)?.kurssit?.some((c: any) => c.id === course.id)
+  );
+
+  return found ?? null;
+};
+
+export const getRecommendedCourses = (
+  teacher: T.Teacher | null,
+  allCourses: T.Course[]
+): T.Course[] => {
+  if (!teacher) return allCourses;
+
+  const teacherCourseIds =
+    (teacher as any)?.kurssit?.map((c: any) => c.id) || [];
+
+  return [...allCourses].sort((a, b) => {
+    const aMatch = teacherCourseIds.includes(a.id);
+    const bMatch = teacherCourseIds.includes(b.id);
+
+    if (aMatch === bMatch) return 0;
+    return aMatch ? -1 : 1;
+  });
+};
+
+export const getRecommendedTeachers = (
+  course: T.Course | null,
+  teachers: T.Teacher[]
+): T.Teacher[] => {
+  if (!course) return teachers;
+
+  return [...teachers].sort((a, b) => {
+    const aMatch = (a as any)?.kurssit?.some((c: any) => c.id === course.id);
+    const bMatch = (b as any)?.kurssit?.some((c: any) => c.id === course.id);
+
+    if (aMatch === bMatch) return 0;
+    return aMatch ? -1 : 1;
+  });
+};
+
+export const isCourseRecommended = (
+  teacher: T.Teacher | null,
+  course: T.Course | null
+) => {
+  if (!teacher || !course) return false;
+
+  return (teacher as any)?.kurssit?.some(
+    (c: any) => c.id === course.id
+  );
+};
+
+export const isTeacherRecommended = (
+  course: T.Course | null,
+  teacher: T.Teacher | null
+) => {
+  if (!teacher || !course) return false;
+
+  return (teacher as any)?.kurssit?.some(
+    (c: any) => c.id === course.id
+  );
+};
+
+
 export const buildEventsToCreate = ({
   days,
   classroom,
