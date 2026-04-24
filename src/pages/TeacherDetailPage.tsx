@@ -107,7 +107,7 @@ export default function TeacherDetailsPage() {
 
       {teacher.kurssit && teacher.kurssit.length > 0 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Kurssit</Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>Opettajan kurssit</Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             {teacher.kurssit.map((k: any) => (
               <Box key={k.id} sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(255,255,255,0.04)', borderRadius: 1 }}>{k.nimi}</Box>

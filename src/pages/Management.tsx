@@ -72,7 +72,7 @@ export default function UnifiedManagementPage() {
       columns: [
         { field: 'ryhmatunnus', headerName: 'Ryhmatunnus', flex: 1 },
         { field: 'tutkintoOhjelma', headerName: 'Tutkinto-ohjelma', flex: 1 },
-        { field: 'opiskelijamaara', headerName: 'Määrä', width: 100 }
+        { field: 'opiskelijamaara', headerName: 'Opiskelijoita', width: 120 }
       ]
     },
     {
@@ -87,7 +87,7 @@ export default function UnifiedManagementPage() {
       columns: [
         { field: 'nimi', headerName: 'Etunimi', flex: 1 },
         { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
-        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1.5 },
+        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1 },
       ]
     },
     {
@@ -101,6 +101,7 @@ export default function UnifiedManagementPage() {
       columns: [
         { field: 'huoneenNumero', headerName: 'Huone', flex: 1 },
         { field: 'kapasiteetti', headerName: 'Kapasiteetti', width: 130 },
+        { field: 'tyyppi', headerName: 'Tyyppi', width: 200 }
       ]
     }
   ], [courses.data, groups.data, teachers.data, rooms.data])
