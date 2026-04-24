@@ -86,7 +86,7 @@ function App() {
           <Navbar onLoginClick={() => setLoginOpen(true)} />
           <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9 }, pb: 4 }}>
             <Suspense fallback={<PageLoader />}>
-              <Routes>
+              <Routes key={user ? user.id : 'guest'}>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/teachers" element={<TeachersPage />} />

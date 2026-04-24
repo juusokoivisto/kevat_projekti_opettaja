@@ -67,8 +67,18 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         disableScrollLock
-        slotProps={{ paper: { sx: { mt: '1px', minWidth: 180, borderRadius: 0 } } }}
-      >
+        slotProps={{
+          paper: {
+            sx: {
+              mt: '8px',
+              minWidth: 180,
+              borderRadius: 0,
+              border: '1px solid',
+              borderColor: 'divider',
+              boxShadow: '0px 4px 10px rgba(0,0,0,0.1)'
+            }
+          }
+        }}      >
         <MenuItem
           onClick={() => { onLogout(); setAnchor(null); }}
           sx={{ color: '#ff1744', fontSize: '0.875rem', gap: 1.5 }}

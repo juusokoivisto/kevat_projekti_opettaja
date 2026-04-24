@@ -1,9 +1,9 @@
 import { useState, useContext, useMemo, useEffect, type JSX } from 'react'
 import {
-  Box, Paper, Container, Tabs, Tab, 
+  Box, Paper, Container, Tabs, Tab,
   CircularProgress
 } from '@mui/material'
-import { 
+import {
   School, Group, MeetingRoom, Book
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -12,12 +12,12 @@ import { api } from '../api'
 import { useCourses, useGroups, useTeachers, useRooms, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
+import { lazy, Suspense } from 'react'
 
-// Form Dialogs
-import CourseFormDialog from '../components/dialogs/CourseFormDialog'
-import GroupFormDialog from '../components/dialogs/GroupFormDialog'
-import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
-import ClassroomFormDialog from '../components/dialogs/ClassroomFormDialog'
+const CourseFormDialog = lazy(() => import('../components/dialogs/CourseFormDialog'))
+const GroupFormDialog = lazy(() => import('../components/dialogs/GroupFormDialog'))
+const TeacherFormDialog = lazy(() => import('../components/dialogs/TeacherFormDialog'))
+const ClassroomFormDialog = lazy(() => import('../components/dialogs/ClassroomFormDialog'))
 
 interface ManagementConfig {
   label: string;
@@ -35,7 +35,7 @@ export default function UnifiedManagementPage() {
   const { user } = useContext(UserContext)
   const navigate = useNavigate()
   const invalidate = useInvalidate()
-  
+
   const [activeTab, setActiveTab] = useState(0)
   const [open, setOpen] = useState(false)
   const [editingRow, setEditingRow] = useState<any | null>(null)
@@ -124,25 +124,25 @@ export default function UnifiedManagementPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          borderRadius: '12px', 
-          border: '1px solid', 
+    <Container maxWidth="xl" sx={{ py: { xs: 1, sm: 2 } }}>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: '12px',
+          border: '1px solid',
           borderColor: 'divider',
           overflow: 'hidden',
           bgcolor: 'background.paper'
         }}
       >
-        <Tabs 
-          value={activeTab} 
+        <Tabs
+          value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           variant="scrollable"
           scrollButtons="auto"
-          sx={{ 
+          sx={{
             bgcolor: 'action.hover',
-            borderBottom: 1, 
+            borderBottom: 1,
             borderColor: 'divider',
             '& .MuiTab-root': { py: 2, minHeight: 64, fontWeight: 'bold' }
           }}
@@ -181,15 +181,17 @@ export default function UnifiedManagementPage() {
       </Paper>
 
       {user && (
-        <current.Dialog
-          open={open}
-          data={editingRow}
-          onClose={() => {
-            setOpen(false)
-            setEditingRow(null)
-            invalidate(current.key)
-          }}
-        />
+        <Suspense fallback={null}>
+          <current.Dialog
+            open={open}
+            data={editingRow}
+            onClose={() => {
+              setOpen(false)
+              setEditingRow(null)
+              invalidate(current.key)
+            }}
+          />
+        </Suspense>
       )}
     </Container>
   )
