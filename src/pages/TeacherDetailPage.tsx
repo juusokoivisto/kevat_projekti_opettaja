@@ -105,12 +105,14 @@ export default function TeacherDetailsPage() {
       </Box>
       <Divider sx={{ mb: 5, borderColor: 'rgba(255, 255, 255, 0.12)' }} />
 
-      {teacher.kurssit && teacher.kurssit.length > 0 && (
+      {teacher.kurssit && typeof teacher.kurssit === 'string' && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Kurssit</Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>Opettajan kurssit</Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {teacher.kurssit.map((k: any) => (
-              <Box key={k.id} sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(255,255,255,0.04)', borderRadius: 1 }}>{k.nimi}</Box>
+            {(String(teacher.kurssit)).split(', ').map((name: string) => (
+              <Box key={name} sx={{ px: 1.5, py: 0.5, bgcolor: 'rgba(255,255,255,0.04)', borderRadius: 1 }}>
+                {name}
+              </Box>
             ))}
           </Box>
         </Box>
