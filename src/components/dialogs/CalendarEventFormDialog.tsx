@@ -138,8 +138,12 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const handleTeacherChange = (val: T.Teacher | null) => {
     setTeacher(val);
     setError(null);
+    setCourses(allCourses);
+
     const tc = (val as any)?.kurssit;
-    setCourses(tc?.length ? tc : allCourses);
+    if (val && tc?.length && !course) {
+      setCourse(tc[0]);
+    }
   };
 
   const handleCourseChange = (val: T.Course | null) => {
@@ -149,6 +153,20 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     const found = teachers.find((t) => (t as any).kurssit?.some((c: any) => c.id === val.id));
     if (found) setTeacher(found);
   };
+
+  const sortedCourses = React.useMemo(() => {
+    if (!teacher) return courses;
+
+    const teacherCourseIds = (teacher as any)?.kurssit?.map((c: any) => c.id) || [];
+
+    return [...courses].sort((a, b) => {
+      const aMatch = teacherCourseIds.includes(a.id);
+      const bMatch = teacherCourseIds.includes(b.id);
+
+      if (aMatch === bMatch) return 0;
+      return aMatch ? -1 : 1; // suositellut ensin
+    });
+  }, [courses, teacher]);
 
   const handleAdd = async () => {
     if (!isValid) return;
@@ -223,11 +241,42 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                   )}
                 />
                 <Autocomplete
-                  options={courses} value={course}
+                  options={sortedCourses} value={course}
                   onChange={(_, val) => handleCourseChange(val)}
                   getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
+                  renderOption={(props, option) => {
+                    const isRecommended =
+                      teacher &&
+                      (teacher as any)?.kurssit?.some((c: any) => c.id === option.id);
+
+                    return (
+                      <li {...props}>
+                        <Stack direction="row" justifyContent="space-between" width="100%">
+                          <span>{option.koodi} - {option.nimi}</span>
+                          {isRecommended && (
+                            <Typography variant="caption" color="primary">
+                              Opettajan kurssi
+                            </Typography>
+                          )}
+                        </Stack>
+                      </li>
+                    );
+                  }}
                   renderInput={(params) => (
-                    <TextField {...params} label="Kurssi" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Book fontSize="small" /></InputAdornment> } }} />
+                    <TextField
+                      {...params}
+                      label="Kurssi"
+                      slotProps={{
+                        input: {
+                          ...params.InputProps,
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Book fontSize="small" />
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                    />
                   )}
                 />
                 <Autocomplete
