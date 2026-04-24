@@ -147,12 +147,21 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   };
 
   const handleCourseChange = (val: T.Course | null) => {
-    setCourse(val);
-    setError(null);
-    if (!val || teacher) return;
-    const found = teachers.find((t) => (t as any).kurssit?.some((c: any) => c.id === val.id));
-    if (found) setTeacher(found);
-  };
+  setCourse(val);
+  setError(null);
+
+  if (!val) return;
+
+  if (!teacher) {
+    const found = teachers.find((t) =>
+      (t as any)?.kurssit?.some((c: any) => c.id === val.id)
+    );
+
+    if (found) {
+      setTeacher(found);
+    }
+  }
+};
 
   const sortedCourses = React.useMemo(() => {
     if (!teacher) return courses;
@@ -164,9 +173,21 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
       const bMatch = teacherCourseIds.includes(b.id);
 
       if (aMatch === bMatch) return 0;
-      return aMatch ? -1 : 1; // suositellut ensin
+      return aMatch ? -1 : 1;
     });
   }, [courses, teacher]);
+
+  const sortedTeachers = React.useMemo(() => {
+  if (!course) return teachers;
+
+  return [...teachers].sort((a, b) => {
+    const aMatch = (a as any)?.kurssit?.some((c: any) => c.id === course.id);
+    const bMatch = (b as any)?.kurssit?.some((c: any) => c.id === course.id);
+
+    if (aMatch === bMatch) return 0;
+    return aMatch ? -1 : 1; // suositellut ensin
+  });
+}, [teachers, course]);
 
   const handleAdd = async () => {
     if (!isValid) return;
@@ -232,14 +253,45 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 Perustiedot
               </Typography>
               <Stack spacing={2}>
-                <Autocomplete
-                  options={teachers} value={teacher}
-                  onChange={(_, val) => handleTeacherChange(val)}
-                  getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Opettaja" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> } }} />
-                  )}
-                />
+<Autocomplete
+  options={sortedTeachers} value={teacher}
+  onChange={(_, val) => handleTeacherChange(val)}
+  getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
+  renderOption={(props, option) => {
+    const isRecommended =
+      course &&
+      (option as any)?.kurssit?.some((c: any) => c.id === course.id);
+
+    return (
+      <li {...props}>
+        <Stack direction="row" justifyContent="space-between" width="100%">
+          <span>{option.nimi} {option.sukunimi}</span>
+          {isRecommended && (
+            <Typography variant="caption" color="primary">
+              Kurssin opettaja
+            </Typography>
+          )}
+        </Stack>
+      </li>
+    );
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Opettaja"
+      slotProps={{
+        input: {
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <Person fontSize="small" />
+            </InputAdornment>
+          )
+        }
+      }}
+    />
+  )}
+/>
                 <Autocomplete
                   options={sortedCourses} value={course}
                   onChange={(_, val) => handleCourseChange(val)}
