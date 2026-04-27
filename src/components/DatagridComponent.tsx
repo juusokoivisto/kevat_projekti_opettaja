@@ -176,9 +176,8 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
         columns={columns}
         //autoHeight={autoHeight}
         checkboxSelection
-        disableRowSelectionOnClick
         loading={loading}
-        onRowClick={(params) => {
+        onRowDoubleClick={(params) => {
           if (onRowClick) onRowClick(params.id);
         }}
         onRowSelectionModelChange={(newModel) => setSelectionModel(newModel as GridRowSelectionModel)}
