@@ -158,7 +158,6 @@ export default function UnifiedManagementPage() {
             rows={current.data}
             columns={current.columns}
             checkboxSelection
-            disableRowSelectionOnClick
             onAddRow={user ? () => { setEditingRow(null); setOpen(true); } : undefined}
             addButtonLabel={`Lisää uusi ${current.singularLabel}`}
             showOpenButton={Boolean(current.detailPath)}
