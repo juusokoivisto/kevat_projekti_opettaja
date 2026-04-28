@@ -49,9 +49,14 @@ export default function Login({ open = true, onClose }: LoginProps) {
       onClose?.()
     } catch (err) {
       const apiErr = err as T.ApiError;
-      setError(apiErr.error || 'Kirjautuminen epäonnistui');
+
+      if (apiErr.error === 'Invalid credentials') {
+        setError('Väärä käyttäjätunnus tai salasana');
+      } else {
+        setError(apiErr.error || 'Kirjautuminen epäonnistui');
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
