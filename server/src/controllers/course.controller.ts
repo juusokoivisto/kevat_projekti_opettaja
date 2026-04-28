@@ -2,6 +2,17 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 import { CourseBody, DeleteRequest } from '../types';
 
+const validateNumber = (value: any, max: number, fieldName: string) => {
+  if (typeof value !== 'number') {
+    return `${fieldName} Täytyy olla numero`;
+  }
+  if (value > max) {
+    return `${fieldName} ylittää ${max}`;
+  }
+
+  return null;
+};
+
 export const getCourses = async (_req: Request, res: Response) => {
   try {
     const kurssit = await prisma.kurssi.findMany();
@@ -13,10 +24,30 @@ export const getCourses = async (_req: Request, res: Response) => {
 
 export const createCourse = async (req: Request<{}, {}, CourseBody>, res: Response) => {
   const { nimi, koodi, opintopisteet, suunnitellutTunnit } = req.body;
+
+  const op = Number(opintopisteet);
+  const tunnit = Number(suunnitellutTunnit);
+
+  const opError = validateNumber(op, 100, 'Opintopisteet');
+  if (opError) {
+    return res.status(400).json({ error: opError });
+  }
+
+  const tunnitError = validateNumber(tunnit, 1000, 'Suunnitellut tunnit');
+  if (tunnitError) {
+    return res.status(400).json({ error: tunnitError });
+  }
+
   try {
     const kurssi = await prisma.kurssi.create({
-      data: { nimi, koodi, opintopisteet: Number(opintopisteet), suunnitellutTunnit: Number(suunnitellutTunnit) }
+      data: {
+        nimi,
+        koodi,
+        opintopisteet: Number(opintopisteet),
+        suunnitellutTunnit: Number(suunnitellutTunnit)
+      }
     });
+
     res.status(201).json(kurssi);
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
@@ -43,6 +74,19 @@ export const updateCourse = async (
 ) => {
   const { id } = req.params;
   const { nimi, koodi, opintopisteet, suunnitellutTunnit } = req.body;
+
+  const op = Number(opintopisteet);
+  const tunnit = Number(suunnitellutTunnit);
+
+  const opError = validateNumber(op, 100, 'Opintopisteet');
+  if (opError) {
+    return res.status(400).json({ error: opError });
+  }
+
+  const tunnitError = validateNumber(tunnit, 1000, 'Suunnitellut tunnit');
+  if (tunnitError) {
+    return res.status(400).json({ error: tunnitError });
+  }
 
   try {
     const updated = await prisma.kurssi.update({
