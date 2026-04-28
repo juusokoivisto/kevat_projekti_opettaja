@@ -38,12 +38,35 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
   }, [data, open]);
 
   const handleSubmit = async () => {
+    const opNumber = Number(op);
+    const tunnitNumber = Number(suunnitellutTunnit);
+
+    if (!Number.isFinite(opNumber) || !Number.isFinite(tunnitNumber)) {
+      setError('Virheellinen numero');
+      return;
+    }
+
+    if (opNumber <= 0 || tunnitNumber <= 0) {
+      setError('Arvon pitää olla positiivinen');
+      return;
+    }
+
+    if (opNumber > 100) {
+      setError('Suurin sallittu opintopiste määrä on 100');
+      return;
+    }
+
+    if (tunnitNumber > 1000) {
+      setError('Suurin sallittu tunti määrä on 1000');
+      return;
+    }
+
     try {
       const payload = {
         nimi,
         koodi,
-        opintopisteet: Number(op),
-        suunnitellutTunnit: Number(suunnitellutTunnit)
+        opintopisteet: opNumber,
+        suunnitellutTunnit: tunnitNumber
       };
 
       if (data) {
@@ -93,10 +116,12 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
           <TextField
             label="Opintopisteet"
             value={op}
+            inputProps={{ maxLength: 3 }}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
                 setOp(value);
+                setError(null);
               }
             }}
           />
@@ -104,10 +129,12 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
           <TextField
             label="Suunnitellut tunnit"
             value={suunnitellutTunnit}
+            inputProps={{ maxLength: 4 }}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
                 setSuunnitellutTunnit(value);
+                setError(null);
               }
             }}
           />
