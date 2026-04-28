@@ -10,6 +10,7 @@ import { api } from '../api'
 import * as T from '../api/types/api.types'
 import Calendar from '../components/Calendar'
 import { useCalendarEvents, useInvalidate } from '../hooks/useQueries'
+import EditIcon from '@mui/icons-material/Edit';
 
 const CalendarEventFormDialog = lazy(() => import('../components/dialogs/CalendarEventFormDialog'))
 
@@ -76,7 +77,9 @@ export default function TeacherDetailsPage() {
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 6, mb: 4, mt: 2 }}>
         <Box
-          onClick={() => { if (user?.username === 'ADMIN') setEditOpen(true) }}
+          onClick={() => {
+            if (user?.username === 'ADMIN') setEditOpen(true)
+          }}
           sx={{
             width: 40,
             height: 40,
@@ -84,10 +87,17 @@ export default function TeacherDetailsPage() {
             background: teacher.vari || '#1976d2',
             boxShadow: 2,
             cursor: user?.username === 'ADMIN' ? 'pointer' : 'default',
-            flexShrink: 0
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           title={user?.username === 'ADMIN' ? 'Muokkaa opettajan väriä' : ''}
-        />
+        >
+          {user?.username === 'ADMIN' && (
+            <EditIcon sx={{ color: 'white', fontSize: 20 }} />
+          )}
+        </Box>
         <Box>
           <Typography variant="caption" sx={{ opacity: 0.7, letterSpacing: 1 }}>SÄHKÖPOSTI</Typography>
           <Typography variant="body1">{teacher.sahkoposti}</Typography>
