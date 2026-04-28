@@ -13,7 +13,15 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }));
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  process.env.CORS_ORIGIN
+].filter(Boolean) as string[];
+
+app.use(cors({
+  origin: allowedOrigins,
+}));
 app.use(express.json());
 app.use(requestLogger);
 app.use(slidingSession);
