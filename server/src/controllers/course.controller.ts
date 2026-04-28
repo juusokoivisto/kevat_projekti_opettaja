@@ -28,12 +28,12 @@ export const createCourse = async (req: Request<{}, {}, CourseBody>, res: Respon
   const op = Number(opintopisteet);
   const tunnit = Number(suunnitellutTunnit);
 
-  const opError = validateNumber(op, 100, 'Opintopisteet');
+  const opError = validateNumber(op, 99, 'Opintopisteet');
   if (opError) {
     return res.status(400).json({ error: opError });
   }
 
-  const tunnitError = validateNumber(tunnit, 1000, 'Suunnitellut tunnit');
+  const tunnitError = validateNumber(tunnit, 999, 'Suunnitellut tunnit');
   if (tunnitError) {
     return res.status(400).json({ error: tunnitError });
   }
@@ -78,12 +78,12 @@ export const updateCourse = async (
   const op = Number(opintopisteet);
   const tunnit = Number(suunnitellutTunnit);
 
-  const opError = validateNumber(op, 100, 'Opintopisteet');
+  const opError = validateNumber(op, 99, 'Opintopisteet');
   if (opError) {
     return res.status(400).json({ error: opError });
   }
 
-  const tunnitError = validateNumber(tunnit, 1000, 'Suunnitellut tunnit');
+  const tunnitError = validateNumber(tunnit, 999, 'Suunnitellut tunnit');
   if (tunnitError) {
     return res.status(400).json({ error: tunnitError });
   }
