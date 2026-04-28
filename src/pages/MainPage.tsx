@@ -1,12 +1,9 @@
 import { useState, lazy, Suspense } from 'react'
 import {
   Container, Paper, Box, CircularProgress,
-  Tabs, Tab
 } from '@mui/material'
-import { CalendarMonth } from '@mui/icons-material'
 import { useInvalidate, useCalendarEvents } from '../hooks/useQueries'
 import * as T from '../api/types/api.types'
-
 const CalendarEventFormDialog = lazy(() => import('../components/dialogs/CalendarEventFormDialog'))
 const Calendar = lazy(() => import('./../components/Calendar.tsx'))
 
@@ -42,31 +39,6 @@ export default function MainPage() {
           bgcolor: 'background.paper'
         }}
       >
-        <Tabs
-          value={0}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            bgcolor: 'action.hover',
-            borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
-              py: 2,
-              minHeight: 64,
-              fontWeight: 'bold',
-              textTransform: 'none',
-              cursor: 'default'
-            }
-          }}
-        >
-          <Tab
-            icon={<CalendarMonth />}
-            iconPosition="start"
-            label="Lukujärjestys"
-            disableRipple
-          />
-        </Tabs>
-
         <Box sx={{ p: 1 }}>
           <Suspense fallback={<CircularProgress sx={{ m: 2 }} />}>
             <Calendar
