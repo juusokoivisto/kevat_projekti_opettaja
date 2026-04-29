@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { Menu as MenuIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserContext } from '../App';
+import { UserContext } from '../context/UserContext'
 import type { AuthUser } from '../api/types/api.types';
 import { useQueryClient } from '@tanstack/react-query';
 

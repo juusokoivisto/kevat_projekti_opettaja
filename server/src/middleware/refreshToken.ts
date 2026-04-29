@@ -14,8 +14,8 @@ export const slidingSession = (req: Request, res: Response, next: NextFunction) 
         { expiresIn: '8h' }
       );
       res.setHeader('x-new-token', newToken);
-    } catch (e) {
-
+    } catch (_e) {
+      // Token oli huono tai vanha, ei anneta uutta...
     }
   }
   next();

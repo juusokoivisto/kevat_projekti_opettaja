@@ -60,7 +60,8 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
         const res = await api.courses.getAll();
         if (!mounted) return;
         setCourses(res || []);
-      } catch (err) {
+      } catch (_err) {
+        // käyttäjä ei näe opettajia
       } finally {
         if (mounted) setLoadingCourses(false);
       }

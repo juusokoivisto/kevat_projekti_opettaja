@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react'
 import { Button, Box, Paper } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 import { api } from '../api'
 import { useRooms, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'

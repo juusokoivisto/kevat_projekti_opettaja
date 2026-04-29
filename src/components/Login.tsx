@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Box, Alert, Collapse
 } from '@mui/material'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 
 import { api } from '../api'
 import * as T from '../api/types/api.types'

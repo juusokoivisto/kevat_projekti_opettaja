@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import { useNavigate } from 'react-router-dom'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
 import { useTeachers, useInvalidate } from '../hooks/useQueries'

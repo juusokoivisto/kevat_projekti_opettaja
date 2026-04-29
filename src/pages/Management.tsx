@@ -7,7 +7,7 @@ import {
   School, Group, MeetingRoom, Book
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 import { api } from '../api'
 import { useCourses, useGroups, useTeachers, useRooms, useInvalidate } from '../hooks/useQueries'
 import DatagridComponent from '../components/DatagridComponent'

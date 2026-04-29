@@ -17,7 +17,7 @@ import {
   Close as CloseIcon, Delete as DeleteIcon
 } from '@mui/icons-material'
 import LunchBreak from './LunchBreak'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
 import { api } from '../api'
 import * as T from '../api/types/api.types'

@@ -22,22 +22,21 @@ const ManagementPage = lazy(() => import('./pages/Management.tsx'))
 import type { AuthUser } from './api/types/api.types'
 import { getDesignTokens } from './Theme.tsx'
 import { jwtDecode } from 'jwt-decode'
+import { UserContext } from './context/UserContext.tsx'
 
-export const UserContext = React.createContext<{
-  user: AuthUser | null
-  setUser: (u: AuthUser | null) => void
-}>({
-  user: null,
-  setUser: () => { },
-})
+const PageLoader = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+    <CircularProgress color="inherit" />
+  </Box>
+)
 
 function App() {
   useEffect(() => {
-  const loader = document.getElementById('initial-loader');
-  if (loader) {
-    loader.remove();
-  }
-}, []);
+    const loader = document.getElementById('initial-loader');
+    if (loader) {
+      loader.remove();
+    }
+  }, []);
 
   const theme = React.useMemo(() => createTheme(getDesignTokens()), []);
 
@@ -53,7 +52,7 @@ function App() {
         return null;
       }
       return JSON.parse(savedUser);
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   });
@@ -75,12 +74,6 @@ function App() {
   }, []);
 
   const [loginOpen, setLoginOpen] = useState(false)
-
-  const PageLoader = () => (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-      <CircularProgress color="inherit" />
-    </Box>
-  )
 
   return (
     <UserContext.Provider value={{ user, setUser }}>

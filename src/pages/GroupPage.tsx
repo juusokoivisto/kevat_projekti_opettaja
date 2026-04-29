@@ -8,7 +8,7 @@ import {
   Container
 } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
-import { UserContext } from '../App'
+import { UserContext } from '../context/UserContext'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
 import { useGroups, useInvalidate } from '../hooks/useQueries'

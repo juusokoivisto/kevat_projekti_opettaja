@@ -83,7 +83,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           if (d.groupId) setGroup(groupsRes.find(g => g.id === d.groupId) || null);
           if (d.slotKey) setSelectedSlot(d.slotKey);
         }
-      } catch (err) {
+      } catch (_err) {
         setError('Lomaketietojen haku epäonnistui');
       }
     };

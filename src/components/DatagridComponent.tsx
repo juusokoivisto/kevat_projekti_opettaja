@@ -11,7 +11,7 @@ import {
   Delete as DeleteIcon, OpenInFull as OpenInFullIcon,
   Edit as EditIcon, Add as AddIcon
 } from '@mui/icons-material';
-import { UserContext } from '../App';
+import { UserContext } from '../context/UserContext'
 
 interface DatagridComponentProps {
   rows: any[];
@@ -174,7 +174,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
         {...rest}
         rows={filteredRows}
         columns={columns}
-        //autoHeight={autoHeight}
+        autoHeight={autoHeight}
         checkboxSelection
         loading={loading}
         onRowDoubleClick={(params) => {
