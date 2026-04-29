@@ -74,6 +74,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           setCourse(coursesRes.find(c => c.id === data.kurssiId) || null);
           setGroup(groupsRes.find(g => g.id === data.ryhmaId) || null);
           setDate(dayjs(data.alkaa));
+          setUseDateRange(false);
         } else {
           const d = loadDefaults();
           if (d.classroomId) setClassroom(roomsRes.find(r => r.id === d.classroomId) || null);
@@ -91,12 +92,14 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
 
   const handleTeacherChange = (val: T.Teacher | null) => {
     setTeacher(val);
+    setError(null);
     const nextCourse = getDefaultCourseForTeacher(val, course);
     setCourse(nextCourse);
   };
 
   const handleCourseChange = (val: T.Course | null) => {
     setCourse(val);
+    setError(null);
     const nextTeacher = getDefaultTeacherForCourse(val, teacher, teachers);
     setTeacher(nextTeacher);
   };
@@ -112,23 +115,14 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     const days = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
 
     const events = buildEventsToCreate({
-      days,
-      classroom: classroom!,
-      teacher: teacher!,
-      course: course!,
-      group: group!,
-      useCustomTime,
-      customStart,
-      customEnd,
-      selectedSlot,
+      days, classroom: classroom!, teacher: teacher!,
+      course: course!, group: group!,
+      useCustomTime, customStart, customEnd, selectedSlot,
     });
 
     try {
-      if (data) {
-        await api.calendar.update(data.id, events[0]);
-      } else {
-        await api.calendar.createBatch(events);
-      }
+      if (data) await api.calendar.update(data.id, events[0]);
+      else await api.calendar.createBatch(events);
 
       saveDefaults({
         classroomId: classroom!.id,
@@ -142,7 +136,6 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     } catch (err) {
       const apiError = err as T.ApiError;
       setError(apiError.error || 'Tuntematon virhe tallennuksessa');
-      console.error("Calendar Save Error:", apiError);
     } finally {
       setLoading(false);
     }
@@ -158,36 +151,52 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {error && (
-              <Alert severity="error">
-                {error.split('\n').map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
+              <Alert severity="error" sx={{ whiteSpace: 'pre-line' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Tallennus epäonnistui:</Typography>
+                {error}
               </Alert>
             )}
 
             <Autocomplete
-              options={sortedTeachers}
-              value={teacher}
+              options={sortedTeachers} value={teacher}
               onChange={(_, val) => handleTeacherChange(val)}
               getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Stack direction="row" justifyContent="space-between" width="100%">
+                    <span>{option.nimi} {option.sukunimi}</span>
+                    {isTeacherRecommended(course, option) && (
+                      <Typography variant="caption" color="primary">Kurssin opettaja</Typography>
+                    )}
+                  </Stack>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField {...params} label="Opettaja" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> } }} />
               )}
             />
 
             <Autocomplete
-              options={sortedCourses}
-              value={course}
+              options={sortedCourses} value={course}
               onChange={(_, val) => handleCourseChange(val)}
               getOptionLabel={(o) => `${o.koodi} - ${o.nimi}`}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Stack direction="row" justifyContent="space-between" width="100%">
+                    <span>{option.koodi} - {option.nimi}</span>
+                    {isCourseRecommended(teacher, option) && (
+                      <Typography variant="caption" color="primary">Opettajan kurssi</Typography>
+                    )}
+                  </Stack>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField {...params} label="Kurssi" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Book fontSize="small" /></InputAdornment> } }} />
               )}
             />
 
             <Autocomplete
-              options={classrooms}
-              value={classroom}
+              options={classrooms} value={classroom}
               onChange={(_, val) => setClassroom(val)}
               getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
               renderInput={(params) => (
@@ -196,8 +205,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
             />
 
             <Autocomplete
-              options={groups}
-              value={group}
+              options={groups} value={group}
               onChange={(_, val) => setGroup(val)}
               getOptionLabel={(o) => o.ryhmatunnus}
               renderInput={(params) => (
@@ -217,8 +225,8 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 <DatePicker label="Päivämäärä" value={date} onChange={setDate} shouldDisableDate={(day) => !isWeekday(day)} slotProps={{ textField: { fullWidth: true } }} />
               ) : (
                 <Stack direction="row" spacing={2}>
-                  <DatePicker label="Alkaa" value={dateRangeStart} onChange={setDateRangeStart} shouldDisableDate={(day) => !isWeekday(day)} slotProps={{ textField: { fullWidth: true } }} />
-                  <DatePicker label="Loppuu" value={dateRangeEnd} onChange={setDateRangeEnd} shouldDisableDate={(day) => !isWeekday(day)} slotProps={{ textField: { fullWidth: true } }} />
+                  <DatePicker label="Alkaa" value={dateRangeStart} onChange={(val) => { setDateRangeStart(val); setError(null); }} shouldDisableDate={(day) => !isWeekday(day)} slotProps={{ textField: { fullWidth: true } }} />
+                  <DatePicker label="Loppuu" value={dateRangeEnd} onChange={(val) => { setDateRangeEnd(val); setError(null); }} shouldDisableDate={(day) => !isWeekday(day)} minDate={dateRangeStart || undefined} slotProps={{ textField: { fullWidth: true } }} />
                 </Stack>
               )}
 
@@ -229,21 +237,28 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                 </Stack>
 
                 {!useCustomTime ? (
-                  <ToggleButtonGroup value={selectedSlot} exclusive onChange={(_, val) => setSelectedSlot(val)} fullWidth color="primary">
+                  <ToggleButtonGroup value={selectedSlot} exclusive onChange={(_, val) => val && setSelectedSlot(val)} fullWidth color="primary">
                     {Object.entries(SLOTS).map(([key, slot]) => (
                       <ToggleButton key={key} value={key} sx={{ py: 1, textTransform: 'none' }}>
                         <Stack alignItems="center">
-                          <Typography variant="body2">{slot.label}</Typography>
-                          <Typography variant="caption">{getSlotTimes(key as any, isMonday)}</Typography>
+                          <Typography variant="body2" fontWeight="medium">{slot.label}</Typography>
+                          <Typography variant="caption" sx={{ opacity: 0.8 }}>{getSlotTimes(key as any, isMonday || false)}</Typography>
                         </Stack>
                       </ToggleButton>
                     ))}
-                    <ToggleButton value="molemmat" sx={{ textTransform: 'none' }}>Molemmat</ToggleButton>
+                    <ToggleButton value="molemmat" sx={{ py: 1, textTransform: 'none' }}>
+                      <Stack alignItems="center">
+                        <Typography variant="body2" fontWeight="medium">Molemmat</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                          {isMonday ? '9:00 - 14:45' : '8:00 - 14:45'}
+                        </Typography>
+                      </Stack>
+                    </ToggleButton>
                   </ToggleButtonGroup>
                 ) : (
                   <Stack direction="row" spacing={2}>
                     <TimePicker label="Alkaa" value={customStart} onChange={setCustomStart} ampm={false} slotProps={{ textField: { fullWidth: true } }} />
-                    <TimePicker label="Päättyy" value={customEnd} onChange={setCustomEnd} ampm={false} slotProps={{ textField: { fullWidth: true } }} />
+                    <TimePicker label="Päättyy" value={customEnd} onChange={setCustomEnd} ampm={false} minTime={customStart || undefined} slotProps={{ textField: { fullWidth: true } }} />
                   </Stack>
                 )}
               </Box>
@@ -252,7 +267,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>
           <Button onClick={() => onClose()} color="inherit">Peruuta</Button>
-          <Button variant="contained" onClick={handleAdd} disabled={!isValid || loading}>
+          <Button variant="contained" onClick={handleAdd} disabled={!isValid || loading} disableElevation>
             {loading ? 'Lisätään...' : `Lisää ${eventCount} tapahtumaa`}
           </Button>
         </DialogActions>
