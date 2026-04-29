@@ -152,7 +152,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick: () => void }) {
               px: 2,
             }}
           >
-            Työjärjestykset
+            TEST I TESTITTESTIT TESTITSTITSI
           </Typography>
 
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'stretch' }}>
