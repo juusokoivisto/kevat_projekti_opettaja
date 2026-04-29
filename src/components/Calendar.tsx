@@ -187,12 +187,12 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
 
     const handler = (e: MouseEvent) => {
       e.preventDefault()
+      e.stopPropagation()
       setSelectedEventId(info.event.id)
       setMenuAnchor(info.el as HTMLElement)
     }
 
     info.el.addEventListener('contextmenu', handler)
-    return () => info.el.removeEventListener('contextmenu', handler)
   }, [])
 
   const filterOpen = Boolean(filterAnchor)
