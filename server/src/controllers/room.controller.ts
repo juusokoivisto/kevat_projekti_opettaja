@@ -69,11 +69,6 @@ export const updateRoom = async (
   if (kapError) {
     return res.status(400).json({ error: kapError });
   }
-
-  if (!huoneenNumero || huoneenNumero.trim() === '') {
-    return res.status(400).json({ error: 'Huoneen numero puuttuu' });
-  }
-
   try {
     const updated = await prisma.tila.update({
       where: { id: Number(id) },
