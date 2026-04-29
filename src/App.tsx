@@ -32,6 +32,13 @@ export const UserContext = React.createContext<{
 })
 
 function App() {
+  useEffect(() => {
+  const loader = document.getElementById('initial-loader');
+  if (loader) {
+    loader.remove();
+  }
+}, []);
+
   const theme = React.useMemo(() => createTheme(getDesignTokens()), []);
 
   const [user, setUserState] = useState<AuthUser | null>(() => {
