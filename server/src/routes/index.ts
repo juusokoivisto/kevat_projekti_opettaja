@@ -8,6 +8,12 @@ import { getCourses, createCourse, deleteCourses, updateCourse } from '../contro
 import { getGroups, createGroup, deleteGroups, updateGroups } from '../controllers/group.controller';
 import { getAllEvents, getTeacherEvents, createEvent, createManyEvents, deleteEvent, updateEvent } from '../controllers/calendar.controller';
 import { exportToExcel, exportToIcs } from '../controllers/export.controller';
+import {
+  validateCreateTeacher,
+  validateUpdateTeacher,
+  validateGetTeacherById,
+  validateDeleteTeachers,
+} from '../validations/teacher.validation';
 
 const router = Router();
 
@@ -16,10 +22,10 @@ router.post('/login', loginRateLimiter, login);
 
 router.route('/opettajat')
   .get(getTeachers)
-  .post(authenticateToken, createTeacher)
-  .delete(authenticateToken, deleteTeachers);
-router.put('/opettajat/:id', authenticateToken, updateTeacher);
-router.get('/opettajat/:id', getTeacherById);
+  .post(authenticateToken, validateCreateTeacher, createTeacher)
+  .delete(authenticateToken, validateDeleteTeachers, deleteTeachers);
+router.put('/opettajat/:id', authenticateToken, validateUpdateTeacher, updateTeacher);
+router.get('/opettajat/:id', validateGetTeacherById, getTeacherById);
 
 router.route('/luokkahuoneet')
   .get(getRooms)

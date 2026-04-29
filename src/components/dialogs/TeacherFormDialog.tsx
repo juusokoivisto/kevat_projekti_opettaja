@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, Autocomplete, Chip, CircularProgress, Alert
+  TextField, Button, Box, Autocomplete, Chip, Alert
 } from '@mui/material';
 import { HexColorPicker } from 'react-colorful';
 
@@ -82,7 +82,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       if (data) {
         await api.teachers.update(data.id, payload);
       } else {
-        await api.teachers.create(payload as any);
+        await api.teachers.create(payload);
       }
 
       reset();
@@ -147,6 +147,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
             getOptionLabel={(o: any) => o.nimi}
             value={selectedCourses}
             onChange={(_, val) => setSelectedCourses(val)}
+            loading={loadingCourses}
             isOptionEqualToValue={(a: any, b: any) => a.id === b.id}
             renderTags={(value: any[], getTagProps) =>
               value.map((option, index) => (
@@ -158,15 +159,6 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
                 {...params}
                 label="Kurssit"
                 placeholder="Valitse kurssit"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingCourses ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  )
-                }}
               />
             )}
           />

@@ -1,3 +1,17 @@
+export const adjustTeacherHours = async (
+  tx: any,
+  opettajaId: number,
+  delta: number
+) => {
+  const teacher = await tx.opettaja.findUnique({ where: { id: opettajaId } });
+  if (!teacher) return;
+  const updated = Math.max(0, (teacher.vapaaResurssi ?? 0) + delta);
+  await tx.opettaja.update({ where: { id: opettajaId }, data: { vapaaResurssi: updated } });
+};
+
+export const durationHours = (start: Date, end: Date): number =>
+  Math.ceil(Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60)));
+
 export const validateEvent = async (
   tx: any,
   data: {

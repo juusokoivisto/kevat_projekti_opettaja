@@ -110,7 +110,7 @@ export default function UnifiedManagementPage() {
 
   useEffect(() => {
     const search = new URLSearchParams(location.search)
-    const tabParam = (search.get('tab') as string) || (location.state as any)?.tab
+    const tabParam = search.get('tab') || (location.state as { tab?: string } | null)?.tab
     if (!tabParam) return
     const idx = configs.findIndex(c => c.key === tabParam || c.label?.toLowerCase() === String(tabParam).toLowerCase())
     if (idx >= 0) setActiveTab(idx)

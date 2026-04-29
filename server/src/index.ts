@@ -21,6 +21,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: allowedOrigins,
+  exposedHeaders: ['x-new-token'],
 }));
 app.use(express.json());
 app.use(requestLogger);

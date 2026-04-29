@@ -17,7 +17,7 @@ import {
   Close as CloseIcon, Delete as DeleteIcon
 } from '@mui/icons-material'
 import LunchBreak from './LunchBreak'
-import { ColorModeContext, UserContext } from '../App'
+import { UserContext } from '../App'
 import { useCalendarEvents, useCalendarFilters } from '../hooks/useQueries'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
@@ -102,7 +102,6 @@ const renderEventContent = (eventInfo: EventContentArg) => {
 }
 
 export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { teacherId?: number; hideFilters?: boolean; onEdit?: (id: string) => void; onAdd?: () => void; }) {
-  const { darkMode } = useContext(ColorModeContext)
   const { user } = useContext(UserContext)
 
   const [filters, setFilters] = useState({
@@ -136,7 +135,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
 
   const filteredEvents = useMemo(() => {
     return rawEvents
-      .map(e => formatCalendarEvent(e, darkMode))
+      .map(e => formatCalendarEvent(e))
       .filter(e => {
         if (filters.room && e.resourceId !== filters.room) return false
         if (filters.teacher && e.extendedProps.opettaja !== filters.teacher) return false
@@ -144,7 +143,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
         if (filters.course && e.extendedProps.kurssi !== filters.course) return false
         return true
       })
-  }, [rawEvents, filters, darkMode])
+  }, [rawEvents, filters])
 
   const sortedResources = useMemo(() =>
     resources.slice().sort((a, b) => a.title.localeCompare(b.title, 'fi')),
@@ -338,7 +337,7 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
         </Box>
       )}
 
-      <div className={darkMode ? 'calendar-dark' : ''}>
+      <div>
         <FullCalendar
           plugins={[resourceTimelinePlugin, timeGridPlugin, dayGridPlugin, multiMonthPlugin]}
           schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
@@ -376,11 +375,15 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           }}
         />
 
-        {user && menuAnchor && (
+        {user && (
           <Menu
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
+            onClose={() => {
+              setMenuAnchor(null)
+              setSelectedEventId(null)
+            }}
+            onContextMenu={(e) => e.stopPropagation()}
           >
             <MenuItem
               sx={{ display: 'flex', alignItems: 'center' }}

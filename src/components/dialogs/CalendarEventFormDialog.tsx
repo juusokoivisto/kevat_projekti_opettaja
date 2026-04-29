@@ -17,10 +17,10 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import 'dayjs/locale/fi';
 import {
   SLOTS, type SlotKey,
-  saveDefaults, loadDefaults, getRecommendedCourses, getRecommendedTeachers, 
+  saveDefaults, loadDefaults, getRecommendedCourses, getRecommendedTeachers,
   isCourseRecommended, isTeacherRecommended, isWeekday,
-   getWeekdaysBetween, getSlotTimes, buildEventsToCreate,
-   getDefaultCourseForTeacher, getDefaultTeacherForCourse,
+  getWeekdaysBetween, getSlotTimes, buildEventsToCreate,
+  getDefaultCourseForTeacher, getDefaultTeacherForCourse,
 } from '../../utils/calendarEventFormHelpers';
 
 dayjs.extend(isSameOrBefore);
@@ -58,7 +58,6 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const activeDate = useDateRange ? dateRangeStart : date;
   const isMonday = activeDate?.day() === 1;
 
-  // ── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
 
@@ -83,37 +82,37 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     load();
   }, [open, data]);
 
-const applyEditDefaults = (
-  rooms: T.Classroom[],
-  teachersRes: T.Teacher[],
-  coursesRes: T.Course[],
-  groupsRes: T.StudentGroup[],
-) => {
-  if (!data) return;
+  const applyEditDefaults = (
+    rooms: T.Classroom[],
+    teachersRes: T.Teacher[],
+    coursesRes: T.Course[],
+    groupsRes: T.StudentGroup[],
+  ) => {
+    if (!data) return;
 
-  setClassroom(rooms.find((r) => r.id === data.tilaId) ?? null);
+    setClassroom(rooms.find((r) => r.id === data.tilaId) ?? null);
 
-  const selTeacher =
-    teachersRes.find((t) => t.id === data.opettajaId) ?? null;
+    const selTeacher =
+      teachersRes.find((t) => t.id === data.opettajaId) ?? null;
 
-  setTeacher(selTeacher);
+    setTeacher(selTeacher);
 
-  const teacherCourses = (selTeacher as any)?.kurssit;
+    const teacherCourses = selTeacher?.kurssit;
 
-  if (teacherCourses?.length) {
-    setCourse(
-      teacherCourses.find((c: any) => c.id === data.kurssiId) ?? null
-    );
-  } else {
-    setCourse(
-      coursesRes.find((c) => c.id === data.kurssiId) ?? null
-    );
-  }
+    if (teacherCourses?.length) {
+      setCourse(
+        teacherCourses.find((c: any) => c.id === data.kurssiId) ?? null
+      );
+    } else {
+      setCourse(
+        coursesRes.find((c) => c.id === data.kurssiId) ?? null
+      );
+    }
 
-  setGroup(groupsRes.find((g) => g.id === data.ryhmaId) ?? null);
-  setDate(dayjs(data.alkaa));
-  setUseDateRange(false);
-};
+    setGroup(groupsRes.find((g) => g.id === data.ryhmaId) ?? null);
+    setDate(dayjs(data.alkaa));
+    setUseDateRange(false);
+  };
 
   const applyStoredDefaults = (
     teachersRes: T.Teacher[], coursesRes: T.Course[],
@@ -124,7 +123,7 @@ const applyEditDefaults = (
     if (d.teacherId) {
       const t = teachersRes.find((t) => t.id === d.teacherId) ?? null;
       setTeacher(t);
-      const tc = (t as any)?.kurssit;
+      const tc = t?.kurssit;
       if (tc?.length) {
         if (d.courseId) setCourse(tc.find((c: any) => c.id === d.courseId) ?? null);
       } else if (d.courseId) {
@@ -137,7 +136,6 @@ const applyEditDefaults = (
     if (d.slotKey) setSelectedSlot(d.slotKey);
   };
 
-  // ── Form actions ──────────────────────────────────────────────────────────
   const resetForm = () => {
     setClassroom(null); setTeacher(null); setCourse(null); setGroup(null);
     setDate(dayjs()); setUseDateRange(false); setDateRangeStart(dayjs()); setDateRangeEnd(null);
@@ -147,31 +145,31 @@ const applyEditDefaults = (
 
   const handleClose = () => { resetForm(); onClose(); };
 
-const handleTeacherChange = (val: T.Teacher | null) => {
-  setTeacher(val);
-  setError(null);
+  const handleTeacherChange = (val: T.Teacher | null) => {
+    setTeacher(val);
+    setError(null);
 
-  const nextCourse = getDefaultCourseForTeacher(val, course);
-  setCourse(nextCourse);
-};
+    const nextCourse = getDefaultCourseForTeacher(val, course);
+    setCourse(nextCourse);
+  };
 
-const handleCourseChange = (val: T.Course | null) => {
-  setCourse(val);
-  setError(null);
-  
-  const nextTeacher = getDefaultTeacherForCourse(val, teacher, teachers);
-  setTeacher(nextTeacher);
-};
+  const handleCourseChange = (val: T.Course | null) => {
+    setCourse(val);
+    setError(null);
 
-const sortedCourses = React.useMemo(
-  () => getRecommendedCourses(teacher, allCourses),
-  [teacher, allCourses]
-);
+    const nextTeacher = getDefaultTeacherForCourse(val, teacher, teachers);
+    setTeacher(nextTeacher);
+  };
 
-const sortedTeachers = React.useMemo(
-  () => getRecommendedTeachers(course, teachers),
-  [course, teachers]
-);
+  const sortedCourses = React.useMemo(
+    () => getRecommendedCourses(teacher, allCourses),
+    [teacher, allCourses]
+  );
+
+  const sortedTeachers = React.useMemo(
+    () => getRecommendedTeachers(course, teachers),
+    [course, teachers]
+  );
 
   const handleAdd = async () => {
     if (!isValid) return;
@@ -201,7 +199,6 @@ const sortedTeachers = React.useMemo(
     }
   };
 
-  // ── Derived state ─────────────────────────────────────────────────────────
   const isCustomTimeValid = !!(customStart && customEnd && customEnd.isAfter(customStart));
   const isDateRangeValid = !!(dateRangeStart && dateRangeEnd && dateRangeEnd.isAfter(dateRangeStart));
   const isValid = !!(classroom && teacher && course && group
@@ -217,7 +214,6 @@ const sortedTeachers = React.useMemo(
 
   const addButtonLabel = loading ? 'Lisätään...' : eventCount > 1 ? `Lisää ${eventCount} tapahtumaa` : 'Lisää tapahtuma';
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -231,7 +227,6 @@ const sortedTeachers = React.useMemo(
               </Alert>
             )}
 
-            {/* ── Basic info ── */}
             <Box>
               <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>
                 Perustiedot
@@ -242,7 +237,7 @@ const sortedTeachers = React.useMemo(
                   onChange={(_, val) => handleTeacherChange(val)}
                   getOptionLabel={(o) => `${o.nimi} ${o.sukunimi}`}
                   renderOption={(props, option) => {
-                    const isRecommended = isTeacherRecommended(course, option);                    
+                    const isRecommended = isTeacherRecommended(course, option);
                     return (
                       <li {...props}>
                         <Stack direction="row" justifyContent="space-between" width="100%">
@@ -262,7 +257,6 @@ const sortedTeachers = React.useMemo(
                       label="Opettaja"
                       slotProps={{
                         input: {
-                          ...params.InputProps,
                           startAdornment: (
                             <InputAdornment position="start">
                               <Person fontSize="small" />
@@ -298,7 +292,6 @@ const sortedTeachers = React.useMemo(
                       label="Kurssi"
                       slotProps={{
                         input: {
-                          ...params.InputProps,
                           startAdornment: (
                             <InputAdornment position="start">
                               <Book fontSize="small" />
@@ -314,7 +307,7 @@ const sortedTeachers = React.useMemo(
                   onChange={(_, val) => { setClassroom(val); setError(null); }}
                   getOptionLabel={(o) => `${o.huoneenNumero} (${o.tyyppi})`}
                   renderInput={(params) => (
-                    <TextField {...params} label="Huone" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><Room fontSize="small" /></InputAdornment> } }} />
+                    <TextField {...params} label="Huone" slotProps={{ input: { startAdornment: <InputAdornment position="start"><Room fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
                 <Autocomplete
@@ -322,7 +315,7 @@ const sortedTeachers = React.useMemo(
                   onChange={(_, val) => { setGroup(val); setError(null); }}
                   getOptionLabel={(o) => o.ryhmatunnus}
                   renderInput={(params) => (
-                    <TextField {...params} label="Opiskelijaryhmä" slotProps={{ input: { ...params.InputProps, startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment> } }} />
+                    <TextField {...params} label="Opiskelijaryhmä" slotProps={{ input: { startAdornment: <InputAdornment position="start"><School fontSize="small" /></InputAdornment> } }} />
                   )}
                 />
 
@@ -331,7 +324,6 @@ const sortedTeachers = React.useMemo(
 
             <Divider />
 
-            {/* ── Timing ── */}
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
                 <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>Ajoitus</Typography>
