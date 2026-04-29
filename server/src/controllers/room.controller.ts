@@ -2,6 +2,19 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 import { RoomBody, DeleteRequest } from '../types';
 
+const validateNumber = (value: any, max: number, fieldName: string) => {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return `${fieldName} täytyy olla numero`;
+  }
+  if (value > max) {
+    return `${fieldName} ylittää ${max}`;
+  }
+  if (value < 0) {
+    return `${fieldName} ei voi olla negatiivinen`;
+  }
+  return null;
+};
+
 export const getRooms = async (_req: Request, res: Response) => {
   try {
     const tilat = await prisma.tila.findMany();
@@ -13,6 +26,13 @@ export const getRooms = async (_req: Request, res: Response) => {
 
 export const createRoom = async (req: Request<{}, {}, RoomBody>, res: Response) => {
   const { huoneenNumero, kapasiteetti, tyyppi } = req.body;
+
+  const kap = Number(kapasiteetti);
+
+  const kapError = validateNumber(kap, 9999, 'Kapasiteetti');
+  if (kapError) {
+    return res.status(400).json({ error: kapError });
+  }
   try {
     const luokkahuone = await prisma.tila.create({
       data: { huoneenNumero, kapasiteetti: Number(kapasiteetti), tyyppi }
@@ -42,6 +62,17 @@ export const updateRoom = async (
 ) => {
   const { id } = req.params;
   const { huoneenNumero, kapasiteetti, tyyppi } = req.body;
+
+  const kap = Number(kapasiteetti);
+
+  const kapError = validateNumber(kap, 9999, 'Kapasiteetti');
+  if (kapError) {
+    return res.status(400).json({ error: kapError });
+  }
+
+  if (!huoneenNumero || huoneenNumero.trim() === '') {
+    return res.status(400).json({ error: 'Huoneen numero puuttuu' });
+  }
 
   try {
     const updated = await prisma.tila.update({
