@@ -1,0 +1,38 @@
+name: Code Review Checks
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  review-code:
+    name: Lint, Typecheck, and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        
+      - name: Run Linter
+        run: npm run lint
+        
+      - name: Type Check (Frontend)
+        run: npx tsc --noEmit -p tsconfig.app.json
+        
+      - name: Type Check (Backend/Node)
+        run: npx tsc --noEmit -p tsconfig.node.json
+
+      - name: Test Build
+        run: npm run build
