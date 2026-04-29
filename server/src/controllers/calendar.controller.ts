@@ -32,18 +32,19 @@ export const deleteEvent = async (req: Request<{ id: string }>, res: Response) =
   try {
     const id = Number(req.params.id);
 
-    const existing = await prisma.tyojarjestys.findUnique({
-      where: { id }
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.tyojarjestys.findUnique({ where: { id } });
+      if (!existing) return null;
+
+      await tx.tyojarjestys.delete({ where: { id } });
+
+      const hours = CalendarService.durationHours(existing.alkaa, existing.paattyy);
+      await CalendarService.adjustTeacherHours(tx, existing.opettajaId, +hours);
+
+      return existing;
     });
 
-    if (!existing) {
-      return res.status(404).json({ error: 'Tapahtumaa ei löydy' });
-    }
-
-    await prisma.tyojarjestys.delete({
-      where: { id }
-    });
-
+    if (!result) return res.status(404).json({ error: 'Tapahtumaa ei löydy' });
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
@@ -60,6 +61,9 @@ export const updateEvent = async (
     const end = new Date(req.body.paattyy);
 
     const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.tyojarjestys.findUnique({ where: { id } });
+      if (!existing) return null;
+
       await CalendarService.validateEvent(tx, {
         id,
         huoneId: req.body.huoneId,
@@ -69,7 +73,7 @@ export const updateEvent = async (
         end
       });
 
-      return await tx.tyojarjestys.update({
+      const updated = await tx.tyojarjestys.update({
         where: { id },
         data: {
           tilaId: Number(req.body.huoneId),
@@ -80,8 +84,21 @@ export const updateEvent = async (
           paattyy: end,
         }
       });
+
+      const oldHours = CalendarService.durationHours(existing.alkaa, existing.paattyy);
+      const newHours = CalendarService.durationHours(start, end);
+
+      if (existing.opettajaId !== updated.opettajaId) {
+        await CalendarService.adjustTeacherHours(tx, existing.opettajaId, +oldHours);
+        await CalendarService.adjustTeacherHours(tx, updated.opettajaId, -newHours);
+      } else {
+        await CalendarService.adjustTeacherHours(tx, updated.opettajaId, oldHours - newHours);
+      }
+
+      return updated;
     });
 
+    if (!result) return res.status(404).json({ error: 'Tapahtumaa ei löydy' });
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
@@ -114,15 +131,8 @@ export const createEvent = async (req: Request<{}, {}, CalendarBody>, res: Respo
         include: { tila: true, opettaja: true, kurssi: true },
       });
 
-      
-      const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
-      const decrement = Math.ceil(durationHours);
-      if (created.opettajaId) {
-        const teacher = await tx.opettaja.findUnique({ where: { id: created.opettajaId } });
-        const current = teacher?.vapaaResurssi ?? 0;
-        const updated = Math.max(0, current - decrement);
-        await tx.opettaja.update({ where: { id: created.opettajaId }, data: { vapaaResurssi: updated } });
-      }
+      const hours = CalendarService.durationHours(start, end);
+      await CalendarService.adjustTeacherHours(tx, created.opettajaId, -hours);
 
       return created;
     });
@@ -160,15 +170,8 @@ export const createManyEvents = async (req: Request<{}, {}, CalendarBody[]>, res
           }
         });
 
-        
-        const durationHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
-        const decrement = Math.ceil(durationHours);
-        if (newEvent.opettajaId) {
-          const teacher = await tx.opettaja.findUnique({ where: { id: newEvent.opettajaId } });
-          const current = teacher?.vapaaResurssi ?? 0;
-          const updated = Math.max(0, current - decrement);
-          await tx.opettaja.update({ where: { id: newEvent.opettajaId }, data: { vapaaResurssi: updated } });
-        }
+        const hours = CalendarService.durationHours(start, end);
+        await CalendarService.adjustTeacherHours(tx, newEvent.opettajaId, -hours);
 
         created.push(newEvent);
       }

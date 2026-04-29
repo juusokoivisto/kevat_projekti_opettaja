@@ -14,13 +14,13 @@ export const api = {
   },
   teachers: {
     getAll: () => request<T.Teacher[]>('/opettajat', { method: 'GET' }),
-    create: (data: Omit<T.Teacher, 'id'>) =>
+    create: (data: T.TeacherPayload) =>
       request<T.Teacher>('/opettajat', { method: 'POST', body: JSON.stringify(data) }),
     deleteMany: (ids: number[]) =>
       request<void>('/opettajat', { method: 'DELETE', body: JSON.stringify({ ids }) }),
     getOne: (id: string | number) =>
       request<T.Teacher>(`/opettajat/${id}`, { method: 'GET' }),
-    update: (id: number, data: any) =>
+    update: (id: number, data: T.TeacherPayload) =>
       request<T.Teacher>(`/opettajat/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   },
   rooms: {

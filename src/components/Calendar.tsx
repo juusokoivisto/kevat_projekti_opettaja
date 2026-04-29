@@ -376,11 +376,15 @@ export default function Calendar({ teacherId, hideFilters, onEdit, onAdd }: { te
           }}
         />
 
-        {user && menuAnchor && (
+        {user && (
           <Menu
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
+            onClose={() => {
+              setMenuAnchor(null)
+              setSelectedEventId(null)
+            }}
+            onContextMenu={(e) => e.stopPropagation()}
           >
             <MenuItem
               sx={{ display: 'flex', alignItems: 'center' }}

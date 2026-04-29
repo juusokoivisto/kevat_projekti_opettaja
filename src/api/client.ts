@@ -13,6 +13,8 @@ async function handleRes<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+
+    window.dispatchEvent(new Event('auth:logout'));
   }
 
   const contentType = res.headers.get('content-type');
@@ -56,9 +58,12 @@ export async function downloadFile(path: string, filename: string): Promise<void
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

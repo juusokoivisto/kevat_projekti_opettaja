@@ -5,6 +5,16 @@ export interface Classroom {
   tyyppi: string;
 }
 
+export interface TeacherPayload {
+  nimi: string;
+  sukunimi: string;
+  sahkoposti: string;
+  sopimustunnit: number;
+  vapaaResurssi?: number;
+  vari?: string;
+  courseIds?: number[];
+}
+
 export interface Teacher {
   id: number;
   nimi: string;

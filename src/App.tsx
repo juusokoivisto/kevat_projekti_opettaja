@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -69,6 +69,12 @@ function App() {
     }
     setUserState(u);
   }
+
+  useEffect(() => {
+    const handler = () => setUser(null);
+    window.addEventListener('auth:logout', handler);
+    return () => window.removeEventListener('auth:logout', handler);
+  }, []);
 
   const [loginOpen, setLoginOpen] = useState(false)
 

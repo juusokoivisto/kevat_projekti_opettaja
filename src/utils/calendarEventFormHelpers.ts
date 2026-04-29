@@ -59,7 +59,7 @@ export const getDefaultCourseForTeacher = (
 ): T.Course | null => {
   if (!teacher) return currentCourse;
 
-  const teacherCourses = (teacher as any)?.kurssit;
+  const teacherCourses = teacher?.kurssit;
 
   if (!teacherCourses?.length) return currentCourse;
 
@@ -78,7 +78,7 @@ export const getDefaultTeacherForCourse = (
   if (currentTeacher) return currentTeacher;
 
   const found = teachers.find((t) =>
-    (t as any)?.kurssit?.some((c: any) => c.id === course.id)
+    t?.kurssit?.some((c) => c.id === course.id)
   );
 
   return found ?? null;
@@ -91,7 +91,7 @@ export const getRecommendedCourses = (
   if (!teacher) return allCourses;
 
   const teacherCourseIds =
-    (teacher as any)?.kurssit?.map((c: any) => c.id) || [];
+    teacher?.kurssit?.map((c: any) => c.id) || [];
 
   return [...allCourses].sort((a, b) => {
     const aMatch = teacherCourseIds.includes(a.id);
@@ -109,8 +109,8 @@ export const getRecommendedTeachers = (
   if (!course) return teachers;
 
   return [...teachers].sort((a, b) => {
-    const aMatch = (a as any)?.kurssit?.some((c: any) => c.id === course.id);
-    const bMatch = (b as any)?.kurssit?.some((c: any) => c.id === course.id);
+    const aMatch = a?.kurssit?.some((c) => c.id === course.id);
+    const bMatch = b?.kurssit?.some((c) => c.id === course.id);
 
     if (aMatch === bMatch) return 0;
     return aMatch ? -1 : 1;
@@ -123,8 +123,8 @@ export const isCourseRecommended = (
 ) => {
   if (!teacher || !course) return false;
 
-  return (teacher as any)?.kurssit?.some(
-    (c: any) => c.id === course.id
+  return teacher?.kurssit?.some(
+    (c) => c.id === course.id
   );
 };
 
@@ -134,8 +134,8 @@ export const isTeacherRecommended = (
 ) => {
   if (!teacher || !course) return false;
 
-  return (teacher as any)?.kurssit?.some(
-    (c: any) => c.id === course.id
+  return teacher?.kurssit?.some(
+    (c) => c.id === course.id
   );
 };
 
