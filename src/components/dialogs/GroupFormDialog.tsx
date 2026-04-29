@@ -108,6 +108,7 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }
             label="Aloitusvuosi"
             variant="outlined"
             value={startingYear}
+            inputProps={{ maxLength: 4 }}
             onChange={handleNumericChange(setStartingYear)}
             fullWidth
             required
@@ -116,6 +117,7 @@ const GroupFormDialog: React.FC<GroupFormDialogProps> = ({ open, onClose, data }
             label="Opiskelijamäärä"
             variant="outlined"
             value={studentCount}
+            inputProps={{ maxLength: 2 }}
             onChange={handleNumericChange(setStudentCount)}
             fullWidth
             required

@@ -116,7 +116,7 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
           <TextField
             label="Opintopisteet"
             value={op}
-            inputProps={{ maxLength: 3 }}
+            inputProps={{ maxLength: 2 }}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
@@ -129,7 +129,7 @@ const CourseFormDialog: React.FC<Props> = ({ open, onClose, data }) => {
           <TextField
             label="Suunnitellut tunnit"
             value={suunnitellutTunnit}
-            inputProps={{ maxLength: 4 }}
+            inputProps={{ maxLength: 3 }}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
