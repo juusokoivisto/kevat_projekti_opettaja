@@ -107,24 +107,42 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const handleAdd = async () => {
     if (!isValid) return;
     setLoading(true);
+    setError(null);
+
     const days = useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!) : [date!];
+
     const events = buildEventsToCreate({
-      days, classroom: classroom!, teacher: teacher!,
-      course: course!, group: group!,
-      useCustomTime, customStart, customEnd, selectedSlot,
+      days,
+      classroom: classroom!,
+      teacher: teacher!,
+      course: course!,
+      group: group!,
+      useCustomTime,
+      customStart,
+      customEnd,
+      selectedSlot,
     });
 
     try {
-      if (data) await api.calendar.update(data.id, events[0]);
-      else await api.calendar.createBatch(events);
+      if (data) {
+        await api.calendar.update(data.id, events[0]);
+      } else {
+        await api.calendar.createBatch(events);
+      }
 
       saveDefaults({
-        classroomId: classroom!.id, teacherId: teacher!.id,
-        courseId: course!.id, groupId: group!.id, slotKey: selectedSlot ?? undefined
+        classroomId: classroom!.id,
+        teacherId: teacher!.id,
+        courseId: course!.id,
+        groupId: group!.id,
+        slotKey: selectedSlot ?? undefined
       });
+
       onClose(true);
     } catch (err) {
-      setError('Tallennus epäonnistui');
+      const apiError = err as T.ApiError;
+      setError(apiError.error || 'Tuntematon virhe tallennuksessa');
+      console.error("Calendar Save Error:", apiError);
     } finally {
       setLoading(false);
     }
@@ -139,7 +157,13 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         <DialogTitle>{data ? 'Muokkaa tapahtumaa' : 'Uusi kalenteritapahtuma'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
-            {error && <Alert severity="error">{error}</Alert>}
+            {error && (
+              <Alert severity="error">
+                {error.split('\n').map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </Alert>
+            )}
 
             <Autocomplete
               options={sortedTeachers}
