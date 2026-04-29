@@ -45,7 +45,7 @@ router.route('/kalenteri')
 router.post('/kalenteri/batch', authenticateToken, createManyEvents);
 router.get('/kalenteri/opettaja/:id', getTeacherEvents);
 router.delete('/kalenteri/:id', authenticateToken, deleteEvent);
-router.put('/kalenteri/:id', updateEvent);
+router.put('/kalenteri/:id', authenticateToken, updateEvent);
 
 router.get('/export/excel', authenticateToken, exportToExcel);
 router.get('/export/ics', authenticateToken, exportToIcs);
