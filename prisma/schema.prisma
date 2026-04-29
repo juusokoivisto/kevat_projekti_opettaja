@@ -9,7 +9,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Opettaja 
+model Opettaja {
   id                Int                 @id @default(autoincrement())
   nimi              String
   sukunimi          String
