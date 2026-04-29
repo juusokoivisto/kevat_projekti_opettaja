@@ -1,14 +1,15 @@
 import * as React from 'react'
-import { useState, lazy, Suspense, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
+import { Suspense, lazy } from 'react'
+import Navbar from './components/Navbar.tsx'
+import Footer from './components/Footer.tsx'
+import Login from './components/Login.tsx'
 
-const Navbar = lazy(() => import('./components/Navbar.tsx'))
-const Footer = lazy(() => import('./components/Footer.tsx'))
-const Login = lazy(() => import('./components/Login.tsx'))
 const MainPage = lazy(() => import('./pages/MainPage.tsx'))
 const AdminPanel = lazy(() => import('./pages/AdminPage.tsx'))
 const TeachersPage = lazy(() => import('./pages/TeachersPage.tsx'))
@@ -21,11 +22,6 @@ const ManagementPage = lazy(() => import('./pages/Management.tsx'))
 import type { AuthUser } from './api/types/api.types'
 import { getDesignTokens } from './Theme.tsx'
 import { jwtDecode } from 'jwt-decode'
-
-export const ColorModeContext = React.createContext({
-  toggleDarkMode: () => { },
-  darkMode: false,
-})
 
 export const UserContext = React.createContext<{
   user: AuthUser | null
@@ -41,19 +37,14 @@ function App() {
   const [user, setUserState] = useState<AuthUser | null>(() => {
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-
     if (!savedUser || !token) return null;
-
     try {
       const decoded: { exp: number } = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-
-      if (decoded.exp < currentTime) {
+      if (decoded.exp < Date.now() / 1000) {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         return null;
       }
-
       return JSON.parse(savedUser);
     } catch (e) {
       return null;
@@ -79,8 +70,8 @@ function App() {
   const [loginOpen, setLoginOpen] = useState(false)
 
   const PageLoader = () => (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-      <CircularProgress />
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+      <CircularProgress color="inherit" />
     </Box>
   )
 
@@ -90,9 +81,10 @@ function App() {
         <CssBaseline />
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Navbar onLoginClick={() => setLoginOpen(true)} />
+
           <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9 }, pb: 4 }}>
             <Suspense fallback={<PageLoader />}>
-              <Routes key={user ? user.id : 'guest'}>
+              <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/teachers" element={<TeachersPage />} />
