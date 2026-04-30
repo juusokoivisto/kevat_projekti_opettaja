@@ -134,6 +134,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
           <TextField
             label="Sopimustunnit (h/vuosi)"
             value={hoursPerYear}
+            inputProps={{ maxLength: 4 }}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
