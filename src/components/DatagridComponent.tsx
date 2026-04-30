@@ -174,7 +174,6 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
         {...rest}
         rows={filteredRows}
         columns={columns}
-        autoHeight={autoHeight}
         checkboxSelection
         loading={loading}
         onRowDoubleClick={(params) => {

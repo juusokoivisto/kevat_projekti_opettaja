@@ -266,7 +266,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>
-          <Button onClick={() => onClose()} color="inherit">Peruuta</Button>
+          <Button onClick={() => onClose()} color="inherit">Peruuuuuta</Button>
           <Button variant="contained" onClick={handleAdd} disabled={!isValid || loading} disableElevation>
             {loading ? 'Lisätään...' : `Lisää ${eventCount} tapahtumaa`}
           </Button>
