@@ -133,7 +133,7 @@ export default function UnifiedManagementPage() {
           border: '1px solid',
           borderColor: 'divider',
           overflow: 'hidden',
-          bgcolor: 'background.paper'
+          bgcolor: 'background.paper',
         }}
       >
         <Tabs
@@ -153,7 +153,7 @@ export default function UnifiedManagementPage() {
           ))}
         </Tabs>
 
-        <Box sx={{ height: 650, width: '100%', p: 1 }}>
+        <Box sx={{ height: 600, width: '100%', p: 2, pb: 3, display: 'flex', flexDirection: 'column' }}>
           <DatagridComponent
             rows={current.data}
             columns={current.columns}

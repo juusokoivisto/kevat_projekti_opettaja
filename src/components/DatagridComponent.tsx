@@ -103,7 +103,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
     : rows.length - selectionModel.ids.size;
 
   return (
-    <Box sx={{ width: '100%', height: '100%' }}>
+    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box
         sx={{
           mb: 2,
@@ -187,6 +187,7 @@ const DatagridComponent: React.FC<DatagridComponentProps> = (props) => {
           '& .MuiDataGrid-row:hover': {
             bgcolor: onRowClick ? 'action.hover' : 'inherit',
           },
+          flexGrow: 1,
           ...(typeof sx === 'object' ? sx : {})
         }}
       />
