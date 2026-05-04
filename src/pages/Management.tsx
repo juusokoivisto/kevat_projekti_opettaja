@@ -5,6 +5,7 @@ import {
 } from '@mui/material'
 import {
   School, Group, MeetingRoom, Book
+  , Settings
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
@@ -18,6 +19,7 @@ const CourseFormDialog = lazy(() => import('../components/dialogs/CourseFormDial
 const GroupFormDialog = lazy(() => import('../components/dialogs/GroupFormDialog'))
 const TeacherFormDialog = lazy(() => import('../components/dialogs/TeacherFormDialog'))
 const ClassroomFormDialog = lazy(() => import('../components/dialogs/ClassroomFormDialog'))
+const AdminSettingsPanel = lazy(() => import('../components/dialogs/AdminSettingsPanel.tsx'));
 
 interface ManagementConfig {
   label: string;
@@ -26,7 +28,7 @@ interface ManagementConfig {
   icon: JSX.Element;
   data: any[];
   deleteApi: (ids: any[]) => Promise<any>;
-  Dialog: React.ComponentType<any>;
+  Dialog?: React.ComponentType<any>;
   columns: GridColDef[];
   detailPath?: string;
 }
@@ -47,6 +49,21 @@ export default function UnifiedManagementPage() {
   const rooms = useRooms()
 
   const configs: ManagementConfig[] = useMemo(() => [
+    {
+      label: 'Opettajat',
+      singularLabel: 'opettaja',
+      key: 'teachers',
+      icon: <School />,
+      data: teachers.data || [],
+      deleteApi: (ids) => api.teachers.deleteMany(ids as number[]),
+      Dialog: TeacherFormDialog,
+      detailPath: '/teachers',
+      columns: [
+        { field: 'nimi', headerName: 'Etunimi', flex: 1 },
+        { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
+        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1 },
+      ]
+    },
     {
       label: 'Kurssit',
       singularLabel: 'kurssi',
@@ -76,21 +93,6 @@ export default function UnifiedManagementPage() {
       ]
     },
     {
-      label: 'Opettajat',
-      singularLabel: 'opettaja',
-      key: 'teachers',
-      icon: <School />,
-      data: teachers.data || [],
-      deleteApi: (ids) => api.teachers.deleteMany(ids as number[]),
-      Dialog: TeacherFormDialog,
-      detailPath: '/teachers',
-      columns: [
-        { field: 'nimi', headerName: 'Etunimi', flex: 1 },
-        { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
-        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1 },
-      ]
-    },
-    {
       label: 'Luokkahuoneet',
       singularLabel: 'luokkahuone',
       key: 'rooms',
@@ -102,6 +104,18 @@ export default function UnifiedManagementPage() {
         { field: 'huoneenNumero', headerName: 'Huone', flex: 1 },
         { field: 'kapasiteetti', headerName: 'Kapasiteetti', width: 130 },
         { field: 'tyyppi', headerName: 'Tyyppi', width: 200 }
+      ]
+    },
+    {
+      label: 'Admin asetukset',
+      singularLabel: 'asetus',
+      key: 'adminSettings',
+      icon: <Settings />,
+      data: [],
+      deleteApi: () => Promise.resolve(),
+      columns: [
+        { field: 'key', headerName: 'Asetus', flex: 1 },
+        { field: 'value', headerName: 'Arvo', flex: 1 }
       ]
     }
   ], [courses.data, groups.data, teachers.data, rooms.data])
@@ -154,33 +168,39 @@ export default function UnifiedManagementPage() {
         </Tabs>
 
         <Box sx={{ height: 600, width: '100%', p: 2, pb: 3, display: 'flex', flexDirection: 'column' }}>
-          <DatagridComponent
-            rows={current.data}
-            columns={current.columns}
-            checkboxSelection
-            onAddRow={user ? () => { setEditingRow(null); setOpen(true); } : undefined}
-            addButtonLabel={`Lisää uusi ${current.singularLabel}`}
-            showOpenButton={Boolean(current.detailPath)}
-            onRowClick={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
-            onOpenRow={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
-            onDeleteRows={async (ids: GridRowId[]) => {
-              try {
-                await current.deleteApi(ids);
-                invalidate(current.key);
-              } catch (err) {
-                console.error("Delete failed", err);
-              }
-            }}
-            onEditRow={(id: GridRowId) => {
-              setEditingRow(current.data.find((r: any) => r.id === id))
-              setOpen(true)
-            }}
-            sx={{ border: 'none' }}
-          />
+          {current.key === 'adminSettings' ? (
+            <Suspense fallback={null}>
+              <AdminSettingsPanel />
+            </Suspense>
+          ) : (
+            <DatagridComponent
+              rows={current.data}
+              columns={current.columns}
+              checkboxSelection
+              onAddRow={user ? () => { setEditingRow(null); setOpen(true); } : undefined}
+              addButtonLabel={`Lisää uusi ${current.singularLabel}`}
+              showOpenButton={Boolean(current.detailPath)}
+              onRowClick={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
+              onOpenRow={current.detailPath ? (id: GridRowId) => navigate(`${current.detailPath}/${id}`) : undefined}
+              onDeleteRows={async (ids: GridRowId[]) => {
+                try {
+                  await current.deleteApi(ids);
+                  invalidate(current.key);
+                } catch (err) {
+                  console.error("Delete failed", err);
+                }
+              }}
+              onEditRow={(id: GridRowId) => {
+                setEditingRow(current.data.find((r: any) => r.id === id))
+                setOpen(true)
+              }}
+              sx={{ border: 'none' }}
+            />
+          )}
         </Box>
       </Paper>
 
-      {user && (
+      {user && current.Dialog && (
         <Suspense fallback={null}>
           <current.Dialog
             open={open}
