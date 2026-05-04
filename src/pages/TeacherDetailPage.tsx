@@ -138,6 +138,10 @@ export default function TeacherDetailsPage() {
             setEditingEvent(fresh)
             setEventEditOpen(true)
           }}
+          onAdd={() => {
+            setEditingEvent(null)
+            setEventEditOpen(true)
+          }}
         />
       </Box>
 
