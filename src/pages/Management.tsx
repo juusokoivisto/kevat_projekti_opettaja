@@ -120,15 +120,23 @@ export default function UnifiedManagementPage() {
     }
   ], [courses.data, groups.data, teachers.data, rooms.data])
 
-  const current = configs[activeTab]
+  const visibleConfigs = useMemo(() => (
+    user ? configs : configs.filter(c => c.key !== 'adminSettings')
+  ), [configs, user])
+
+  const current = visibleConfigs[activeTab] || visibleConfigs[0]
+
+  useEffect(() => {
+    if (activeTab >= visibleConfigs.length) setActiveTab(0)
+  }, [activeTab, visibleConfigs.length])
 
   useEffect(() => {
     const search = new URLSearchParams(location.search)
     const tabParam = search.get('tab') || (location.state as { tab?: string } | null)?.tab
     if (!tabParam) return
-    const idx = configs.findIndex(c => c.key === tabParam || c.label?.toLowerCase() === String(tabParam).toLowerCase())
+    const idx = visibleConfigs.findIndex(c => c.key === tabParam || c.label?.toLowerCase() === String(tabParam).toLowerCase())
     if (idx >= 0) setActiveTab(idx)
-  }, [location.search, location.state, configs])
+  }, [location.search, location.state, visibleConfigs])
 
   if (courses.isLoading || groups.isLoading || teachers.isLoading || rooms.isLoading) {
     return (
@@ -162,7 +170,7 @@ export default function UnifiedManagementPage() {
             '& .MuiTab-root': { py: 2, minHeight: 64, fontWeight: 'bold' }
           }}
         >
-          {configs.map((tab, i) => (
+          {visibleConfigs.map((tab, i) => (
             <Tab key={i} icon={tab.icon} iconPosition="start" label={tab.label} />
           ))}
         </Tabs>
