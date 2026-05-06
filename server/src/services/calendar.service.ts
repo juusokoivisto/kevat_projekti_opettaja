@@ -45,6 +45,32 @@ export const validateEvent = async (
   const dateStr = start.toLocaleDateString('fi-FI');
   const errors: string[] = [];
 
+  const teacher = await tx.opettaja.findUnique({
+    where: { id: opettajaId }
+  });
+
+  const newHours = durationHours(start, end);
+
+  if (!id) {
+    if ((teacher.vapaaResurssi ?? 0) < newHours) {
+      errors.push('Opettajalla ei ole riittävästi vapaita tunteja');
+    }
+  }
+
+  
+  if (id) {
+    const existing = await tx.tyojarjestys.findUnique({
+      where: { id }
+    });
+
+    const oldHours = durationHours(existing.alkaa, existing.paattyy);
+    const diff = newHours - oldHours;
+
+    if (diff > 0 && (teacher.vapaaResurssi ?? 0) < diff) {
+      errors.push('Opettajalla ei ole riittävästi vapaita tunteja tähän muutokseen');
+    }
+  }
+
   if (roomConflict) errors.push(`Huone on jo varattu päivänä ${dateStr}`);
   if (teacherConflict) errors.push(`Opettajalla on jo varaus päivänä ${dateStr}`);
   if (groupConflict) errors.push(`Ryhmällä on jo varaus päivänä ${dateStr}`);
