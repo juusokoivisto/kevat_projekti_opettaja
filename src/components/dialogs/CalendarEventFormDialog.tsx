@@ -140,9 +140,28 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
       setLoading(false);
     }
   };
+  const eventHours = React.useMemo(() => {
+    if (useCustomTime && customStart && customEnd) {
+      return Math.ceil((customEnd.valueOf() - customStart.valueOf()) / (1000 * 60 * 60));
+    }
+
+    if (selectedSlot) {
+      if (selectedSlot === 'molemmat') return 6;
+      return 3;
+    }
+
+    return 0;
+  }, [useCustomTime, customStart, customEnd, selectedSlot]);
 
   const isValid = !!(classroom && teacher && course && group && (useDateRange ? (dateRangeStart && dateRangeEnd) : date) && (useCustomTime ? (customStart && customEnd) : selectedSlot));
   const eventCount = isValid ? (useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!).length : 1) * (selectedSlot === 'molemmat' ? 2 : 1) : 1;
+  const teacherHasHoursLeft = React.useMemo(() => {
+    if (!teacher) return false;
+
+    if (data) return true;
+
+    return teacher.vapaaResurssi >= eventHours;
+  }, [teacher, data, eventHours]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
@@ -154,6 +173,12 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
               <Alert severity="error" sx={{ whiteSpace: 'pre-line' }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Tallennus epäonnistui:</Typography>
                 {error}
+              </Alert>
+            )}
+
+            {!teacherHasHoursLeft && !data && teacher && (
+              <Alert severity="warning">
+                Ei tarpeeksi tunteja: tapahtuma {eventHours} h • vapaana {teacher.vapaaResurssi} h
               </Alert>
             )}
 
@@ -267,7 +292,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>
           <Button onClick={() => onClose()} color="inherit">Peruuta</Button>
-          <Button variant="contained" onClick={handleAdd} disabled={!isValid || loading} disableElevation>
+          <Button variant="contained" onClick={handleAdd} disabled={!isValid || loading || !teacherHasHoursLeft} disableElevation>
             {loading ? 'Lisätään...' : `Lisää ${eventCount} tapahtumaa`}
           </Button>
         </DialogActions>
