@@ -12,7 +12,7 @@ export default function AdminSettingsPanel() {
   const handleExportToExcel = async () => {
     try {
       setExporting(true)
-      await api.export.excel()
+      await api.export.excelAll()
     } catch (err) {
       console.error('Export failed', err)
       window.alert('Vienti epäonnistui.')

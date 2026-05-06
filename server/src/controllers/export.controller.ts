@@ -24,23 +24,17 @@ const fmt = (d: Date) =>
 const parseOpettajaId = (req: Request): number | undefined =>
   req.query.opettajaId ? parseInt(req.query.opettajaId as string) : undefined;
 
-export const exportToExcel = async (req: Request, res: Response) => {
-  const opettajaId = parseOpettajaId(req);
-  const where = opettajaId ? { opettajaId } : undefined;
-
+export const exportAllToExcel = async (req: Request, res: Response) => {
   const [opettajat, kurssit, ryhmat, varaukset, tyojarjestykset] = await Promise.all([
     prisma.opettaja.findMany({
-      where: opettajaId ? { id: opettajaId } : undefined,
       include: { opettajaKurssit: { include: { kurssi: true } } },
     }),
     prisma.kurssi.findMany(),
     prisma.opiskelijaryhma.findMany(),
     prisma.resurssivaraus.findMany({
-      where,
       include: { opettaja: true, kurssi: true, ryhma: true },
     }),
     prisma.tyojarjestys.findMany({
-      where,
       include: { opettaja: true, kurssi: true, ryhma: true, tila: true },
     }),
   ]);
@@ -128,6 +122,85 @@ export const exportToExcel = async (req: Request, res: Response) => {
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', 'attachment; filename="export.xlsx"');
+  await workbook.xlsx.write(res);
+  res.end();
+};
+
+export const exportTeacherCalendarToExcel = async (req: Request, res: Response) => {
+  const opettajaId = parseOpettajaId(req);
+
+  if (!opettajaId) {
+    res.status(400).json({ error: 'opettajaId is required' });
+    return;
+  }
+
+  const where = { opettajaId };
+
+  const [opettaja, varaukset, tyojarjestykset] = await Promise.all([
+    prisma.opettaja.findUnique({
+      where: { id: opettajaId },
+      include: { opettajaKurssit: { include: { kurssi: true } } },
+    }),
+    prisma.resurssivaraus.findMany({
+      where,
+      include: { opettaja: true, kurssi: true, ryhma: true },
+    }),
+    prisma.tyojarjestys.findMany({
+      where,
+      include: { opettaja: true, kurssi: true, ryhma: true, tila: true },
+    }),
+  ]);
+
+  if (!opettaja) {
+    res.status(404).json({ error: 'Opettajaa ei löydy' });
+    return;
+  }
+
+  const workbook = new Workbook();
+
+  const tyojarjestysSheet = workbook.addWorksheet('Työjärjestys');
+  tyojarjestysSheet.columns = [
+    { header: 'ID', key: 'id' },
+    { header: 'Kurssi', key: 'kurssi' },
+    { header: 'Opettaja', key: 'opettaja' },
+    { header: 'Ryhmä', key: 'ryhma' },
+    { header: 'Tila', key: 'tila' },
+    { header: 'Alkaa', key: 'alkaa' },
+    { header: 'Päättyy', key: 'paattyy' },
+  ];
+  tyojarjestysSheet.addRows(
+    tyojarjestykset.map((t) => ({
+      id: t.id,
+      kurssi: t.kurssi.nimi,
+      opettaja: `${t.opettaja.nimi} ${t.opettaja.sukunimi}`,
+      ryhma: t.ryhma.ryhmatunnus,
+      tila: t.tila.huoneenNumero,
+      alkaa: fmt(t.alkaa),
+      paattyy: fmt(t.paattyy),
+    }))
+  );
+
+  const varauksetSheet = workbook.addWorksheet('Resurssivaraukset');
+  varauksetSheet.columns = [
+    { header: 'ID', key: 'id' },
+    { header: 'Kurssi', key: 'kurssi' },
+    { header: 'Ryhmä', key: 'ryhma' },
+    { header: 'Varatut tunnit', key: 'varatutTunnit' },
+    { header: 'Rooli', key: 'rooli' },
+  ];
+  varauksetSheet.addRows(
+    varaukset.map((v) => ({
+      id: v.id,
+      kurssi: v.kurssi.nimi,
+      ryhma: v.ryhma.ryhmatunnus,
+      varatutTunnit: v.varatutTunnit,
+      rooli: v.rooli,
+    }))
+  );
+
+  const filename = `kalenteri-${opettaja.sukunimi}-${opettaja.nimi}.xlsx`.toLowerCase().replace(/\s+/g, '-');
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   await workbook.xlsx.write(res);
   res.end();
 };

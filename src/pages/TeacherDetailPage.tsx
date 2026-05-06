@@ -5,6 +5,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { UserContext } from '../context/UserContext'
 import TeacherFormDialog from '../components/dialogs/TeacherFormDialog'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import TableChartIcon from '@mui/icons-material/TableChart'
+import EventIcon from '@mui/icons-material/Event'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../api'
 import * as T from '../api/types/api.types'
@@ -126,9 +128,31 @@ export default function TeacherDetailsPage() {
         </Box>
       )}
 
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: 'medium' }}>
-        Kalenteri
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'medium' }}>
+          Kalenteri
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<TableChartIcon />}
+            onClick={() => api.export.excelTeacher(Number(id))}
+            sx={{ textTransform: 'none' }}
+          >
+            Vie Exceliin
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EventIcon />}
+            onClick={() => api.export.ics(Number(id))}
+            sx={{ textTransform: 'none' }}
+          >
+            Vie ICS
+          </Button>
+        </Box>
+      </Box>
       <Box sx={{ maxWidth: '900px' }}>
         <Calendar
           teacherId={Number(id)}

@@ -1,6 +1,5 @@
 import { request, downloadFile } from './client';
 import * as T from './types/api.types';
-
 export const api = {
   health: {
     check: () => request<{ status: string }>('/health', { method: 'GET' }),
@@ -64,11 +63,10 @@ export const api = {
       request<T.CalendarEvent>(`/kalenteri/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   },
   export: {
-    excel: (opettajaId?: number) =>
-      downloadFile(
-        `/export/excel${opettajaId ? `?opettajaId=${opettajaId}` : ''}`,
-        `kalenteri-export-${Date.now()}.xlsx`
-      ),
+    excelAll: () =>
+      downloadFile('/export/excel', `kalenteri-export-${Date.now()}.xlsx`),
+    excelTeacher: (opettajaId: number) =>
+      downloadFile(`/export/excel/opettaja?opettajaId=${opettajaId}`, `kalenteri-export-${Date.now()}.xlsx`),
     ics: (opettajaId?: number) =>
       downloadFile(
         `/export/ics${opettajaId ? `?opettajaId=${opettajaId}` : ''}`,

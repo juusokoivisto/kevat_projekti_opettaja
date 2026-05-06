@@ -32,7 +32,7 @@ export default function TeachersPage() {
     { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
     { field: 'sahkoposti', headerName: 'Sähköposti', width: 220 },
     { field: 'sopimustunnit', headerName: 'Sopimustunnit', width: 160 },
-    { field: 'vapaaResurssi', headerName: 'Vapaa resurssi', width: 160 }
+    { field: 'vapaaResurssi', headerName: 'Vapaa resurssi', width: 160 },
   ]
 
   const handleDelete = async (ids: (string | number)[]) => {

@@ -61,7 +61,7 @@ export default function UnifiedManagementPage() {
       columns: [
         { field: 'nimi', headerName: 'Etunimi', flex: 1 },
         { field: 'sukunimi', headerName: 'Sukunimi', flex: 1 },
-        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1 },
+        { field: 'sahkoposti', headerName: 'Sähköposti', flex: 1 }
       ]
     },
     {
