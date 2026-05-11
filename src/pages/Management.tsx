@@ -136,7 +136,7 @@ export default function UnifiedManagementPage() {
     if (!tabParam) return
     const idx = visibleConfigs.findIndex(c => c.key === tabParam || c.label?.toLowerCase() === String(tabParam).toLowerCase())
     if (idx >= 0) setActiveTab(idx)
-  }, [location.search, location.state, visibleConfigs])
+  }, [location.search, location.state])
 
   if (courses.isLoading || groups.isLoading || teachers.isLoading || rooms.isLoading) {
     return (
