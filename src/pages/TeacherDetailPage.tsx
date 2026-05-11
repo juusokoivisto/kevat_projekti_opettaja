@@ -69,7 +69,7 @@ export default function TeacherDetailsPage() {
       <Button
         variant="text"
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/management?tab=teachers')}
+        onClick={() => navigate(-1)}
         sx={{ mb: 3, color: 'text.primary' }}
       >
         Takaisin
