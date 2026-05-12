@@ -156,14 +156,21 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
     if (useCustomTime && customStart && customEnd) {
       return Math.ceil((customEnd.valueOf() - customStart.valueOf()) / (1000 * 60 * 60));
     }
-
+    
     if (selectedSlot) {
-      if (selectedSlot === 'molemmat') return 6;
-      return 3;
+      const isMondayMorning =
+        selectedSlot === 'aamu' &&
+        activeDate?.day() === 1;
+
+      if (selectedSlot === 'molemmat') {
+        return activeDate?.day() === 1 ? 5 : 6;
+      }
+
+      return isMondayMorning ? 2 : 3;
     }
 
     return 0;
-  }, [useCustomTime, customStart, customEnd, selectedSlot]);
+  }, [useCustomTime, customStart, customEnd, selectedSlot, activeDate]);
 
   const isValid = !!(classroom && teacher && course && group && (useDateRange ? (dateRangeStart && dateRangeEnd) : date) && (useCustomTime ? (customStart && customEnd) : selectedSlot));
   const eventCount = isValid ? (useDateRange ? getWeekdaysBetween(dateRangeStart!, dateRangeEnd!).length : 1) * (selectedSlot === 'molemmat' ? 2 : 1) : 1;
