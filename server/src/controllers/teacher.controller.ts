@@ -93,7 +93,7 @@ export const updateTeacher = async (
       return res.status(404).json({ error: 'Opettajaa ei löytynyt' });
     }
 
-    res.json(teacher); // ✅ tämä puuttui
+    res.json(teacher);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
