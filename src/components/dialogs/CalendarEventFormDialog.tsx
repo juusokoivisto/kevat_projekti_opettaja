@@ -58,6 +58,18 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
   const activeDate = useDateRange ? dateRangeStart : date;
   const isMonday = activeDate?.day() === 1;
 
+  const bothSlotsLabel = React.useMemo(() => {
+    if (useDateRange && dateRangeStart && dateRangeEnd) {
+      const days = getWeekdaysBetween(dateRangeStart, dateRangeEnd);
+      const hasMonday = days.some(d => d.day() === 1);
+      const hasOther = days.some(d => d.day() !== 1);
+      if (hasMonday && hasOther) return '8/9:00 - 14:45';
+      if (hasMonday) return '9:00 - 14:45';
+      return '8:00 - 14:45';
+    }
+    return isMonday ? '9:00 - 14:45' : '8:00 - 14:45';
+  }, [useDateRange, dateRangeStart, dateRangeEnd, isMonday]);
+
   useEffect(() => {
     if (!open) return;
     const load = async () => {
@@ -275,7 +287,7 @@ const CalendarEventFormDialog: React.FC<CalendarEventFormDialogProps> = ({ open,
                       <Stack alignItems="center">
                         <Typography variant="body2" fontWeight="medium">Molemmat</Typography>
                         <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                          {isMonday ? '9:00 - 14:45' : '8:00 - 14:45'}
+                          {bothSlotsLabel}
                         </Typography>
                       </Stack>
                     </ToggleButton>
