@@ -8,7 +8,7 @@ import { HexColorPicker } from 'react-colorful';
 
 interface TeacherFormDialogProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (refresh?: boolean) => void;
   data?: any | null;
 }
 
@@ -87,7 +87,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       }
 
       reset();
-      onClose();
+      onClose(true);
     } catch (err: any) {
       setError(err?.error || 'Tallennus epäonnistui');
     }
@@ -97,7 +97,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
     !teacherFirstName || !teacherLastName || !email || !hoursPerYear;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={() => onClose()} fullWidth maxWidth="sm">
       <DialogTitle>
         {data ? 'Muokkaa opettajaa' : 'Lisää opettaja'}
       </DialogTitle>
@@ -182,7 +182,7 @@ const TeacherFormDialog: React.FC<TeacherFormDialogProps> = ({ open, onClose, da
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Peruuta</Button>
+        <Button onClick={() => onClose()}>Peruuta</Button>
         <Button
           variant="contained"
           onClick={handleSubmit}

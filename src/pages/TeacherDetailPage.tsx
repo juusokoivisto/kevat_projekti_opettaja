@@ -48,12 +48,27 @@ export default function TeacherDetailsPage() {
     </Box>
   )
 
-  const handleCloseEdit = () => {
-    setEditOpen(false)
-    qc.invalidateQueries({ queryKey: ['teachers'] })
-    qc.invalidateQueries({ queryKey: ['calendar', Number(id)] })
-    qc.invalidateQueries({ queryKey: ['calendar'] })
+const handleCloseEdit = async (refresh?: boolean) => {
+  setEditOpen(false)
+
+  if (refresh) {
+    await qc.invalidateQueries({
+      queryKey: ['teachers', id]
+    })
+
+    await qc.invalidateQueries({
+      queryKey: ['teachers']
+    })
+
+    await qc.invalidateQueries({
+      queryKey: ['calendar', Number(id)]
+    })
+
+    await qc.invalidateQueries({
+      queryKey: ['calendar']
+    })
   }
+}
 
   const handleEventDialogClose = async (shouldRefresh?: boolean) => {
     setEventEditOpen(false)
