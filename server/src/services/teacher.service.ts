@@ -41,21 +41,78 @@ export const createTeacher = async (body: TeacherBody) => {
 };
 
 export const updateTeacher = async (id: number, body: TeacherBody) => {
-  const { nimi, sukunimi, sahkoposti, sopimustunnit, vari, courseIds = [] } = body;
+  const {
+    nimi,
+    sukunimi,
+    sahkoposti,
+    sopimustunnit,
+    vari,
+    courseIds = []
+  } = body;
 
   return prisma.$transaction(async (tx) => {
-    await tx.opettaja.update({
-      where: { id },
-      data: { nimi, sukunimi, sahkoposti, sopimustunnit: Number(sopimustunnit), vari: vari ?? undefined },
+
+    const existing = await tx.opettaja.findUnique({
+      where: { id }
     });
 
-    await tx.opettajaKurssi.deleteMany({ where: { opettajaId: id } });
+    if (!existing) return null;
 
-    for (const kurssiId of courseIds) {
-      await tx.opettajaKurssi.create({ data: { opettajaId: id, kurssiId } as any });
+    const events = await tx.tyojarjestys.findMany({
+      where: { opettajaId: id },
+    });
+
+    const usedHours = events.reduce((sum, e) => {
+      const start = new Date(e.alkaa);
+      const end = new Date(e.paattyy);
+
+      return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    }, 0);
+
+    const newHours = Number(sopimustunnit);
+
+    if (newHours < usedHours) {
+      throw new Error(
+        `Sopimustunnit eivät voi olla alle käytettyjen tuntien (${usedHours.toFixed(1)} h)`
+      );
     }
 
-    const full = await tx.opettaja.findUnique({ where: { id }, include: includeKurssit });
+    const oldHours = Number(existing.sopimustunnit);
+    const oldFree = Number(existing.vapaaResurssi);
+
+    const diff = newHours - oldHours;
+    const newFree = Math.max(0, oldFree + diff);
+
+    await tx.opettaja.update({
+      where: { id },
+      data: {
+        nimi,
+        sukunimi,
+        sahkoposti,
+        sopimustunnit: newHours,
+        vapaaResurssi: newFree,
+        vari: vari ?? undefined,
+      },
+    });
+
+    await tx.opettajaKurssi.deleteMany({
+      where: { opettajaId: id }
+    });
+
+    for (const kurssiId of courseIds) {
+      await tx.opettajaKurssi.create({
+        data: {
+          opettajaId: id,
+          kurssiId
+        } as any
+      });
+    }
+
+    const full = await tx.opettaja.findUnique({
+      where: { id },
+      include: includeKurssit
+    });
+
     return full ? mapKurssit(full) : null;
   });
 };
