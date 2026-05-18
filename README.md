@@ -12,25 +12,19 @@ Varmista, että koneellesi on asennettu:
 
 ## Asennus ja käyttöönotto
 
-Avaa terminaali ja aja seuraavat komennot ladataksesi projektin:
+Kloonaa projekti ja asenna riippuvuudet:
 
 ```bash
-# Kloonaa projekti
 git clone https://github.com/juusokoivisto/kevat_projekti_opettaja.git
-
-# Siirry projektin juurikansioon, lataa vaatimukset ja rakenna sovellus
 cd kevat_projekti_opettaja
-npm install
-npm run build
-
-# Siirry backend kansioon, lataa vaatimukset ja rakenna sovellus
-cd server
-npm install
-npm run build
+npm install && npm run build
 ```
 
-Sen jälkeen voit aloittaa sovelluksen kirjoittamalla molemmissa kansiossa
+Tee sama backend-kansiossa:
 
 ```bash
-npm start
+cd server
+npm install && npm run build
 ```
+
+Käynnistä sovellus ajamalla `npm start` molemmissa kansioissa.
